@@ -48,7 +48,7 @@ function PainelLayout() {
         </Link>
 
         <div className="mt-5">
-          <Select value={businessId ?? undefined} onValueChange={setBusinessId}>
+          <Select {...(businessId ? { value: businessId } : {})} onValueChange={setBusinessId}>
             <SelectTrigger className="w-full bg-card">
               <SelectValue placeholder="Nenhum negócio" />
             </SelectTrigger>
