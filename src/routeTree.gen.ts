@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedPainelRouteImport } from './routes/_authenticated/painel'
 import { Route as AuthenticatedPainelNegociosRouteImport } from './routes/_authenticated/painel.negocios'
+import { Route as AuthenticatedPainelProfissionaisRouteImport } from './routes/_authenticated/painel.profissionais'
 import { Route as AuthenticatedPainelServicosRouteImport } from './routes/_authenticated/painel.servicos'
 
 const IndexRoute = IndexRouteImport.update({
@@ -41,6 +42,12 @@ const AuthenticatedPainelNegociosRoute =
     path: '/negocios',
     getParentRoute: () => AuthenticatedPainelRoute,
   } as any)
+const AuthenticatedPainelProfissionaisRoute =
+  AuthenticatedPainelProfissionaisRouteImport.update({
+    id: '/profissionais',
+    path: '/profissionais',
+    getParentRoute: () => AuthenticatedPainelRoute,
+  } as any)
 const AuthenticatedPainelServicosRoute =
   AuthenticatedPainelServicosRouteImport.update({
     id: '/servicos',
@@ -53,6 +60,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/painel': typeof AuthenticatedPainelRouteWithChildren
   '/painel/negocios': typeof AuthenticatedPainelNegociosRoute
+  '/painel/profissionais': typeof AuthenticatedPainelProfissionaisRoute
   '/painel/servicos': typeof AuthenticatedPainelServicosRoute
 }
 export interface FileRoutesByTo {
@@ -60,6 +68,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/painel': typeof AuthenticatedPainelRouteWithChildren
   '/painel/negocios': typeof AuthenticatedPainelNegociosRoute
+  '/painel/profissionais': typeof AuthenticatedPainelProfissionaisRoute
   '/painel/servicos': typeof AuthenticatedPainelServicosRoute
 }
 export interface FileRoutesById {
@@ -69,13 +78,26 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/painel': typeof AuthenticatedPainelRouteWithChildren
   '/_authenticated/painel/negocios': typeof AuthenticatedPainelNegociosRoute
+  '/_authenticated/painel/profissionais': typeof AuthenticatedPainelProfissionaisRoute
   '/_authenticated/painel/servicos': typeof AuthenticatedPainelServicosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/painel' | '/painel/negocios' | '/painel/servicos'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/painel'
+    | '/painel/negocios'
+    | '/painel/profissionais'
+    | '/painel/servicos'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/painel' | '/painel/negocios' | '/painel/servicos'
+  to:
+    | '/'
+    | '/auth'
+    | '/painel'
+    | '/painel/negocios'
+    | '/painel/profissionais'
+    | '/painel/servicos'
   id:
     | '__root__'
     | '/'
@@ -83,6 +105,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/painel'
     | '/_authenticated/painel/negocios'
+    | '/_authenticated/painel/profissionais'
     | '/_authenticated/painel/servicos'
   fileRoutesById: FileRoutesById
 }
@@ -129,6 +152,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPainelNegociosRouteImport
       parentRoute: typeof AuthenticatedPainelRoute
     }
+    '/_authenticated/painel/profissionais': {
+      id: '/_authenticated/painel/profissionais'
+      path: '/profissionais'
+      fullPath: '/painel/profissionais'
+      preLoaderRoute: typeof AuthenticatedPainelProfissionaisRouteImport
+      parentRoute: typeof AuthenticatedPainelRoute
+    }
     '/_authenticated/painel/servicos': {
       id: '/_authenticated/painel/servicos'
       path: '/servicos'
@@ -141,11 +171,13 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedPainelRouteChildren {
   AuthenticatedPainelNegociosRoute: typeof AuthenticatedPainelNegociosRoute
+  AuthenticatedPainelProfissionaisRoute: typeof AuthenticatedPainelProfissionaisRoute
   AuthenticatedPainelServicosRoute: typeof AuthenticatedPainelServicosRoute
 }
 
 const AuthenticatedPainelRouteChildren: AuthenticatedPainelRouteChildren = {
   AuthenticatedPainelNegociosRoute: AuthenticatedPainelNegociosRoute,
+  AuthenticatedPainelProfissionaisRoute: AuthenticatedPainelProfissionaisRoute,
   AuthenticatedPainelServicosRoute: AuthenticatedPainelServicosRoute,
 }
 
