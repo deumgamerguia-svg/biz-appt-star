@@ -12,6 +12,7 @@ export const STATUSES = [
   { value: "confirmado", label: "Confirmado" },
   { value: "concluido", label: "Concluído" },
   { value: "cancelado", label: "Cancelado" },
+  { value: "bloqueado", label: "Bloqueado" },
 ];
 
 export function statusLabel(value: string) {
