@@ -122,41 +122,62 @@
   --sidebar-accent-foreground: oklch(0.4 0.16 264);
   --sidebar-border: oklch(0.92 0.01 256);
   --sidebar-ring: oklch(0.51 0.22 264);
+
+  --slot-free: oklch(0.85 0.08 20);
+  --slot-free-foreground: oklch(0.25 0.06 20);
+  --slot-booked: oklch(0.72 0.17 300);
+  --slot-booked-foreground: oklch(0.2 0.05 300);
+  --slot-paid: oklch(0.87 0.005 260);
+  --slot-paid-foreground: oklch(0.24 0.02 260);
+  --slot-empty: oklch(0.94 0.004 260);
+  --slot-empty-foreground: oklch(0.55 0.02 260);
 }
 
+/* Tema escuro — padrão do painel (referência Agenda Serviço) */
 .dark {
-  --background: oklch(0.21 0.04 260);
-  --foreground: oklch(0.98 0.005 250);
-  --card: oklch(0.26 0.04 260);
-  --card-foreground: oklch(0.98 0.005 250);
-  --popover: oklch(0.26 0.04 260);
-  --popover-foreground: oklch(0.98 0.005 250);
-  --primary: oklch(0.62 0.19 264);
-  --primary-foreground: oklch(0.99 0.005 250);
-  --secondary: oklch(0.3 0.04 260);
-  --secondary-foreground: oklch(0.98 0.005 250);
-  --muted: oklch(0.3 0.04 260);
-  --muted-foreground: oklch(0.72 0.03 257);
-  --accent: oklch(0.32 0.06 262);
-  --accent-foreground: oklch(0.9 0.05 264);
-  --destructive: oklch(0.65 0.2 25);
-  --destructive-foreground: oklch(0.99 0.005 250);
-  --success: oklch(0.68 0.14 155);
+  --background: oklch(0.16 0.005 265);
+  --foreground: oklch(0.97 0.005 250);
+  --card: oklch(0.22 0.006 265);
+  --card-foreground: oklch(0.97 0.005 250);
+  --popover: oklch(0.2 0.006 265);
+  --popover-foreground: oklch(0.97 0.005 250);
+  --primary: oklch(0.78 0.16 175);
+  --primary-foreground: oklch(0.16 0.03 180);
+  --secondary: oklch(0.28 0.006 265);
+  --secondary-foreground: oklch(0.97 0.005 250);
+  --muted: oklch(0.27 0.006 265);
+  --muted-foreground: oklch(0.7 0.01 260);
+  --accent: oklch(0.3 0.02 200);
+  --accent-foreground: oklch(0.88 0.1 180);
+  --destructive: oklch(0.6 0.2 25);
+  --destructive-foreground: oklch(0.98 0.005 250);
+  --success: oklch(0.7 0.15 160);
   --success-foreground: oklch(0.16 0.03 160);
-  --warning: oklch(0.8 0.14 75);
-  --warning-foreground: oklch(0.22 0.05 60);
+  --warning: oklch(0.82 0.14 90);
+  --warning-foreground: oklch(0.2 0.05 60);
   --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 16%);
-  --ring: oklch(0.62 0.19 264);
-  --sidebar: oklch(0.24 0.04 260);
-  --sidebar-foreground: oklch(0.96 0.005 250);
-  --sidebar-primary: oklch(0.62 0.19 264);
-  --sidebar-primary-foreground: oklch(0.99 0.005 250);
-  --sidebar-accent: oklch(0.32 0.06 262);
-  --sidebar-accent-foreground: oklch(0.9 0.05 264);
-  --sidebar-border: oklch(1 0 0 / 12%);
-  --sidebar-ring: oklch(0.62 0.19 264);
+  --ring: oklch(0.78 0.16 175);
+
+  --sidebar: oklch(0.16 0.05 265);
+  --sidebar-foreground: oklch(0.85 0.03 250);
+  --sidebar-primary: oklch(0.78 0.16 175);
+  --sidebar-primary-foreground: oklch(0.16 0.03 180);
+  --sidebar-accent: oklch(0.24 0.06 265);
+  --sidebar-accent-foreground: oklch(0.98 0.005 250);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.78 0.16 175);
+
+  --slot-free: oklch(0.82 0.09 18);
+  --slot-free-foreground: oklch(0.2 0.06 20);
+  --slot-booked: oklch(0.7 0.18 300);
+  --slot-booked-foreground: oklch(0.16 0.05 300);
+  --slot-paid: oklch(0.85 0.005 260);
+  --slot-paid-foreground: oklch(0.2 0.01 260);
+  --slot-empty: oklch(0.28 0.005 265);
+  --slot-empty-foreground: oklch(0.6 0.01 260);
 }
+
 
 @layer base {
   * {
