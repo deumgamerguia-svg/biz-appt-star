@@ -63,3 +63,32 @@ export function localToIso(date: string, time: string) {
 export function addMinutesIso(iso: string, minutes: number) {
   return new Date(new Date(iso).getTime() + minutes * 60000).toISOString();
 }
+
+export const WEEKDAYS = [
+  { value: 0, label: "Domingo" },
+  { value: 1, label: "Segunda - feira" },
+  { value: 2, label: "Terça - feira" },
+  { value: 3, label: "Quarta - feira" },
+  { value: 4, label: "Quinta - feira" },
+  { value: 5, label: "Sexta - feira" },
+  { value: 6, label: "Sábado" },
+];
+
+export function weekdayLabel(value: number) {
+  return WEEKDAYS.find((d) => d.value === value)?.label ?? String(value);
+}
+
+/** "2026-09-01" -> "09/26" */
+export function formatMonthShort(date: string) {
+  const [y, m] = date.split("-");
+  return `${m}/${y?.slice(2)}`;
+}
+
+export function hhmm(value: string) {
+  return value.slice(0, 5);
+}
+
+export function daysSince(iso: string | null) {
+  if (!iso) return null;
+  return Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 86400000));
+}
