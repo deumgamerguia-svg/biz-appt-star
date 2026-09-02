@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedPainelRouteImport } from './routes/_authenticated/painel'
+import { Route as AgendarSlugRouteImport } from './routes/agendar.$slug'
 import { Route as AuthenticatedPainelIndexRouteImport } from './routes/_authenticated/painel.index'
 import { Route as AuthenticatedPainelAsPayRouteImport } from './routes/_authenticated/painel.as-pay'
 import { Route as AuthenticatedPainelAssinaturaRouteImport } from './routes/_authenticated/painel.assinatura'
@@ -48,6 +49,11 @@ const AuthenticatedPainelRoute = AuthenticatedPainelRouteImport.update({
   id: '/painel',
   path: '/painel',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AgendarSlugRoute = AgendarSlugRouteImport.update({
+  id: '/agendar/$slug',
+  path: '/agendar/$slug',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedPainelIndexRoute =
   AuthenticatedPainelIndexRouteImport.update({
@@ -150,6 +156,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/painel': typeof AuthenticatedPainelRouteWithChildren
+  '/agendar/$slug': typeof AgendarSlugRoute
   '/painel/as-pay': typeof AuthenticatedPainelAsPayRoute
   '/painel/assinatura': typeof AuthenticatedPainelAssinaturaRoute
   '/painel/bloqueios': typeof AuthenticatedPainelBloqueiosRoute
@@ -170,6 +177,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/agendar/$slug': typeof AgendarSlugRoute
   '/painel/as-pay': typeof AuthenticatedPainelAsPayRoute
   '/painel/assinatura': typeof AuthenticatedPainelAssinaturaRoute
   '/painel/bloqueios': typeof AuthenticatedPainelBloqueiosRoute
@@ -193,6 +201,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/painel': typeof AuthenticatedPainelRouteWithChildren
+  '/agendar/$slug': typeof AgendarSlugRoute
   '/_authenticated/painel/as-pay': typeof AuthenticatedPainelAsPayRoute
   '/_authenticated/painel/assinatura': typeof AuthenticatedPainelAssinaturaRoute
   '/_authenticated/painel/bloqueios': typeof AuthenticatedPainelBloqueiosRoute
@@ -216,6 +225,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/painel'
+    | '/agendar/$slug'
     | '/painel/as-pay'
     | '/painel/assinatura'
     | '/painel/bloqueios'
@@ -236,6 +246,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/agendar/$slug'
     | '/painel/as-pay'
     | '/painel/assinatura'
     | '/painel/bloqueios'
@@ -258,6 +269,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/painel'
+    | '/agendar/$slug'
     | '/_authenticated/painel/as-pay'
     | '/_authenticated/painel/assinatura'
     | '/_authenticated/painel/bloqueios'
@@ -280,6 +292,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  AgendarSlugRoute: typeof AgendarSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -311,6 +324,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/painel'
       preLoaderRoute: typeof AuthenticatedPainelRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/agendar/$slug': {
+      id: '/agendar/$slug'
+      path: '/agendar/$slug'
+      fullPath: '/agendar/$slug'
+      preLoaderRoute: typeof AgendarSlugRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/painel/': {
       id: '/_authenticated/painel/'
@@ -483,6 +503,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  AgendarSlugRoute: AgendarSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
