@@ -2,20 +2,18 @@ import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Plus, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Eye, CalendarX2, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useBusiness } from "@/lib/business";
 import {
   STATUSES,
   statusLabel,
-  formatTime,
-  formatDateLong,
   toDateInput,
   localToIso,
   addMinutesIso,
   formatPrice,
 } from "@/lib/format";
-import { PageHeader, NoBusiness, EmptyList } from "@/components/painel/PageHeader";
+import { NoBusiness } from "@/components/painel/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,7 +24,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -48,26 +45,42 @@ export const Route = createFileRoute("/_authenticated/painel/")({
   component: AgendaPage,
 });
 
-const statusStyles: Record<string, string> = {
-  agendado: "bg-accent text-accent-foreground",
-  confirmado: "bg-primary/10 text-primary",
-  concluido: "bg-success/15 text-success",
-  cancelado: "bg-destructive/10 text-destructive",
+const START_HOUR = 8;
+const END_HOUR = 19;
+
+function buildSlots() {
+  const slots: string[] = [];
+  for (let h = START_HOUR; h <= END_HOUR; h++) {
+    slots.push(`${String(h).padStart(2, "0")}:00`);
+    if (h !== END_HOUR) slots.push(`${String(h).padStart(2, "0")}:30`);
+  }
+  return slots;
+}
+
+const SLOTS = buildSlots();
+
+function slotOf(iso: string) {
+  const d = new Date(iso);
+  const m = d.getMinutes() < 30 ? "00" : "30";
+  return `${String(d.getHours()).padStart(2, "0")}:${m}`;
+}
+
+const emptyForm = {
+  customer_name: "",
+  customer_phone: "",
+  service_id: "",
+  professional_id: "",
+  time: "09:00",
+  notes: "",
 };
 
 function AgendaPage() {
-  const { businessId } = useBusiness();
+  const { businessId, business } = useBusiness();
   const queryClient = useQueryClient();
   const [day, setDay] = useState(() => toDateInput(new Date()));
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({
-    customer_name: "",
-    customer_phone: "",
-    service_id: "",
-    professional_id: "",
-    time: "09:00",
-    notes: "",
-  });
+  const [detail, setDetail] = useState<string | null>(null);
+  const [form, setForm] = useState(emptyForm);
 
   const { data: services } = useQuery({
     queryKey: ["services", businessId],
@@ -99,7 +112,7 @@ function AgendaPage() {
     },
   });
 
-  const { data: appointments, isLoading } = useQuery({
+  const { data: appointments } = useQuery({
     queryKey: ["appointments", businessId, day],
     enabled: !!businessId,
     queryFn: async () => {
@@ -139,14 +152,7 @@ function AgendaPage() {
     onSuccess: () => {
       toast.success("Agendamento criado!");
       setOpen(false);
-      setForm({
-        customer_name: "",
-        customer_phone: "",
-        service_id: "",
-        professional_id: "",
-        time: "09:00",
-        notes: "",
-      });
+      setForm(emptyForm);
       void invalidate();
     },
     onError: (e: Error) => toast.error(e.message),
@@ -167,6 +173,7 @@ function AgendaPage() {
     },
     onSuccess: () => {
       toast.success("Agendamento removido.");
+      setDetail(null);
       void invalidate();
     },
   });
@@ -179,6 +186,13 @@ function AgendaPage() {
     setDay(toDateInput(next));
   };
 
+  const bySlot = new Map<string, (typeof appointments extends (infer T)[] | undefined ? T : never)[]>();
+  for (const a of appointments ?? []) {
+    const key = slotOf(a.starts_at);
+    bySlot.set(key, [...(bySlot.get(key) ?? []), a]);
+  }
+
+  const weekday = new Date(`${day}T12:00:00`).toLocaleDateString("pt-BR", { weekday: "long" });
   const total = (appointments ?? []).reduce(
     (sum, a) =>
       a.status !== "cancelado"
@@ -186,185 +200,252 @@ function AgendaPage() {
         : sum,
     0,
   );
+  const selected = (appointments ?? []).find((a) => a.id === detail) ?? null;
+
+  const openNewAt = (time: string) => {
+    setForm({ ...emptyForm, time });
+    setOpen(true);
+  };
 
   return (
     <div>
-      <PageHeader
-        title="Agenda"
-        subtitle={formatDateLong(new Date(`${day}T12:00:00`))}
-        action={
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="size-4" /> Novo agendamento
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Novo agendamento</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="aname">Cliente</Label>
-                    <Input
-                      id="aname"
-                      value={form.customer_name}
-                      onChange={(e) => setForm({ ...form, customer_name: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="aphone">Telefone</Label>
-                    <Input
-                      id="aphone"
-                      value={form.customer_phone}
-                      onChange={(e) => setForm({ ...form, customer_phone: e.target.value })}
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Serviço</Label>
-                  <Select
-                    value={form.service_id}
-                    onValueChange={(v) => setForm({ ...form, service_id: v })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione um serviço" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {(services ?? []).map((s) => (
-                        <SelectItem key={s.id} value={s.id}>
-                          {s.name} · {s.duration_minutes} min
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Profissional</Label>
-                    <Select
-                      value={form.professional_id}
-                      onValueChange={(v) => setForm({ ...form, professional_id: v })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Qualquer um" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {(professionals ?? []).map((p) => (
-                          <SelectItem key={p.id} value={p.id}>
-                            {p.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="atime">Horário</Label>
-                    <Input
-                      id="atime"
-                      type="time"
-                      value={form.time}
-                      onChange={(e) => setForm({ ...form, time: e.target.value })}
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="anotes">Observações</Label>
-                  <Textarea
-                    id="anotes"
-                    value={form.notes}
-                    onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button
-                  onClick={() => create.mutate()}
-                  disabled={!form.customer_name.trim() || create.isPending}
-                >
-                  Agendar
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        }
-      />
-
-      <div className="surface mb-6 flex flex-wrap items-center gap-3 p-4">
+      <div className="flex items-center gap-2">
         <Button variant="outline" size="icon" onClick={() => shiftDay(-1)} aria-label="Dia anterior">
           <ChevronLeft className="size-4" />
         </Button>
         <Input
           type="date"
-          className="w-auto"
+          className="w-44"
           value={day}
           onChange={(e) => setDay(e.target.value)}
+          aria-label="Data da agenda"
         />
         <Button variant="outline" size="icon" onClick={() => shiftDay(1)} aria-label="Próximo dia">
           <ChevronRight className="size-4" />
         </Button>
-        <Button variant="ghost" onClick={() => setDay(toDateInput(new Date()))}>
-          Hoje
-        </Button>
-        <span className="ml-auto text-sm text-muted-foreground">
-          {(appointments ?? []).length} agendamento(s) · {formatPrice(total)}
-        </span>
       </div>
 
-      {isLoading ? (
-        <EmptyList text="Carregando agenda..." />
-      ) : !appointments?.length ? (
-        <EmptyList text="Nenhum agendamento para este dia." />
-      ) : (
-        <ul className="space-y-3">
-          {appointments.map((a) => (
-            <li key={a.id} className="surface flex flex-wrap items-center gap-4 p-4">
-              <div className="font-display text-lg font-bold">{formatTime(a.starts_at)}</div>
-              <div className="min-w-40 flex-1">
-                <p className="font-semibold">{a.customer_name}</p>
-                <p className="text-sm text-muted-foreground">
-                  {(a.services as { name: string } | null)?.name ?? "Serviço não definido"}
-                  {(a.professionals as { name: string } | null)?.name
-                    ? ` · ${(a.professionals as { name: string }).name}`
-                    : ""}
-                </p>
-                {a.customer_phone && (
-                  <p className="text-xs text-muted-foreground">{a.customer_phone}</p>
-                )}
+      <p className="mt-2 pl-12 text-sm font-medium capitalize">{weekday}</p>
+
+      <button
+        type="button"
+        onClick={() => openNewAt("09:00")}
+        className="mt-2 ml-12 w-44 rounded-md bg-warning/70 px-4 py-2.5 text-sm font-semibold text-warning-foreground transition-opacity hover:opacity-90"
+      >
+        Encaixe
+      </button>
+
+      <div className="mt-8 flex items-center gap-3">
+        <span className="flex size-16 items-center justify-center rounded-full bg-secondary text-xs font-bold uppercase text-muted-foreground">
+          {(business?.name ?? "??").slice(0, 2)}
+        </span>
+        <h1 className="text-lg font-semibold">Agenda</h1>
+        <div className="ml-auto flex gap-2">
+          <Button variant="secondary" size="icon" aria-label="Visualizar">
+            <Eye className="size-4" />
+          </Button>
+          <Button variant="secondary" size="icon" aria-label="Bloquear dia">
+            <CalendarX2 className="size-4" />
+          </Button>
+        </div>
+      </div>
+
+      <div className="mt-3 overflow-hidden rounded-md border border-border">
+        <div className="h-8 bg-secondary" />
+        <ul>
+          {SLOTS.map((slot) => {
+            const items = bySlot.get(slot) ?? [];
+            if (!items.length) {
+              return (
+                <li key={slot}>
+                  <button
+                    type="button"
+                    onClick={() => openNewAt(slot)}
+                    className="flex w-full items-center gap-4 border-b border-background bg-slot-free px-4 py-2.5 text-left text-slot-free-foreground transition-opacity hover:opacity-90"
+                  >
+                    <span className="w-14 font-bold">{slot}</span>
+                    <span className="flex-1" />
+                  </button>
+                </li>
+              );
+            }
+            return items.map((a) => {
+              const paid = a.status === "concluido";
+              const cancelled = a.status === "cancelado";
+              const tone = cancelled
+                ? "bg-slot-empty text-slot-empty-foreground line-through"
+                : paid
+                  ? "bg-slot-paid text-slot-paid-foreground"
+                  : "bg-slot-booked text-slot-booked-foreground";
+              const price = (a.services as { price_cents: number } | null)?.price_cents ?? 0;
+              return (
+                <li key={a.id}>
+                  <button
+                    type="button"
+                    onClick={() => setDetail(a.id)}
+                    className={`flex w-full items-center gap-4 border-b border-background px-4 py-2.5 text-left transition-opacity hover:opacity-90 ${tone}`}
+                  >
+                    <span className="w-14 font-bold">{slot}</span>
+                    <span className="flex-1 text-center text-sm">
+                      <span className="block font-medium">{a.customer_name}</span>
+                      {a.customer_phone && (
+                        <span className="block text-xs opacity-80">{a.customer_phone}</span>
+                      )}
+                    </span>
+                    <span className="hidden text-xs font-medium uppercase sm:block">
+                      {(a.services as { name: string } | null)?.name ?? "Serviço"}
+                      {price > 0 ? ` - ${formatPrice(price)}` : ""}
+                    </span>
+                    <span className="w-16 text-right text-xs">
+                      {paid ? formatPrice(price) : ""}
+                    </span>
+                  </button>
+                </li>
+              );
+            });
+          })}
+        </ul>
+      </div>
+
+      <p className="mt-4 text-right text-sm text-muted-foreground">
+        {(appointments ?? []).length} agendamento(s) · {formatPrice(total)}
+      </p>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Novo agendamento</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="aname">Cliente</Label>
+                <Input
+                  id="aname"
+                  value={form.customer_name}
+                  onChange={(e) => setForm({ ...form, customer_name: e.target.value })}
+                />
               </div>
-              <span
-                className={`rounded-full px-3 py-1 text-xs font-semibold ${statusStyles[a.status] ?? "bg-muted"}`}
-              >
-                {statusLabel(a.status)}
-              </span>
+              <div className="space-y-2">
+                <Label htmlFor="aphone">Telefone</Label>
+                <Input
+                  id="aphone"
+                  value={form.customer_phone}
+                  onChange={(e) => setForm({ ...form, customer_phone: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Serviço</Label>
               <Select
-                value={a.status}
-                onValueChange={(status) => setStatus.mutate({ id: a.id, status })}
+                value={form.service_id}
+                onValueChange={(v) => setForm({ ...form, service_id: v })}
               >
-                <SelectTrigger className="w-36">
-                  <SelectValue />
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione um serviço" />
                 </SelectTrigger>
                 <SelectContent>
-                  {STATUSES.map((s) => (
-                    <SelectItem key={s.value} value={s.value}>
-                      {s.label}
+                  {(services ?? []).map((s) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.name} · {s.duration_minutes} min
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => remove.mutate(a.id)}
-                aria-label="Remover agendamento"
-              >
-                <Trash2 className="size-4 text-destructive" />
-              </Button>
-            </li>
-          ))}
-        </ul>
-      )}
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Profissional</Label>
+                <Select
+                  value={form.professional_id}
+                  onValueChange={(v) => setForm({ ...form, professional_id: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Qualquer um" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(professionals ?? []).map((p) => (
+                      <SelectItem key={p.id} value={p.id}>
+                        {p.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="atime">Horário</Label>
+                <Input
+                  id="atime"
+                  type="time"
+                  value={form.time}
+                  onChange={(e) => setForm({ ...form, time: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="anotes">Observações</Label>
+              <Textarea
+                id="anotes"
+                value={form.notes}
+                onChange={(e) => setForm({ ...form, notes: e.target.value })}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              onClick={() => create.mutate()}
+              disabled={!form.customer_name.trim() || create.isPending}
+            >
+              Agendar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!selected} onOpenChange={(v) => !v && setDetail(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{selected?.customer_name}</DialogTitle>
+          </DialogHeader>
+          {selected && (
+            <div className="space-y-4 text-sm">
+              <p className="text-muted-foreground">
+                {(selected.services as { name: string } | null)?.name ?? "Sem serviço"} ·{" "}
+                {slotOf(selected.starts_at)}
+                {selected.customer_phone ? ` · ${selected.customer_phone}` : ""}
+              </p>
+              {selected.notes && <p className="text-muted-foreground">{selected.notes}</p>}
+              <div className="space-y-2">
+                <Label>Situação</Label>
+                <Select
+                  value={selected.status}
+                  onValueChange={(status) => setStatus.mutate({ id: selected.id, status })}
+                >
+                  <SelectTrigger>
+                    <SelectValue>{statusLabel(selected.status)}</SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {STATUSES.map((s) => (
+                      <SelectItem key={s.value} value={s.value}>
+                        {s.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              variant="destructive"
+              onClick={() => selected && remove.mutate(selected.id)}
+              disabled={remove.isPending}
+            >
+              <Trash2 className="size-4" /> Excluir
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
