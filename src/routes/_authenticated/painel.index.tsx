@@ -276,7 +276,7 @@ function AgendaPage() {
             const items = bySlot.get(slot) ?? [];
             if (!items.length) {
               return (
-                <li key={slot}>
+                <li key={slot} className="group relative">
                   <button
                     type="button"
                     onClick={() => openNewAt(slot)}
@@ -285,17 +285,28 @@ function AgendaPage() {
                     <span className="w-14 font-bold">{slot}</span>
                     <span className="flex-1" />
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => blockSlot.mutate(slot)}
+                    aria-label={`Bloquear ${slot}`}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md bg-slot-blocked px-2 py-1 text-[11px] font-semibold text-slot-blocked-foreground opacity-0 transition-opacity group-hover:opacity-100"
+                  >
+                    Bloquear
+                  </button>
                 </li>
               );
             }
             return items.map((a) => {
               const paid = a.status === "concluido";
               const cancelled = a.status === "cancelado";
-              const tone = cancelled
-                ? "bg-slot-empty text-slot-empty-foreground line-through"
-                : paid
-                  ? "bg-slot-paid text-slot-paid-foreground"
-                  : "bg-slot-booked text-slot-booked-foreground";
+              const blocked = a.status === "bloqueado";
+              const tone = blocked
+                ? "bg-slot-blocked text-slot-blocked-foreground"
+                : cancelled
+                  ? "bg-slot-empty text-slot-empty-foreground line-through"
+                  : paid
+                    ? "bg-slot-paid text-slot-paid-foreground"
+                    : "bg-slot-booked text-slot-booked-foreground";
               const price = (a.services as { price_cents: number } | null)?.price_cents ?? 0;
               return (
                 <li key={a.id}>
@@ -306,15 +317,19 @@ function AgendaPage() {
                   >
                     <span className="w-14 font-bold">{slot}</span>
                     <span className="flex-1 text-center text-sm">
-                      <span className="block font-medium">{a.customer_name}</span>
-                      {a.customer_phone && (
+                      <span className="block font-medium">
+                        {blocked ? "Horário bloqueado" : a.customer_name}
+                      </span>
+                      {!blocked && a.customer_phone && (
                         <span className="block text-xs opacity-80">{a.customer_phone}</span>
                       )}
                     </span>
-                    <span className="hidden text-xs font-medium uppercase sm:block">
-                      {(a.services as { name: string } | null)?.name ?? "Serviço"}
-                      {price > 0 ? ` - ${formatPrice(price)}` : ""}
-                    </span>
+                    {!blocked && (
+                      <span className="hidden text-xs font-medium uppercase sm:block">
+                        {(a.services as { name: string } | null)?.name ?? "Serviço"}
+                        {price > 0 ? ` - ${formatPrice(price)}` : ""}
+                      </span>
+                    )}
                     <span className="w-16 text-right text-xs">
                       {paid ? formatPrice(price) : ""}
                     </span>
