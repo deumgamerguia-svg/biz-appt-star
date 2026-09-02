@@ -59,9 +59,19 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
+  --color-slot-free: var(--slot-free);
+  --color-slot-free-foreground: var(--slot-free-foreground);
+  --color-slot-booked: var(--slot-booked);
+  --color-slot-booked-foreground: var(--slot-booked-foreground);
+  --color-slot-paid: var(--slot-paid);
+  --color-slot-paid-foreground: var(--slot-paid-foreground);
+  --color-slot-empty: var(--slot-empty);
+  --color-slot-empty-foreground: var(--slot-empty-foreground);
+
   --shadow-soft: 0 1px 2px oklch(0.22 0.06 258 / 0.06), 0 8px 24px oklch(0.22 0.06 258 / 0.06);
   --shadow-lift: 0 2px 4px oklch(0.22 0.06 258 / 0.06), 0 18px 40px oklch(0.22 0.06 258 / 0.1);
 }
+
 
 :root {
   --radius: 0.75rem;
