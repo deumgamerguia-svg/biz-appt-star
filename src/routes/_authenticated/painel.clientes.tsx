@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Plus, Trash2, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useBusiness } from "@/lib/business";
+import { daysSince } from "@/lib/format";
 import { PageHeader, NoBusiness, EmptyList } from "@/components/painel/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,6 +52,26 @@ function ClientesPage() {
       return data;
     },
   });
+
+  const { data: visits } = useQuery({
+    queryKey: ["customer-visits", businessId],
+    enabled: !!businessId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("appointments")
+        .select("customer_id, starts_at")
+        .eq("business_id", businessId!)
+        .not("customer_id", "is", null)
+        .order("starts_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const lastVisit: Record<string, string> = {};
+  for (const v of visits ?? []) {
+    if (v.customer_id && !lastVisit[v.customer_id]) lastVisit[v.customer_id] = v.starts_at;
+  }
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ["customers", businessId] });
 
