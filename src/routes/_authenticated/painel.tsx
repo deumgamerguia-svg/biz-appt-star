@@ -1,5 +1,26 @@
 import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-router";
-import { CalendarDays, Users, Scissors, Store, UserRound, LogOut, Menu } from "lucide-react";
+import {
+  CalendarDays,
+  Users,
+  Scissors,
+  Store,
+  UserRound,
+  LogOut,
+  Menu,
+  Bell,
+  Gem,
+  PieChart,
+  Calculator,
+  CreditCard,
+  ShoppingBasket,
+  MessageSquareText,
+  DollarSign,
+  CircleX,
+  CalendarCheck,
+  Settings2,
+  Plus,
+  MessageCircle,
+} from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useBusiness } from "@/lib/business";
@@ -26,9 +47,20 @@ export const Route = createFileRoute("/_authenticated/painel")({
 
 const nav = [
   { to: "/painel", label: "Agenda", icon: CalendarDays, exact: true },
-  { to: "/painel/servicos", label: "Serviços", icon: Scissors },
-  { to: "/painel/profissionais", label: "Profissionais", icon: UserRound },
+  { to: "/painel/as-pay", label: "AS Pay", icon: Gem },
+  { to: "/painel/relatorio", label: "Relatório", icon: PieChart },
+  { to: "/painel/caixa", label: "Caixa", icon: Calculator },
+  { to: "/painel/assinatura", label: "Assinatura", icon: CreditCard },
+  { to: "/painel/produtos", label: "Produtos", icon: ShoppingBasket },
+  { to: "/painel/servicos", label: "Serviço", icon: Scissors },
   { to: "/painel/clientes", label: "Clientes", icon: Users },
+  { to: "/painel/templates", label: "Templates", icon: MessageSquareText },
+  { to: "/painel/pagamentos", label: "Pagamentos", icon: DollarSign },
+  { to: "/painel/bloqueios", label: "Horários Bloqueados", icon: CircleX },
+  { to: "/painel/funcionamento", label: "Funcionamento", icon: CalendarCheck },
+  { to: "/painel/profissionais", label: "Profissionais", icon: UserRound },
+  { to: "/painel/configuracoes", label: "Configurações", icon: Settings2 },
+  { to: "/painel/integracoes", label: "Integrações", icon: Plus },
   { to: "/painel/negocios", label: "Negócios", icon: Store },
 ] as const;
 
@@ -39,17 +71,20 @@ function PainelLayout() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-muted/40 lg:flex">
+    <div className="min-h-screen bg-background lg:flex">
       <aside
-        className={`${open ? "block" : "hidden"} border-b border-sidebar-border bg-sidebar p-4 lg:sticky lg:top-0 lg:block lg:h-screen lg:w-64 lg:shrink-0 lg:border-b-0 lg:border-r`}
+        className={`${open ? "block" : "hidden"} bg-sidebar p-3 lg:sticky lg:top-0 lg:block lg:h-screen lg:w-64 lg:shrink-0 lg:overflow-y-auto`}
       >
-        <Link to="/" className="block px-2 font-display text-xl font-extrabold">
-          Agenda<span className="text-primary">ê</span>
+        <Link
+          to="/"
+          className="block px-3 py-3 font-display text-lg font-extrabold uppercase tracking-[0.12em] text-primary"
+        >
+          Agenda Serviço
         </Link>
 
-        <div className="mt-5">
+        <div className="px-1 pb-3">
           <Select {...(businessId ? { value: businessId } : {})} onValueChange={setBusinessId}>
-            <SelectTrigger className="w-full bg-card">
+            <SelectTrigger className="w-full border-sidebar-border bg-sidebar-accent text-sidebar-foreground">
               <SelectValue placeholder="Nenhum negócio" />
             </SelectTrigger>
             <SelectContent>
@@ -62,30 +97,30 @@ function PainelLayout() {
           </Select>
         </div>
 
-        <nav className="mt-5 space-y-1">
+        <nav className="space-y-0.5">
           {nav.map((item) => (
             <Link
               key={item.to}
               to={item.to}
               activeOptions={{ exact: "exact" in item ? item.exact : false }}
               onClick={() => setOpen(false)}
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-foreground transition-colors hover:bg-sidebar-accent"
+              className="flex items-center gap-3 rounded-md px-3 py-2.5 text-[0.95rem] font-medium text-sidebar-foreground transition-colors hover:bg-sidebar-accent"
               activeProps={{
                 className:
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold bg-sidebar-accent text-sidebar-accent-foreground",
+                  "flex items-center gap-3 rounded-md px-3 py-2.5 text-[0.95rem] font-semibold bg-sidebar-accent text-sidebar-accent-foreground",
               }}
             >
-              <item.icon className="size-4" />
+              <item.icon className="size-[18px] text-primary" />
               {item.label}
             </Link>
           ))}
         </nav>
 
-        <div className="mt-8 border-t border-sidebar-border pt-4">
+        <div className="mt-6 border-t border-sidebar-border pt-3">
           <p className="truncate px-3 text-xs text-muted-foreground">{user?.email}</p>
           <Button
             variant="ghost"
-            className="mt-2 w-full justify-start"
+            className="mt-1 w-full justify-start text-sidebar-foreground"
             onClick={async () => {
               await signOut();
               void navigate({ to: "/" });
@@ -96,16 +131,25 @@ function PainelLayout() {
         </div>
       </aside>
 
-      <div className="flex-1">
-        <div className="flex items-center justify-between border-b border-border bg-card px-4 py-3 lg:hidden">
-          <span className="font-display font-extrabold">
-            Agenda<span className="text-primary">ê</span>
-          </span>
-          <Button variant="outline" size="icon" onClick={() => setOpen((v) => !v)}>
-            <Menu className="size-4" />
+      <div className="min-w-0 flex-1">
+        <header className="flex items-center gap-3 bg-card px-3 py-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="shrink-0"
+            onClick={() => setOpen((v) => !v)}
+            aria-label="Abrir menu"
+          >
+            <Menu className="size-5" />
           </Button>
-        </div>
-        <main className="mx-auto w-full max-w-5xl p-4 sm:p-8">
+          <div className="flex flex-1 items-center justify-center rounded-md border border-success/60 px-4 py-2 text-sm font-medium text-success">
+            <MessageCircle className="mr-2 size-4" /> WHATSAPP CONECTADO
+          </div>
+          <Button variant="ghost" size="icon" className="shrink-0" aria-label="Notificações">
+            <Bell className="size-5" />
+          </Button>
+        </header>
+        <main className="mx-auto w-full max-w-6xl p-3 sm:p-6">
           <Outlet />
         </main>
       </div>
