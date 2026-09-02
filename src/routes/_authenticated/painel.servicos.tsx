@@ -36,7 +36,7 @@ function ServicosPage() {
   const { businessId } = useBusiness();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ name: "", duration: "30", price: "0" });
+  const [form, setForm] = useState({ name: "", duration: "30", price: "0", deposit: "0", description: "" });
 
   const { data: services } = useQuery({
     queryKey: ["services", businessId],
@@ -61,13 +61,15 @@ function ServicosPage() {
         name: form.name,
         duration_minutes: Number(form.duration) || 30,
         price_cents: Math.round(Number(form.price.replace(",", ".")) * 100) || 0,
+        deposit_cents: Math.round(Number(form.deposit.replace(",", ".")) * 100) || 0,
+        description: form.description || null,
       });
       if (error) throw error;
     },
     onSuccess: () => {
       toast.success("Serviço cadastrado!");
       setOpen(false);
-      setForm({ name: "", duration: "30", price: "0" });
+      setForm({ name: "", duration: "30", price: "0", deposit: "0", description: "" });
       void invalidate();
     },
     onError: (e: Error) => toast.error(e.message),
@@ -142,6 +144,24 @@ function ServicosPage() {
                     />
                   </div>
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="sdep">Sinal para agendar (R$)</Label>
+                  <Input
+                    id="sdep"
+                    value={form.deposit}
+                    onChange={(e) => setForm({ ...form, deposit: e.target.value })}
+                    placeholder="10,00"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="sdesc">Descrição para o cliente</Label>
+                  <Input
+                    id="sdesc"
+                    value={form.description}
+                    onChange={(e) => setForm({ ...form, description: e.target.value })}
+                    placeholder="Srs clientes, caso o cliente atrase..."
+                  />
+                </div>
               </div>
               <DialogFooter>
                 <Button
@@ -166,7 +186,11 @@ function ServicosPage() {
                 <p className="font-semibold">{s.name}</p>
                 <p className="text-sm text-muted-foreground">
                   {s.duration_minutes} min · {formatPrice(s.price_cents)}
+                  {s.deposit_cents > 0 && ` · sinal ${formatPrice(s.deposit_cents)}`}
                 </p>
+                {s.description && (
+                  <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">{s.description}</p>
+                )}
               </div>
               <label className="flex items-center gap-2 text-xs text-muted-foreground">
                 Ativo

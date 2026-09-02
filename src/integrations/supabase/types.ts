@@ -21,6 +21,8 @@ export type Database = {
           customer_id: string | null
           customer_name: string
           customer_phone: string | null
+          deposit_cents: number
+          deposit_paid_at: string | null
           ends_at: string
           id: string
           notes: string | null
@@ -36,6 +38,8 @@ export type Database = {
           customer_id?: string | null
           customer_name: string
           customer_phone?: string | null
+          deposit_cents?: number
+          deposit_paid_at?: string | null
           ends_at: string
           id?: string
           notes?: string | null
@@ -51,6 +55,8 @@ export type Database = {
           customer_id?: string | null
           customer_name?: string
           customer_phone?: string | null
+          deposit_cents?: number
+          deposit_paid_at?: string | null
           ends_at?: string
           id?: string
           notes?: string | null
@@ -87,6 +93,44 @@ export type Database = {
             columns: ["service_id"]
             isOneToOne: false
             referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_hours: {
+        Row: {
+          business_id: string
+          created_at: string
+          ends_at: string
+          id: string
+          starts_at: string
+          updated_at: string
+          weekday: number
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          ends_at?: string
+          id?: string
+          starts_at?: string
+          updated_at?: string
+          weekday: number
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          ends_at?: string
+          id?: string
+          starts_at?: string
+          updated_at?: string
+          weekday?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_hours_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
             referencedColumns: ["id"]
           },
         ]
@@ -235,6 +279,8 @@ export type Database = {
           active: boolean
           business_id: string
           created_at: string
+          deposit_cents: number
+          description: string | null
           duration_minutes: number
           id: string
           name: string
@@ -245,6 +291,8 @@ export type Database = {
           active?: boolean
           business_id: string
           created_at?: string
+          deposit_cents?: number
+          description?: string | null
           duration_minutes?: number
           id?: string
           name: string
@@ -255,6 +303,8 @@ export type Database = {
           active?: boolean
           business_id?: string
           created_at?: string
+          deposit_cents?: number
+          description?: string | null
           duration_minutes?: number
           id?: string
           name?: string
@@ -267,6 +317,104 @@ export type Database = {
             columns: ["business_id"]
             isOneToOne: false
             referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscription_payments: {
+        Row: {
+          amount_cents: number
+          business_id: string
+          created_at: string
+          id: string
+          paid_at: string | null
+          reference_month: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount_cents?: number
+          business_id: string
+          created_at?: string
+          id?: string
+          paid_at?: string | null
+          reference_month: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          business_id?: string
+          created_at?: string
+          id?: string
+          paid_at?: string | null
+          reference_month?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_payments_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      time_blocks: {
+        Row: {
+          block_date: string | null
+          business_id: string
+          created_at: string
+          ends_at: string
+          id: string
+          professional_id: string | null
+          reason: string | null
+          recurring: boolean
+          starts_at: string
+          updated_at: string
+          weekday: number | null
+        }
+        Insert: {
+          block_date?: string | null
+          business_id: string
+          created_at?: string
+          ends_at: string
+          id?: string
+          professional_id?: string | null
+          reason?: string | null
+          recurring?: boolean
+          starts_at: string
+          updated_at?: string
+          weekday?: number | null
+        }
+        Update: {
+          block_date?: string | null
+          business_id?: string
+          created_at?: string
+          ends_at?: string
+          id?: string
+          professional_id?: string | null
+          reason?: string | null
+          recurring?: boolean
+          starts_at?: string
+          updated_at?: string
+          weekday?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "time_blocks_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "time_blocks_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
             referencedColumns: ["id"]
           },
         ]
