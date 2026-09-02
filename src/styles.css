@@ -123,12 +123,14 @@
   --sidebar-border: oklch(0.92 0.01 256);
   --sidebar-ring: oklch(0.51 0.22 264);
 
-  --slot-free: oklch(0.85 0.08 20);
-  --slot-free-foreground: oklch(0.25 0.06 20);
+  --slot-free: oklch(0.94 0.004 260);
+  --slot-free-foreground: oklch(0.55 0.02 260);
   --slot-booked: oklch(0.72 0.17 300);
   --slot-booked-foreground: oklch(0.2 0.05 300);
   --slot-paid: oklch(0.87 0.005 260);
   --slot-paid-foreground: oklch(0.24 0.02 260);
+  --slot-blocked: oklch(0.85 0.08 20);
+  --slot-blocked-foreground: oklch(0.25 0.06 20);
   --slot-empty: oklch(0.94 0.004 260);
   --slot-empty-foreground: oklch(0.55 0.02 260);
 }
@@ -168,12 +170,14 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.78 0.16 175);
 
-  --slot-free: oklch(0.82 0.09 18);
-  --slot-free-foreground: oklch(0.2 0.06 20);
+  --slot-free: oklch(0.28 0.005 265);
+  --slot-free-foreground: oklch(0.6 0.01 260);
   --slot-booked: oklch(0.7 0.18 300);
   --slot-booked-foreground: oklch(0.16 0.05 300);
   --slot-paid: oklch(0.85 0.005 260);
   --slot-paid-foreground: oklch(0.2 0.01 260);
+  --slot-blocked: oklch(0.82 0.09 18);
+  --slot-blocked-foreground: oklch(0.2 0.06 20);
   --slot-empty: oklch(0.28 0.005 265);
   --slot-empty-foreground: oklch(0.6 0.01 260);
 }
