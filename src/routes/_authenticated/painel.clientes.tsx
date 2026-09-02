@@ -171,28 +171,46 @@ function ClientesPage() {
       {!filtered.length ? (
         <EmptyList text="Nenhum cliente encontrado." />
       ) : (
-        <ul className="space-y-3">
-          {filtered.map((c) => (
-            <li key={c.id} className="surface flex flex-wrap items-center gap-4 p-4">
-              <div className="flex-1">
-                <p className="font-semibold">{c.name}</p>
-                <p className="text-sm text-muted-foreground">
-                  {[c.phone, c.email].filter(Boolean).join(" · ") || "Sem contato cadastrado"}
-                </p>
-                {c.notes && <p className="mt-1 text-xs text-muted-foreground">{c.notes}</p>}
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => remove.mutate(c.id)}
-                aria-label={`Remover ${c.name}`}
-              >
-                <Trash2 className="size-4 text-destructive" />
-              </Button>
-            </li>
-          ))}
-        </ul>
+        <div className="surface overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/40 text-left text-xs uppercase text-muted-foreground">
+              <tr>
+                <th className="px-4 py-3">Nome</th>
+                <th className="px-4 py-3">Telefone</th>
+                <th className="px-4 py-3">Dias ausente</th>
+                <th className="px-4 py-3" />
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((c) => {
+                const last = lastVisit[c.id];
+                const days = last === undefined ? null : daysSince(last);
+                return (
+                  <tr key={c.id} className="border-t border-border/60">
+                    <td className="px-4 py-3 font-medium">{c.name}</td>
+                    <td className="px-4 py-3 text-primary">{c.phone ?? "—"}</td>
+                    <td className="px-4 py-3">{days === null ? "—" : `${days} dias`}</td>
+                    <td className="px-4 py-3 text-right">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => remove.mutate(c.id)}
+                        aria-label={`Remover ${c.name}`}
+                      >
+                        <Trash2 className="size-4 text-destructive" />
+                      </Button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+          <p className="border-t border-border/60 px-4 py-3 text-center text-sm text-muted-foreground">
+            Total de clientes: <span className="text-primary">{filtered.length}</span>
+          </p>
+        </div>
       )}
+
     </div>
   );
 }
