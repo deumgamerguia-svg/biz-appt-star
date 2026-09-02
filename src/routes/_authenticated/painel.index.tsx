@@ -214,7 +214,7 @@ function AgendaPage() {
   const weekday = new Date(`${day}T12:00:00`).toLocaleDateString("pt-BR", { weekday: "long" });
   const total = (appointments ?? []).reduce(
     (sum, a) =>
-      a.status !== "cancelado"
+      a.status !== "cancelado" && a.status !== "bloqueado"
         ? sum + ((a.services as { price_cents: number } | null)?.price_cents ?? 0)
         : sum,
     0,
