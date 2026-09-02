@@ -158,6 +158,25 @@ function AgendaPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const blockSlot = useMutation({
+    mutationFn: async (time: string) => {
+      const startsAt = localToIso(day, time);
+      const { error } = await supabase.from("appointments").insert({
+        business_id: businessId!,
+        customer_name: "Bloqueado",
+        starts_at: startsAt,
+        ends_at: addMinutesIso(startsAt, 30),
+        status: "bloqueado",
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Horário bloqueado.");
+      void invalidate();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const setStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
       const { error } = await supabase.from("appointments").update({ status }).eq("id", id);
