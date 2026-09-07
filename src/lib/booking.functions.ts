@@ -392,11 +392,16 @@ export const getDepositStatus = createServerFn({ method: "POST" })
           .from("deposit_payments")
           .update({ status: "pago", paid_at: paidAt })
           .eq("id", charge.id);
-        if (charge.appointment_id)
+        if (charge.appointment_id) {
           await db
             .from("appointments")
             .update({ status: "agendado", deposit_paid_at: paidAt })
             .eq("id", charge.appointment_id);
+          const { sendBookingConfirmation } = await import(
+            "./whatsapp-notify.server"
+          );
+          await sendBookingConfirmation(charge.appointment_id);
+        }
         return { status: "pago" as const };
       }
       if (["cancelled", "rejected", "expired"].includes(status)) {

@@ -34,11 +34,16 @@ export const Route = createFileRoute("/api/public/mercadopago-webhook")({
             .from("deposit_payments")
             .update({ status: "pago", paid_at: paidAt })
             .eq("id", charge.id);
-          if (charge.appointment_id)
+          if (charge.appointment_id) {
             await supabaseAdmin
               .from("appointments")
               .update({ status: "agendado", deposit_paid_at: paidAt })
               .eq("id", charge.appointment_id);
+            const { sendBookingConfirmation } = await import(
+              "@/lib/whatsapp-notify.server"
+            );
+            await sendBookingConfirmation(charge.appointment_id);
+          }
         } else if (["cancelled", "rejected", "expired"].includes(status)) {
           await supabaseAdmin
             .from("deposit_payments")
