@@ -247,7 +247,7 @@ function PublicBooking() {
           </div>
         )}
 
-        {tab === "agendar" ? (
+        {business?.status === "suspenso" ? null : tab === "agendar" ? (
           <div className="space-y-4">
             {(services ?? []).map((s) => (
               <button
