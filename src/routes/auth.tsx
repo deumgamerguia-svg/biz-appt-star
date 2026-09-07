@@ -148,13 +148,8 @@ function AuthPage() {
             </form>
           )}
 
-          <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
-            <span className="h-px flex-1 bg-border" /> ou <span className="h-px flex-1 bg-border" />
-          </div>
 
-          <Button variant="outline" className="w-full" onClick={handleGoogle}>
-            Continuar com Google
-          </Button>
+
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
             {isSignup ? "Já tem conta?" : "Ainda não tem conta?"}{" "}
