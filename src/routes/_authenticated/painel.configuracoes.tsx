@@ -143,6 +143,119 @@ function ConfiguracoesPage() {
           </p>
         </div>
       </div>
+
+      <BrandColors businessId={businessId} />
     </div>
   );
 }
+
+const DEFAULT_PRIMARY = "#1f6feb";
+const DEFAULT_BACKGROUND = "#0f172a";
+
+function BrandColors({ businessId }: { businessId: string }) {
+  const queryClient = useQueryClient();
+  const [primary, setPrimary] = useState(DEFAULT_PRIMARY);
+  const [background, setBackground] = useState(DEFAULT_BACKGROUND);
+
+  const { data: colors } = useQuery({
+    queryKey: ["business-colors", businessId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("businesses")
+        .select("brand_primary, brand_background")
+        .eq("id", businessId)
+        .maybeSingle();
+      if (error) throw error;
+      return data as { brand_primary: string | null; brand_background: string | null } | null;
+    },
+  });
+
+  useEffect(() => {
+    if (!colors) return;
+    setPrimary(colors.brand_primary ?? DEFAULT_PRIMARY);
+    setBackground(colors.brand_background ?? DEFAULT_BACKGROUND);
+  }, [colors]);
+
+  const save = useMutation({
+    mutationFn: async (values: { brand_primary: string | null; brand_background: string | null }) => {
+      const { error } = await supabase.from("businesses").update(values).eq("id", businessId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Cores da página do cliente atualizadas");
+      void queryClient.invalidateQueries({ queryKey: ["business-colors", businessId] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <div className="rounded-xl border border-border bg-card p-6">
+      <h2 className="text-lg font-bold">Cores da página do cliente</h2>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Escolha o fundo e a cor de destaque que o cliente vê ao agendar.
+      </p>
+
+      <div className="mt-5 grid gap-5 sm:grid-cols-2">
+        <div className="space-y-2">
+          <label htmlFor="brand-bg" className="text-sm font-medium">
+            Cor de fundo
+          </label>
+          <div className="flex items-center gap-3">
+            <input
+              id="brand-bg"
+              type="color"
+              value={background}
+              onChange={(e) => setBackground(e.target.value)}
+              className="h-10 w-14 cursor-pointer rounded-md border border-border bg-transparent"
+            />
+            <span className="text-sm text-muted-foreground">{background}</span>
+          </div>
+        </div>
+        <div className="space-y-2">
+          <label htmlFor="brand-primary" className="text-sm font-medium">
+            Cor de destaque
+          </label>
+          <div className="flex items-center gap-3">
+            <input
+              id="brand-primary"
+              type="color"
+              value={primary}
+              onChange={(e) => setPrimary(e.target.value)}
+              className="h-10 w-14 cursor-pointer rounded-md border border-border bg-transparent"
+            />
+            <span className="text-sm text-muted-foreground">{primary}</span>
+          </div>
+        </div>
+      </div>
+
+      <div
+        className="mt-5 rounded-xl border border-border p-6 text-center"
+        style={{ background }}
+      >
+        <p className="text-sm" style={{ color: primary }}>
+          Prévia: assim o cliente vê os destaques da sua página.
+        </p>
+      </div>
+
+      <div className="mt-5 flex flex-wrap gap-3">
+        <Button
+          onClick={() => save.mutate({ brand_primary: primary, brand_background: background })}
+          disabled={save.isPending}
+        >
+          Salvar cores
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => {
+            setPrimary(DEFAULT_PRIMARY);
+            setBackground(DEFAULT_BACKGROUND);
+            save.mutate({ brand_primary: null, brand_background: null });
+          }}
+        >
+          Usar cores padrão
+        </Button>
+      </div>
+    </div>
+  );
+}
+
