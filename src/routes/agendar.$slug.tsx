@@ -124,7 +124,7 @@ function PublicBooking() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("businesses")
-        .select("id, name, category, phone, address, logo_url")
+        .select("id, name, category, phone, address, logo_url, status, brand_primary, brand_background")
         .eq("slug", slug)
         .maybeSingle();
       if (error) throw error;
@@ -213,7 +213,15 @@ function PublicBooking() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-background pb-28">
+    <div
+      className="flex min-h-screen flex-col bg-background pb-28"
+      style={
+        {
+          ...(business?.brand_primary ? { "--primary": business.brand_primary } : {}),
+          ...(business?.brand_background ? { "--background": business.brand_background } : {}),
+        } as React.CSSProperties
+      }
+    >
       <header className="bg-sidebar px-4 py-3">
         <span className="font-display text-sm font-extrabold uppercase tracking-[0.18em] text-primary">
           Agenda Serviço
@@ -232,6 +240,12 @@ function PublicBooking() {
             <p className="text-sm text-muted-foreground">Negócio não encontrado</p>
           ) : null}
         </div>
+
+        {business?.status === "suspenso" && (
+          <div className="mb-6 rounded-xl border border-destructive/40 bg-destructive/10 p-6 text-center text-sm text-destructive">
+            Os agendamentos deste estabelecimento estão temporariamente indisponíveis.
+          </div>
+        )}
 
         {tab === "agendar" ? (
           <div className="space-y-4">
