@@ -143,7 +143,32 @@ export const getAvailability = createServerFn({ method: "POST" })
     return { slots, depositCents: service.deposit_cents };
   });
 
-export const createDepositBooking = createServerFn({ method: "POST" })
+export const getOpenDays = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => z.object({ slug: z.string().min(1) }).parse(d))
+  .handler(async ({ data }) => {
+    const db = await admin();
+    const { data: business } = await db
+      .from("businesses")
+      .select("id")
+      .eq("slug", data.slug)
+      .maybeSingle();
+    if (!business) return { days: [] as { date: string; weekday: number }[] };
+    const { data: hours } = await db
+      .from("business_hours")
+      .select("weekday")
+      .eq("business_id", business.id);
+    const open = new Set((hours ?? []).map((h) => h.weekday));
+    const days: { date: string; weekday: number }[] = [];
+    for (let i = 0; i < 21 && days.length < 12; i++) {
+      const d = new Date(Date.now() + i * 86400000);
+      const date = d.toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" });
+      const weekday = new Date(`${date}T12:00:00-03:00`).getDay();
+      if (open.has(weekday)) days.push({ date, weekday });
+    }
+    return { days };
+  });
+
+export const reserveBooking = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) =>
     slugSchema
       .extend({
@@ -193,6 +218,7 @@ export const createDepositBooking = createServerFn({ method: "POST" })
       .single();
     if (apptError || !appointment) throw new Error(apptError?.message ?? "Falha ao reservar.");
 
+    const expiresAt = new Date(Date.now() + 5 * 60_000).toISOString();
     const { data: charge, error: chargeError } = await db
       .from("deposit_payments")
       .insert({
@@ -202,45 +228,135 @@ export const createDepositBooking = createServerFn({ method: "POST" })
         status: "pendente",
         payer_name: data.customerName,
         payer_phone: data.customerPhone,
+        expires_at: expiresAt,
       })
       .select("id")
       .single();
     if (chargeError || !charge) throw new Error(chargeError?.message ?? "Falha ao criar cobrança.");
 
-    const { createPixCharge } = await import("./mercadopago.server");
-    try {
-      const pix = await createPixCharge({
-        amountCents: service.deposit_cents,
-        description: `Sinal - ${service.name}`,
-        payerName: data.customerName,
-        payerEmail: `sinal+${charge.id}@agendae.app`,
-        externalReference: charge.id,
-      });
-      await db
-        .from("deposit_payments")
-        .update({
-          provider_payment_id: pix.providerPaymentId,
-          qr_code: pix.qrCode,
-          qr_code_base64: pix.qrCodeBase64,
-          ticket_url: pix.ticketUrl,
-          expires_at: pix.expiresAt,
-        })
-        .eq("id", charge.id);
-
-      return {
-        chargeId: charge.id,
-        amountCents: service.deposit_cents,
-        qrCode: pix.qrCode,
-        qrCodeBase64: pix.qrCodeBase64,
-        ticketUrl: pix.ticketUrl,
-        expiresAt: pix.expiresAt,
-      };
-    } catch (e) {
-      await db.from("deposit_payments").update({ status: "cancelado" }).eq("id", charge.id);
-      await db.from("appointments").delete().eq("id", appointment.id);
-      throw e;
-    }
+    return {
+      chargeId: charge.id,
+      appointmentId: appointment.id,
+      amountCents: service.deposit_cents,
+      serviceName: service.name,
+      startsAt,
+      expiresAt,
+    };
   });
+
+export const generateDepositPix = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => z.object({ chargeId: z.string().uuid() }).parse(d))
+  .handler(async ({ data }) => {
+    const db = await admin();
+    const { data: charge } = await db
+      .from("deposit_payments")
+      .select("id, amount_cents, status, payer_name, qr_code, qr_code_base64, ticket_url, expires_at")
+      .eq("id", data.chargeId)
+      .maybeSingle();
+    if (!charge) throw new Error("Cobrança não encontrada.");
+    if (charge.status !== "pendente") throw new Error("Essa cobrança não está mais ativa.");
+    if (charge.qr_code)
+      return {
+        qrCode: charge.qr_code,
+        qrCodeBase64: charge.qr_code_base64,
+        ticketUrl: charge.ticket_url,
+        expiresAt: charge.expires_at,
+      };
+
+    const { createPixCharge } = await import("./mercadopago.server");
+    const pix = await createPixCharge({
+      amountCents: charge.amount_cents,
+      description: "Sinal do agendamento",
+      payerName: charge.payer_name ?? "Cliente",
+      payerEmail: `sinal+${charge.id}@agendae.app`,
+      externalReference: charge.id,
+      expiresInMinutes: 5,
+    });
+    await db
+      .from("deposit_payments")
+      .update({
+        provider_payment_id: pix.providerPaymentId,
+        qr_code: pix.qrCode,
+        qr_code_base64: pix.qrCodeBase64,
+        ticket_url: pix.ticketUrl,
+      })
+      .eq("id", charge.id);
+    return {
+      qrCode: pix.qrCode,
+      qrCodeBase64: pix.qrCodeBase64,
+      ticketUrl: pix.ticketUrl,
+      expiresAt: charge.expires_at,
+    };
+  });
+
+export const cancelDepositBooking = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => z.object({ chargeId: z.string().uuid() }).parse(d))
+  .handler(async ({ data }) => {
+    const db = await admin();
+    const { data: charge } = await db
+      .from("deposit_payments")
+      .select("id, status, appointment_id")
+      .eq("id", data.chargeId)
+      .maybeSingle();
+    if (!charge) throw new Error("Cobrança não encontrada.");
+    if (charge.status === "pago") throw new Error("Esse sinal já foi pago.");
+    await db.from("deposit_payments").update({ status: "cancelado" }).eq("id", charge.id);
+    if (charge.appointment_id)
+      await db
+        .from("appointments")
+        .update({ status: "cancelado" })
+        .eq("id", charge.appointment_id);
+    return { ok: true };
+  });
+
+export const getMyBookings = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) =>
+    z.object({ chargeIds: z.array(z.string().uuid()).max(50) }).parse(d),
+  )
+  .handler(async ({ data }) => {
+    if (!data.chargeIds.length) return { bookings: [] };
+    const db = await admin();
+    const { data: charges } = await db
+      .from("deposit_payments")
+      .select("id, status, amount_cents, payer_name, expires_at, created_at, appointment_id")
+      .in("id", data.chargeIds)
+      .order("created_at", { ascending: false });
+    const apptIds = (charges ?? []).map((c) => c.appointment_id).filter(Boolean) as string[];
+    const { data: appts } = apptIds.length
+      ? await db
+          .from("appointments")
+          .select("id, starts_at, status, service_id, professional_id")
+          .in("id", apptIds)
+      : { data: [] as never[] };
+    const serviceIds = [...new Set((appts ?? []).map((a) => a.service_id).filter(Boolean))];
+    const { data: servicesRows } = serviceIds.length
+      ? await db.from("services").select("id, name").in("id", serviceIds as string[])
+      : { data: [] as never[] };
+    const profIds = [...new Set((appts ?? []).map((a) => a.professional_id).filter(Boolean))];
+    const { data: profs } = profIds.length
+      ? await db.from("professionals").select("id, name").in("id", profIds as string[])
+      : { data: [] as never[] };
+
+    const bookings = (charges ?? []).map((c) => {
+      const a = (appts ?? []).find((x) => x.id === c.appointment_id);
+      const s = (servicesRows ?? []).find((x) => x.id === a?.service_id);
+      const p = (profs ?? []).find((x) => x.id === a?.professional_id);
+      return {
+        chargeId: c.id,
+        chargeStatus: c.status,
+        amountCents: c.amount_cents,
+        customerName: c.payer_name,
+        expiresAt: c.expires_at,
+        createdAt: c.created_at,
+        startsAt: a?.starts_at ?? null,
+        appointmentStatus: a?.status ?? "cancelado",
+        serviceName: s?.name ?? "Serviço",
+        professionalName: p?.name ?? "Profissional Agenda",
+      };
+    });
+    return { bookings };
+  });
+
 
 export const getDepositStatus = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ chargeId: z.string().uuid() }).parse(d))
@@ -248,11 +364,21 @@ export const getDepositStatus = createServerFn({ method: "POST" })
     const db = await admin();
     const { data: charge } = await db
       .from("deposit_payments")
-      .select("id, status, provider_payment_id, appointment_id")
+      .select("id, status, provider_payment_id, appointment_id, expires_at")
       .eq("id", data.chargeId)
       .maybeSingle();
     if (!charge) throw new Error("Cobrança não encontrada.");
     if (charge.status === "pago") return { status: "pago" as const };
+    if (charge.status !== "pendente") return { status: "expirado" as const };
+
+    const expire = async () => {
+      await db.from("deposit_payments").update({ status: "expirado" }).eq("id", charge.id);
+      if (charge.appointment_id)
+        await db
+          .from("appointments")
+          .update({ status: "cancelado" })
+          .eq("id", charge.appointment_id);
+    };
 
     if (charge.provider_payment_id) {
       const { fetchPaymentStatus } = await import("./mercadopago.server");
@@ -271,11 +397,14 @@ export const getDepositStatus = createServerFn({ method: "POST" })
         return { status: "pago" as const };
       }
       if (["cancelled", "rejected", "expired"].includes(status)) {
-        await db.from("deposit_payments").update({ status: "expirado" }).eq("id", charge.id);
-        if (charge.appointment_id)
-          await db.from("appointments").delete().eq("id", charge.appointment_id);
+        await expire();
         return { status: "expirado" as const };
       }
     }
+    if (charge.expires_at && new Date(charge.expires_at).getTime() < Date.now()) {
+      await expire();
+      return { status: "expirado" as const };
+    }
+
     return { status: "pendente" as const };
   });
