@@ -141,6 +141,7 @@ export type Database = {
           category: string
           created_at: string
           id: string
+          logo_url: string | null
           name: string
           owner_id: string
           phone: string | null
@@ -152,6 +153,7 @@ export type Database = {
           category?: string
           created_at?: string
           id?: string
+          logo_url?: string | null
           name: string
           owner_id?: string
           phone?: string | null
@@ -163,6 +165,7 @@ export type Database = {
           category?: string
           created_at?: string
           id?: string
+          logo_url?: string | null
           name?: string
           owner_id?: string
           phone?: string | null

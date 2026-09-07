@@ -18,6 +18,7 @@ import {
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { formatPrice } from "@/lib/format";
+import { getLogoUrl } from "@/lib/logo";
 import {
   getAvailability,
   getOpenDays,
@@ -123,12 +124,18 @@ function PublicBooking() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("businesses")
-        .select("id, name, category, phone, address")
+        .select("id, name, category, phone, address, logo_url")
         .eq("slug", slug)
         .maybeSingle();
       if (error) throw error;
       return data;
     },
+  });
+
+  const { data: logoUrl } = useQuery({
+    queryKey: ["public-business-logo", business?.logo_url],
+    enabled: !!business?.logo_url,
+    queryFn: () => getLogoUrl(business!.logo_url),
   });
 
   const { data: services } = useQuery({
@@ -214,13 +221,16 @@ function PublicBooking() {
       </header>
 
       <main className="mx-auto w-full max-w-3xl flex-1 px-4">
-        <div className="py-8 text-center">
-          <h1 className="font-display text-2xl font-semibold tracking-wide">
-            {isLoading ? "Carregando..." : (business?.name ?? "Negócio não encontrado")}
-          </h1>
-          {business?.address && (
-            <p className="mt-1 text-xs text-muted-foreground">{business.address}</p>
-          )}
+        <div className="flex min-h-[92px] items-center justify-center py-8">
+          {logoUrl ? (
+            <img
+              src={logoUrl}
+              alt={business?.name ? `Logotipo de ${business.name}` : "Logotipo"}
+              className="max-h-24 max-w-[70%] object-contain"
+            />
+          ) : !isLoading && !business ? (
+            <p className="text-sm text-muted-foreground">Negócio não encontrado</p>
+          ) : null}
         </div>
 
         {tab === "agendar" ? (
