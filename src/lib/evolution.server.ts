@@ -1,83 +1,72 @@
-// Integração com a Evolution API (WhatsApp via QR Code / multi-dispositivo).
-// Requer EVOLUTION_API_URL (ex.: https://evo.seudominio.com) e EVOLUTION_API_KEY.
+// Integração com a Z-API (WhatsApp via QR Code / multi-dispositivo).
+// Requer ZAPI_INSTANCE_ID, ZAPI_TOKEN e ZAPI_CLIENT_TOKEN (do painel da Z-API).
 
 function config() {
-  const baseUrl = process.env["EVOLUTION_API_URL"]?.replace(/\/$/, "");
-  const apiKey = process.env["EVOLUTION_API_KEY"];
-  if (!baseUrl || !apiKey)
+  const instanceId = process.env["ZAPI_INSTANCE_ID"];
+  const token = process.env["ZAPI_TOKEN"];
+  const clientToken = process.env["ZAPI_CLIENT_TOKEN"];
+  if (!instanceId || !token || !clientToken)
     throw new Error(
       "A integração de WhatsApp ainda não foi configurada pela plataforma.",
     );
-  return { baseUrl, apiKey };
+  return {
+    baseUrl: `https://api.z-api.io/instances/${instanceId}/token/${token}`,
+    clientToken,
+  };
 }
 
-async function call<T>(
-  path: string,
-  init?: RequestInit,
-): Promise<T> {
-  const { baseUrl, apiKey } = config();
+async function call<T>(path: string, init?: RequestInit): Promise<T> {
+  const { baseUrl, clientToken } = config();
   const res = await fetch(`${baseUrl}${path}`, {
     ...init,
     headers: {
       "Content-Type": "application/json",
-      apikey: apiKey,
+      "Client-Token": clientToken,
       ...(init?.headers ?? {}),
     },
   });
   const text = await res.text();
   if (!res.ok) {
-    console.error(`Evolution API [${res.status}] ${path}: ${text}`);
+    console.error(`Z-API [${res.status}] ${path}: ${text}`);
     throw new Error(`Falha na integração de WhatsApp (${res.status}).`);
   }
   return (text ? JSON.parse(text) : {}) as T;
 }
 
-export type EvolutionQr = {
-  qrcode?: string; // base64 data-url
-  code?: string; // pairing code
-};
-
-export async function createInstance(instance: string): Promise<EvolutionQr> {
-  return call<EvolutionQr>("/instance/create", {
-    method: "POST",
-    body: JSON.stringify({
-      instanceName: instance,
-      qrcode: true,
-      integration: "WHATSAPP-BAILEYS",
-    }),
+/** QR Code atual da instância, como data-url base64 pronta para <img>. */
+export async function getQrCode(): Promise<string | null> {
+  const { baseUrl, clientToken } = config();
+  const res = await fetch(`${baseUrl}/qr-code/image`, {
+    headers: { "Client-Token": clientToken },
   });
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    console.error(`Z-API [${res.status}] /qr-code/image: ${body}`);
+    return null;
+  }
+  const buffer = await res.arrayBuffer();
+  const base64 = Buffer.from(buffer).toString("base64");
+  return `data:image/png;base64,${base64}`;
 }
 
-export async function getQrCode(instance: string): Promise<EvolutionQr> {
-  return call<EvolutionQr>(`/instance/connect/${instance}`);
-}
-
-export async function getConnectionState(
-  instance: string,
-): Promise<"open" | "connecting" | "close"> {
+/** true quando o WhatsApp está conectado e pronto para enviar. */
+export async function isConnected(): Promise<boolean> {
   try {
-    const data = await call<{ instance?: { state?: string } }>(
-      `/instance/connectionState/${instance}`,
+    const data = await call<{ connected?: boolean; smartphoneConnected?: boolean }>(
+      "/status",
     );
-    const state = data.instance?.state ?? "close";
-    if (state === "open") return "open";
-    if (state === "connecting") return "connecting";
-    return "close";
+    return !!data.connected;
   } catch {
-    return "close";
+    return false;
   }
 }
 
-export async function deleteInstance(instance: string): Promise<void> {
+/** Desconecta o aparelho vinculado (a instância continua existindo). */
+export async function disconnect(): Promise<void> {
   try {
-    await call(`/instance/logout/${instance}`, { method: "DELETE" });
+    await call("/disconnect");
   } catch {
     // ignora: instância pode já estar desconectada
-  }
-  try {
-    await call(`/instance/delete/${instance}`, { method: "DELETE" });
-  } catch {
-    // ignora
   }
 }
 
@@ -87,15 +76,14 @@ export function phoneToWhatsapp(phone: string): string {
 }
 
 export async function sendTextMessage(
-  instance: string,
   phone: string,
   message: string,
 ): Promise<void> {
-  await call(`/message/sendText/${instance}`, {
+  await call("/send-text", {
     method: "POST",
     body: JSON.stringify({
-      number: phoneToWhatsapp(phone),
-      text: message,
+      phone: phoneToWhatsapp(phone),
+      message,
     }),
   });
 }

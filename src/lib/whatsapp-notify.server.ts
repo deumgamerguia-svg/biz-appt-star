@@ -62,11 +62,7 @@ export async function sendBookingConfirmation(appointmentId: string) {
       .replaceAll("{hora}", formatTimePtBr(appt.starts_at))
       .replaceAll("{negocio}", business.name);
 
-    await sendTextMessage(
-      business.whatsapp_instance,
-      appt.customer_phone,
-      message,
-    );
+    await sendTextMessage(appt.customer_phone, message);
   } catch (err) {
     console.error("Falha ao enviar WhatsApp de confirmação:", err);
   }

@@ -25,46 +25,41 @@ async function loadOwnedBusiness(
   return data as BizRow;
 }
 
-function instanceName(businessId: string) {
-  return `agendae-${businessId.slice(0, 8)}`;
-}
-
-/** Inicia a conexão: cria a instância na Evolution API e devolve o QR Code. */
+/** Inicia a conexão: marca o negócio como conectando e devolve o QR Code. */
 export const connectWhatsapp = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => bizSchema.parse(d))
   .handler(async ({ context, data }) => {
-    const evo = await import("./evolution.server");
+    const zapi = await import("./evolution.server");
     const business = await loadOwnedBusiness(context.supabase, data.businessId);
-    const instance = business.whatsapp_instance ?? instanceName(business.id);
 
-    let qr: { qrcode?: string; code?: string } = {};
-    try {
-      qr = await evo.createInstance(instance);
-    } catch {
-      // Instância pode já existir: tenta só pegar o QR Code.
-      qr = await evo.getQrCode(instance);
+    const connected = await zapi.isConnected();
+    if (connected) {
+      await context.supabase
+        .from("businesses")
+        .update({ whatsapp_instance: "zapi", whatsapp_status: "conectado" })
+        .eq("id", business.id);
+      return { qrCode: null, alreadyConnected: true };
     }
 
+    const qrCode = await zapi.getQrCode();
     await context.supabase
       .from("businesses")
-      .update({ whatsapp_instance: instance, whatsapp_status: "conectando" })
+      .update({ whatsapp_instance: "zapi", whatsapp_status: "conectando" })
       .eq("id", business.id);
 
-    return { instance, qrCode: qr.qrcode ?? null, pairingCode: qr.code ?? null };
+    return { qrCode, alreadyConnected: false };
   });
 
-/** Gera um novo QR Code para uma instância já criada. */
+/** Gera um novo QR Code. */
 export const refreshWhatsappQr = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => bizSchema.parse(d))
   .handler(async ({ context, data }) => {
-    const evo = await import("./evolution.server");
-    const business = await loadOwnedBusiness(context.supabase, data.businessId);
-    if (!business.whatsapp_instance)
-      throw new Error("Inicie a conexão primeiro.");
-    const qr = await evo.getQrCode(business.whatsapp_instance);
-    return { qrCode: qr.qrcode ?? null, pairingCode: qr.code ?? null };
+    await loadOwnedBusiness(context.supabase, data.businessId);
+    const zapi = await import("./evolution.server");
+    const qrCode = await zapi.getQrCode();
+    return { qrCode };
   });
 
 /** Consulta o estado atual da conexão e sincroniza no banco. */
@@ -76,14 +71,14 @@ export const getWhatsappStatus = createServerFn({ method: "POST" })
     if (!business.whatsapp_instance) {
       return { status: "desconectado" as const, connected: false };
     }
-    const evo = await import("./evolution.server");
-    const state = await evo.getConnectionState(business.whatsapp_instance);
+    const zapi = await import("./evolution.server");
+    const online = await zapi.isConnected();
     const status =
-      state === "open"
-        ? ("conectado" as const)
-        : state === "connecting"
-          ? ("conectando" as const)
-          : ("desconectado" as const);
+      online || business.whatsapp_status === "conectando"
+        ? online
+          ? ("conectado" as const)
+          : ("conectando" as const)
+        : ("desconectado" as const);
     if (status !== business.whatsapp_status) {
       await context.supabase
         .from("businesses")
@@ -93,15 +88,15 @@ export const getWhatsappStatus = createServerFn({ method: "POST" })
     return { status, connected: status === "conectado" };
   });
 
-/** Desconecta e remove a instância do WhatsApp do negócio. */
+/** Desconecta o WhatsApp do negócio. */
 export const disconnectWhatsapp = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => bizSchema.parse(d))
   .handler(async ({ context, data }) => {
     const business = await loadOwnedBusiness(context.supabase, data.businessId);
     if (business.whatsapp_instance) {
-      const evo = await import("./evolution.server");
-      await evo.deleteInstance(business.whatsapp_instance);
+      const zapi = await import("./evolution.server");
+      await zapi.disconnect();
     }
     await context.supabase
       .from("businesses")
