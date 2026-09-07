@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { Eye, EyeOff, Smartphone } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-
 import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 type Search = { modo?: "login" | "cadastro" };
 
@@ -49,7 +51,6 @@ function AuthPage() {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [remember, setRemember] = useState(true);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -98,96 +99,95 @@ function AuthPage() {
   };
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center overflow-hidden bg-background px-6">
-      {/* Marca gigante cortada no topo */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 flex h-[16vh] min-h-24 items-start justify-center overflow-hidden"
-      >
-        <span className="mt-[-0.32em] whitespace-nowrap font-display text-[clamp(4rem,14vw,11rem)] font-extrabold leading-none tracking-tight text-primary">
-          AGENDA SERVIÇO
-        </span>
-      </div>
+    <div className="flex min-h-screen items-center justify-center hero-wash px-6 py-12">
+      <div className="w-full max-w-md">
+        <Link to="/" className="mb-6 block text-center font-display text-2xl font-extrabold">
+          Agenda<span className="text-primary">ê</span>
+        </Link>
 
-      <div className="relative z-10 mt-[15vh] w-full max-w-sm">
-        <div className="auth-card">
-          <h1 className="auth-card-title">{isSignup ? "criar conta" : "seu login"}</h1>
+        <div className="surface p-7">
+          <h1 className="text-2xl font-bold">{isSignup ? "Criar sua conta" : "Entrar"}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {isSignup
+              ? "Cadastre seu negócio e comece a receber agendamentos."
+              : "Acesse o painel do seu negócio com telefone e senha de 4 dígitos."}
+          </p>
 
-          <form onSubmit={handleSubmit} className="space-y-3 p-5">
+          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             {isSignup && (
-              <div className="auth-field">
-                <input
+              <div className="space-y-2">
+                <Label htmlFor="name">Seu nome</Label>
+                <Input
+                  id="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Nome do responsável"
+                  placeholder="Ex.: João da Silva"
                   required
                 />
               </div>
             )}
-            <div className="auth-field">
-              <input
-                type="tel"
-                inputMode="numeric"
-                autoComplete="tel"
-                value={phone}
-                onChange={(e) => setPhone(formatPhone(e.target.value))}
-                placeholder="(11) 93935-4416"
-                required
-              />
-              <span className="auth-field-icon">
-                <Smartphone className="size-4" />
-              </span>
+            <div className="space-y-2">
+              <Label htmlFor="phone">Telefone do estabelecimento</Label>
+              <div className="relative">
+                <Input
+                  id="phone"
+                  type="tel"
+                  inputMode="numeric"
+                  autoComplete="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(formatPhone(e.target.value))}
+                  placeholder="(11) 93935-4416"
+                  required
+                  className="peer pr-10"
+                />
+                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                  <Smartphone className="size-4" />
+                </span>
+              </div>
             </div>
-
-            <div className="auth-field">
-              <input
-                type={showPassword ? "text" : "password"}
-                inputMode="numeric"
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(onlyDigits(e.target.value).slice(0, 4))}
-                placeholder="1234"
-                minLength={4}
-                maxLength={4}
-                pattern="\d{4}"
-                required
-              />
-              <button
-                type="button"
-                className="auth-field-icon"
-                onClick={() => setShowPassword((v) => !v)}
-                aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-              >
-                {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-              </button>
+            <div className="space-y-2">
+              <Label htmlFor="password">Senha de 4 dígitos</Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  inputMode="numeric"
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(onlyDigits(e.target.value).slice(0, 4))}
+                  placeholder="1234"
+                  minLength={4}
+                  maxLength={4}
+                  pattern="\d{4}"
+                  required
+                  className="peer pr-10"
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                >
+                  {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                </button>
+              </div>
             </div>
-
-            <label className="flex cursor-pointer items-center gap-2 text-sm font-medium">
-              <input
-                type="checkbox"
-                checked={remember}
-                onChange={(e) => setRemember(e.target.checked)}
-                className="size-4 accent-[#2563eb]"
-              />
-              Lembrar senha
-            </label>
-
-            <button type="submit" className="auth-submit" disabled={busy}>
+            <Button type="submit" className="w-full" disabled={busy}>
               {busy ? "Aguarde..." : isSignup ? "Criar conta" : "Entrar"}
-            </button>
+            </Button>
           </form>
-        </div>
 
-        <p className="mt-5 text-center text-sm text-muted-foreground">
-          {isSignup ? "Já tem conta?" : "Ainda não tem conta?"}{" "}
-          <button
-            type="button"
-            className="font-semibold text-primary hover:underline"
-            onClick={() => setIsSignup((v) => !v)}
-          >
-            {isSignup ? "Entrar" : "Criar agora"}
-          </button>
-        </p>
+          <p className="mt-6 text-center text-sm text-muted-foreground">
+            {isSignup ? "Já tem conta?" : "Ainda não tem conta?"}{" "}
+            <button
+              type="button"
+              className="font-semibold text-primary hover:underline"
+              onClick={() => setIsSignup((v) => !v)}
+            >
+              {isSignup ? "Entrar" : "Criar agora"}
+            </button>
+          </p>
+        </div>
       </div>
     </div>
   );
