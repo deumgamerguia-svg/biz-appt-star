@@ -206,6 +206,7 @@ function ClientesPage() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          </div>
         }
       />
 
