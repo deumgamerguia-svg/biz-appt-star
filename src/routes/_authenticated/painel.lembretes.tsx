@@ -98,7 +98,12 @@ function LembretesPage() {
   });
 
   const saveConfig = useMutation({
-    mutationFn: async (patch: Record<string, unknown>) => {
+    mutationFn: async (
+      patch:
+        | { reminder_enabled: boolean }
+        | { reminder_hours_before: number }
+        | { reminder_template: string },
+    ) => {
       const { error } = await supabase.from("businesses").update(patch).eq("id", businessId!);
       if (error) throw error;
     },
