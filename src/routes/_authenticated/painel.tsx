@@ -8,6 +8,7 @@ import {
   LogOut,
   Menu,
   Bell,
+  BellRing,
   Gem,
   PieChart,
   Calculator,
