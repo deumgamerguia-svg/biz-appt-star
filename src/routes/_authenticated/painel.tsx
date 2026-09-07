@@ -60,6 +60,7 @@ const nav = [
   { to: "/painel/clientes", label: "Clientes", icon: Users },
   { to: "/painel/templates", label: "Templates", icon: MessageSquareText },
   { to: "/painel/pagamentos", label: "Pagamentos", icon: DollarSign },
+  { to: "/painel/lembretes", label: "Lembretes", icon: BellRing },
   { to: "/painel/bloqueios", label: "Horários Bloqueados", icon: CircleX },
   { to: "/painel/funcionamento", label: "Funcionamento", icon: CalendarCheck },
   { to: "/painel/profissionais", label: "Profissionais", icon: UserRound },
