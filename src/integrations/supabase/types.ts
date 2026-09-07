@@ -148,6 +148,10 @@ export type Database = {
           name: string
           owner_id: string
           phone: string | null
+          reminder_channel: string
+          reminder_enabled: boolean
+          reminder_hours_before: number
+          reminder_template: string | null
           slug: string
           status: string
           updated_at: string
@@ -164,6 +168,10 @@ export type Database = {
           name: string
           owner_id?: string
           phone?: string | null
+          reminder_channel?: string
+          reminder_enabled?: boolean
+          reminder_hours_before?: number
+          reminder_template?: string | null
           slug: string
           status?: string
           updated_at?: string
@@ -180,6 +188,10 @@ export type Database = {
           name?: string
           owner_id?: string
           phone?: string | null
+          reminder_channel?: string
+          reminder_enabled?: boolean
+          reminder_hours_before?: number
+          reminder_template?: string | null
           slug?: string
           status?: string
           updated_at?: string
@@ -360,6 +372,57 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      reminder_logs: {
+        Row: {
+          appointment_id: string
+          business_id: string
+          channel: string
+          created_at: string
+          error: string | null
+          id: string
+          phone: string | null
+          provider_sid: string | null
+          status: string
+        }
+        Insert: {
+          appointment_id: string
+          business_id: string
+          channel?: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          phone?: string | null
+          provider_sid?: string | null
+          status?: string
+        }
+        Update: {
+          appointment_id?: string
+          business_id?: string
+          channel?: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          phone?: string | null
+          provider_sid?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reminder_logs_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reminder_logs_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       services: {
         Row: {
