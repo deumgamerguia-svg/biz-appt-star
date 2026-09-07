@@ -29,6 +29,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { getMasterStatus } from "@/lib/admin.functions";
 import { useAuth } from "@/hooks/useAuth";
 import { useBusiness } from "@/lib/business";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
   Select,
