@@ -63,6 +63,10 @@ function AuthPage() {
       toast.error("Informe o telefone com DDD.");
       return;
     }
+    if (!/^\d{4}$/.test(password)) {
+      toast.error("A senha deve ter exatamente 4 dígitos.");
+      return;
+    }
     setBusy(true);
     try {
       if (isSignup) {
@@ -142,9 +146,11 @@ function AuthPage() {
                 inputMode="numeric"
                 autoComplete="current-password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => setPassword(onlyDigits(e.target.value).slice(0, 4))}
                 placeholder="Ex.: 1237"
                 minLength={4}
+                maxLength={4}
+                pattern="\d{4}"
                 required
               />
             </div>
