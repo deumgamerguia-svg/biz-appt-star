@@ -260,9 +260,11 @@ function MasterPage() {
                 <Label htmlFor="opass">Senha de acesso</Label>
                 <Input
                   id="opass"
+                  inputMode="numeric"
                   value={form.password}
-                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  onChange={(e) => setForm({ ...form, password: e.target.value.replace(/\D/g, "").slice(0, 4) })}
                   placeholder="Ex.: 1237"
+                  maxLength={4}
                 />
               </div>
             </div>
@@ -278,7 +280,7 @@ function MasterPage() {
                 form.businessName.trim().length < 2 ||
                 form.ownerName.trim().length < 2 ||
                 form.phone.replace(/\D/g, "").length < 10 ||
-                form.password.length < 4
+                form.password.length !== 4
               }
             >
               Criar acesso
