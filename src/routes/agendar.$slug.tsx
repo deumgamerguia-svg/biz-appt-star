@@ -123,12 +123,18 @@ function PublicBooking() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("businesses")
-        .select("id, name, category, phone, address")
+        .select("id, name, category, phone, address, logo_url")
         .eq("slug", slug)
         .maybeSingle();
       if (error) throw error;
       return data;
     },
+  });
+
+  const { data: logoUrl } = useQuery({
+    queryKey: ["public-business-logo", business?.logo_url],
+    enabled: !!business?.logo_url,
+    queryFn: () => getLogoUrl(business!.logo_url),
   });
 
   const { data: services } = useQuery({
