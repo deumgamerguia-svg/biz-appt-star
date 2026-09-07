@@ -18,6 +18,7 @@ import {
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { formatPrice } from "@/lib/format";
+import { getLogoUrl } from "@/lib/logo";
 import {
   getAvailability,
   getOpenDays,
