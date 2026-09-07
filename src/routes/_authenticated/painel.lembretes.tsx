@@ -100,7 +100,10 @@ function LembretesPage() {
       return (appts ?? []).map((a) => ({
         ...a,
         serviceName: (services ?? []).find((s) => s.id === a.service_id)?.name ?? "Serviço",
-        reminder: (logs ?? []).find((l) => l.appointment_id === a.id) ?? null,
+        reminder:
+          (logs ?? []).find(
+            (l) => l.appointment_id === a.id && l.status === "enviado",
+          ) ?? null,
       }));
     },
     refetchInterval: 60_000,
@@ -305,8 +308,8 @@ function LembretesPage() {
       {!enabled && (
         <div className="mt-6 flex items-center gap-3 rounded-xl border border-dashed border-border p-5 text-sm text-muted-foreground">
           <MessageCircle className="size-5 shrink-0 text-primary" />
-          Ative acima para ver aqui a lista de clientes que devem ser lembrados. O botão abre o
-          WhatsApp com a mensagem pronta — você só confirma o envio.
+          Ative o lembrete acima para os clientes receberem o aviso automaticamente no WhatsApp,
+          na antecedência que você definir. A lista de quem será lembrado aparece aqui.
         </div>
       )}
     </div>
