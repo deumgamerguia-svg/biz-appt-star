@@ -220,13 +220,16 @@ function PublicBooking() {
       </header>
 
       <main className="mx-auto w-full max-w-3xl flex-1 px-4">
-        <div className="py-8 text-center">
-          <h1 className="font-display text-2xl font-semibold tracking-wide">
-            {isLoading ? "Carregando..." : (business?.name ?? "Negócio não encontrado")}
-          </h1>
-          {business?.address && (
-            <p className="mt-1 text-xs text-muted-foreground">{business.address}</p>
-          )}
+        <div className="flex min-h-[92px] items-center justify-center py-8">
+          {logoUrl ? (
+            <img
+              src={logoUrl}
+              alt={business?.name ? `Logotipo de ${business.name}` : "Logotipo"}
+              className="max-h-24 max-w-[70%] object-contain"
+            />
+          ) : !isLoading && !business ? (
+            <p className="text-sm text-muted-foreground">Negócio não encontrado</p>
+          ) : null}
         </div>
 
         {tab === "agendar" ? (
