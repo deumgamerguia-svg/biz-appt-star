@@ -138,38 +138,50 @@ export type Database = {
       businesses: {
         Row: {
           address: string | null
+          brand_background: string | null
+          brand_primary: string | null
           category: string
           created_at: string
           id: string
           logo_url: string | null
+          monthly_fee_cents: number
           name: string
           owner_id: string
           phone: string | null
           slug: string
+          status: string
           updated_at: string
         }
         Insert: {
           address?: string | null
+          brand_background?: string | null
+          brand_primary?: string | null
           category?: string
           created_at?: string
           id?: string
           logo_url?: string | null
+          monthly_fee_cents?: number
           name: string
           owner_id?: string
           phone?: string | null
           slug: string
+          status?: string
           updated_at?: string
         }
         Update: {
           address?: string | null
+          brand_background?: string | null
+          brand_primary?: string | null
           category?: string
           created_at?: string
           id?: string
           logo_url?: string | null
+          monthly_fee_cents?: number
           name?: string
           owner_id?: string
           phone?: string | null
           slug?: string
+          status?: string
           updated_at?: string
         }
         Relationships: []
