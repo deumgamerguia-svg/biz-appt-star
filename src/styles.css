@@ -282,7 +282,7 @@
   padding: 0.75rem 1rem;
   border-radius: 0.5rem;
   background: var(--background);
-  color: var(--background-foreground);
+  color: oklch(0.98 0.005 260);
   font-weight: 700;
   transition: opacity 150ms;
 }
