@@ -124,6 +124,7 @@ function AgendaPage() {
         .eq("business_id", businessId!)
         .gte("starts_at", start)
         .lte("starts_at", end)
+        .neq("status", "aguardando_sinal")
         .order("starts_at");
       if (error) throw error;
       return data;
