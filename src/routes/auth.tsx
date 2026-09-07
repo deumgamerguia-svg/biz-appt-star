@@ -163,7 +163,7 @@ function AuthPage() {
               type="button"
               className="font-semibold text-primary hover:underline"
               onClick={() => {
-                setSent(false);
+                
                 setIsSignup((v) => !v);
               }}
             >
