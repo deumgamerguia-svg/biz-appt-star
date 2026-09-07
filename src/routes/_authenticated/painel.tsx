@@ -72,6 +72,37 @@ const nav = [
   { to: "/painel/negocios", label: "Negócios", icon: Store },
 ] as const;
 
+function WhatsappBadge() {
+  const { businessId } = useBusiness();
+  const { data } = useQuery({
+    queryKey: ["whatsapp-badge", businessId],
+    queryFn: async () => {
+      const { data: row } = await supabase
+        .from("businesses")
+        .select("whatsapp_status")
+        .eq("id", businessId!)
+        .maybeSingle();
+      return row?.whatsapp_status ?? "desconectado";
+    },
+    enabled: !!businessId,
+    refetchInterval: 15000,
+  });
+  const connected = data === "conectado";
+  return (
+    <Link
+      to="/painel/whatsapp"
+      className={`flex flex-1 items-center justify-center rounded-md border px-4 py-2 text-sm font-medium ${
+        connected
+          ? "border-success/60 text-success"
+          : "border-destructive/50 text-destructive"
+      }`}
+    >
+      <MessageCircle className="mr-2 size-4" />
+      {connected ? "WHATSAPP CONECTADO" : "WHATSAPP DESCONECTADO"}
+    </Link>
+  );
+}
+
 function PainelLayout() {
   const { user, signOut } = useAuth();
   const { businesses, businessId, setBusinessId } = useBusiness();
