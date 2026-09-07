@@ -112,6 +112,50 @@ function MasterPage() {
       toast.error("Não foi possível remover: existem agendamentos vinculados a este negócio."),
   });
 
+  const metrics = useQuery({
+    queryKey: ["master-metrics"],
+    enabled: !!status.data?.isMaster,
+    queryFn: () => metricsFn(),
+  });
+
+  const refreshAll = () => {
+    void queryClient.invalidateQueries({ queryKey: ["master-businesses"] });
+    void queryClient.invalidateQueries({ queryKey: ["master-metrics"] });
+  };
+
+  const setStatus = useMutation({
+    mutationFn: (vars: { id: string; status: "ativo" | "suspenso" }) =>
+      statusUpdateFn({ data: vars }),
+    onSuccess: (_r, vars) => {
+      toast.success(
+        vars.status === "suspenso"
+          ? "Estabelecimento suspenso: a página de agendamento ficou indisponível."
+          : "Estabelecimento reativado.",
+      );
+      refreshAll();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const fee = useMutation({
+    mutationFn: (vars: { id: string; amountCents: number }) => feeFn({ data: vars }),
+    onSuccess: () => {
+      toast.success("Mensalidade atualizada.");
+      refreshAll();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const charge = useMutation({
+    mutationFn: (vars: { businessId: string; month: string; status: "pago" | "pendente" }) =>
+      chargeFn({ data: vars }),
+    onSuccess: () => {
+      toast.success("Cobrança registrada como paga.");
+      refreshAll();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   if (status.isLoading) {
     return <p className="p-8 text-sm text-muted-foreground">Carregando...</p>;
   }
