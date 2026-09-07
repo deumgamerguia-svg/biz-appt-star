@@ -372,7 +372,7 @@ function MasterPage() {
             })}
             {!rows.length && (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
+                <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
                   Nenhum estabelecimento cadastrado ainda.
                 </td>
               </tr>
