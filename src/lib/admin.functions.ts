@@ -62,7 +62,9 @@ export const listAllBusinesses = createServerFn({ method: "GET" })
     const supabaseAdmin = await assertSuperAdmin(context.userId);
     const { data, error } = await supabaseAdmin
       .from("businesses")
-      .select("id, name, slug, category, phone, owner_id, created_at")
+      .select(
+        "id, name, slug, category, phone, owner_id, created_at, status, monthly_fee_cents",
+      )
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     const businesses = data ?? [];
@@ -77,16 +79,26 @@ export const listAllBusinesses = createServerFn({ method: "GET" })
       counts.set(a.business_id, (counts.get(a.business_id) ?? 0) + 1);
     }
 
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    const { data: payments } = await supabaseAdmin
+      .from("subscription_payments")
+      .select("business_id, status, reference_month");
+
     return businesses.map((b) => {
       const owner = (owners ?? []).find((o) => o.id === b.owner_id);
+      const monthPayment = (payments ?? []).find(
+        (p) => p.business_id === b.id && p.reference_month.slice(0, 7) === currentMonth,
+      );
       return {
         ...b,
         owner_name: owner?.full_name ?? null,
         owner_login: owner?.email ?? null,
         appointments: counts.get(b.id) ?? 0,
+        current_month_status: monthPayment?.status ?? "pendente",
       };
     });
   });
+
 
 const createInput = z.object({
   businessName: z.string().min(2),
@@ -168,4 +180,134 @@ export const deleteBusiness = createServerFn({ method: "POST" })
     const { error } = await supabaseAdmin.from("businesses").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
+  });
+
+/** Situação (ativo/suspenso) de um estabelecimento. */
+export const setBusinessStatus = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) =>
+    z.object({ id: z.string().uuid(), status: z.enum(["ativo", "suspenso"]) }).parse(data),
+  )
+  .handler(async ({ context, data }) => {
+    const supabaseAdmin = await assertSuperAdmin(context.userId);
+    const { error } = await supabaseAdmin
+      .from("businesses")
+      .update({ status: data.status })
+      .eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+/** Define o valor da mensalidade cobrada do estabelecimento. */
+export const setMonthlyFee = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) =>
+    z.object({ id: z.string().uuid(), amountCents: z.number().int().min(0) }).parse(data),
+  )
+  .handler(async ({ context, data }) => {
+    const supabaseAdmin = await assertSuperAdmin(context.userId);
+    const { error } = await supabaseAdmin
+      .from("businesses")
+      .update({ monthly_fee_cents: data.amountCents })
+      .eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+const monthRegex = /^\d{4}-\d{2}$/;
+
+/** Gera (ou atualiza) a cobrança da mensalidade de um mês para um estabelecimento. */
+export const registerSubscriptionCharge = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) =>
+    z
+      .object({
+        businessId: z.string().uuid(),
+        month: z.string().regex(monthRegex),
+        status: z.enum(["pago", "pendente"]),
+      })
+      .parse(data),
+  )
+  .handler(async ({ context, data }) => {
+    const supabaseAdmin = await assertSuperAdmin(context.userId);
+    const { data: business, error: bErr } = await supabaseAdmin
+      .from("businesses")
+      .select("monthly_fee_cents")
+      .eq("id", data.businessId)
+      .maybeSingle();
+    if (bErr) throw new Error(bErr.message);
+    if (!business) throw new Error("Estabelecimento não encontrado.");
+
+    const referenceMonth = `${data.month}-01`;
+    const { data: existing } = await supabaseAdmin
+      .from("subscription_payments")
+      .select("id")
+      .eq("business_id", data.businessId)
+      .eq("reference_month", referenceMonth)
+      .maybeSingle();
+
+    const payload = {
+      business_id: data.businessId,
+      reference_month: referenceMonth,
+      amount_cents: business.monthly_fee_cents ?? 8990,
+      status: data.status,
+      paid_at: data.status === "pago" ? new Date().toISOString() : null,
+    };
+
+    const { error } = existing
+      ? await supabaseAdmin.from("subscription_payments").update(payload).eq("id", existing.id)
+      : await supabaseAdmin.from("subscription_payments").insert(payload);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+/** Números gerais da plataforma para o painel master. */
+export const getPlatformMetrics = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const supabaseAdmin = await assertSuperAdmin(context.userId);
+    const currentMonth = new Date().toISOString().slice(0, 7);
+
+    const { data: businesses, error } = await supabaseAdmin
+      .from("businesses")
+      .select("id, status, monthly_fee_cents");
+    if (error) throw new Error(error.message);
+    const list = businesses ?? [];
+    const active = list.filter((b) => b.status !== "suspenso");
+
+    const { data: payments } = await supabaseAdmin
+      .from("subscription_payments")
+      .select("business_id, amount_cents, status, reference_month");
+
+    const paidThisMonth = (payments ?? []).filter(
+      (p) => p.status === "pago" && p.reference_month.slice(0, 7) === currentMonth,
+    );
+    const revenueTotal = (payments ?? [])
+      .filter((p) => p.status === "pago")
+      .reduce((sum, p) => sum + (p.amount_cents ?? 0), 0);
+
+    const { data: deposits } = await supabaseAdmin
+      .from("deposit_payments")
+      .select("amount_cents, status");
+    const depositsTotal = (deposits ?? [])
+      .filter((d) => d.status === "pago" || d.status === "aprovado")
+      .reduce((sum, d) => sum + (d.amount_cents ?? 0), 0);
+
+    const { count: appointmentsCount } = await supabaseAdmin
+      .from("appointments")
+      .select("id", { count: "exact", head: true });
+
+    return {
+      currentMonth,
+      totalBusinesses: list.length,
+      activeBusinesses: active.length,
+      suspendedBusinesses: list.length - active.length,
+      mrrCents: active.reduce((sum, b) => sum + (b.monthly_fee_cents ?? 0), 0),
+      paidThisMonthCount: paidThisMonth.length,
+      paidThisMonthCents: paidThisMonth.reduce((s, p) => s + (p.amount_cents ?? 0), 0),
+      delinquentCount: active.length - paidThisMonth.length,
+      revenueTotalCents: revenueTotal,
+      depositsTotalCents: depositsTotal,
+      appointments: appointmentsCount ?? 0,
+    };
   });

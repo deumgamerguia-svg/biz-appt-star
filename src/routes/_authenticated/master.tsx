@@ -3,14 +3,19 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { ShieldCheck, Trash2, Plus, ExternalLink } from "lucide-react";
+import { ShieldCheck, Trash2, Plus, ExternalLink, Ban, PlayCircle } from "lucide-react";
 import {
   claimMaster,
   createBusinessWithOwner,
   deleteBusiness,
   getMasterStatus,
+  getPlatformMetrics,
   listAllBusinesses,
+  registerSubscriptionCharge,
+  setBusinessStatus,
+  setMonthlyFee,
 } from "@/lib/admin.functions";
+import { formatPrice } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -60,6 +65,11 @@ function MasterPage() {
   const claimFn = useServerFn(claimMaster);
   const createFn = useServerFn(createBusinessWithOwner);
   const deleteFn = useServerFn(deleteBusiness);
+  const metricsFn = useServerFn(getPlatformMetrics);
+  const statusUpdateFn = useServerFn(setBusinessStatus);
+  const feeFn = useServerFn(setMonthlyFee);
+  const chargeFn = useServerFn(registerSubscriptionCharge);
+  const currentMonth = new Date().toISOString().slice(0, 7);
 
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(emptyForm);
@@ -100,6 +110,50 @@ function MasterPage() {
     },
     onError: () =>
       toast.error("Não foi possível remover: existem agendamentos vinculados a este negócio."),
+  });
+
+  const metrics = useQuery({
+    queryKey: ["master-metrics"],
+    enabled: !!status.data?.isMaster,
+    queryFn: () => metricsFn(),
+  });
+
+  const refreshAll = () => {
+    void queryClient.invalidateQueries({ queryKey: ["master-businesses"] });
+    void queryClient.invalidateQueries({ queryKey: ["master-metrics"] });
+  };
+
+  const setStatus = useMutation({
+    mutationFn: (vars: { id: string; status: "ativo" | "suspenso" }) =>
+      statusUpdateFn({ data: vars }),
+    onSuccess: (_r, vars) => {
+      toast.success(
+        vars.status === "suspenso"
+          ? "Estabelecimento suspenso: a página de agendamento ficou indisponível."
+          : "Estabelecimento reativado.",
+      );
+      refreshAll();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const fee = useMutation({
+    mutationFn: (vars: { id: string; amountCents: number }) => feeFn({ data: vars }),
+    onSuccess: () => {
+      toast.success("Mensalidade atualizada.");
+      refreshAll();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const charge = useMutation({
+    mutationFn: (vars: { businessId: string; month: string; status: "pago" | "pendente" }) =>
+      chargeFn({ data: vars }),
+    onSuccess: () => {
+      toast.success("Cobrança registrada como paga.");
+      refreshAll();
+    },
+    onError: (e: Error) => toast.error(e.message),
   });
 
   if (status.isLoading) {
@@ -154,56 +208,155 @@ function MasterPage() {
         </div>
       </div>
 
-      <div className="mt-6 overflow-hidden rounded-md border border-border">
-        <table className="w-full text-sm">
+      <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <MetricCard
+          label="Negócios ativos"
+          value={String(metrics.data?.activeBusinesses ?? 0)}
+          hint={`${metrics.data?.suspendedBusinesses ?? 0} suspenso(s)`}
+        />
+        <MetricCard
+          label="Mensalidade prevista"
+          value={formatPrice(metrics.data?.mrrCents ?? 0)}
+          hint="Soma das mensalidades ativas"
+        />
+        <MetricCard
+          label="Recebido este mês"
+          value={formatPrice(metrics.data?.paidThisMonthCents ?? 0)}
+          hint={`${metrics.data?.delinquentCount ?? 0} em aberto`}
+        />
+        <MetricCard
+          label="Faturamento total"
+          value={formatPrice(metrics.data?.revenueTotalCents ?? 0)}
+          hint={`${metrics.data?.appointments ?? 0} agendamentos na plataforma`}
+        />
+      </div>
+
+      <div className="mt-6 overflow-x-auto rounded-md border border-border">
+        <table className="w-full min-w-[860px] text-sm">
           <thead className="bg-secondary text-left text-xs uppercase text-muted-foreground">
             <tr>
               <th className="px-4 py-3">Estabelecimento</th>
               <th className="px-4 py-3">Dono</th>
-              <th className="px-4 py-3">Agendamentos</th>
+              <th className="px-4 py-3">Mensalidade</th>
+              <th className="px-4 py-3">Mês atual</th>
+              <th className="px-4 py-3">Situação</th>
               <th className="px-4 py-3">Link do cliente</th>
               <th className="px-4 py-3" />
             </tr>
           </thead>
           <tbody>
-            {rows.map((b) => (
-              <tr key={b.id} className="border-t border-border">
-                <td className="px-4 py-3 font-medium">
-                  {b.name}
-                  <span className="block text-xs text-muted-foreground">{b.category}</span>
-                </td>
-                <td className="px-4 py-3">
-                  {b.owner_name ?? "—"}
-                  <span className="block text-xs text-muted-foreground">
-                    {b.phone ? formatPhone(b.phone) : "—"}
-                  </span>
-                </td>
-                <td className="px-4 py-3">{b.appointments}</td>
-                <td className="px-4 py-3">
-                  <a
-                    href={`/agendar/${b.slug}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1 text-primary hover:underline"
-                  >
-                    /agendar/{b.slug} <ExternalLink className="size-3" />
-                  </a>
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label={`Remover ${b.name}`}
-                    onClick={() => remove.mutate(b.id)}
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
-                </td>
-              </tr>
-            ))}
+            {rows.map((b) => {
+              const suspended = b.status === "suspenso";
+              const paid = b.current_month_status === "pago";
+              return (
+                <tr key={b.id} className="border-t border-border">
+                  <td className="px-4 py-3 font-medium">
+                    {b.name}
+                    <span className="block text-xs text-muted-foreground">
+                      {b.category} · {b.appointments} agendamento(s)
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    {b.owner_name ?? "—"}
+                    <span className="block text-xs text-muted-foreground">
+                      {b.phone ? formatPhone(b.phone) : "—"}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <button
+                      type="button"
+                      className="text-primary hover:underline"
+                      onClick={() => {
+                        const input = window.prompt(
+                          "Valor da mensalidade em reais",
+                          ((b.monthly_fee_cents ?? 0) / 100).toFixed(2),
+                        );
+                        if (input === null) return;
+                        const amount = Math.round(Number(input.replace(",", ".")) * 100);
+                        if (!Number.isFinite(amount) || amount < 0) {
+                          toast.error("Valor inválido");
+                          return;
+                        }
+                        fee.mutate({ id: b.id, amountCents: amount });
+                      }}
+                    >
+                      {formatPrice(b.monthly_fee_cents ?? 0)}
+                    </button>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                        paid
+                          ? "bg-success/15 text-success"
+                          : "bg-destructive/15 text-destructive"
+                      }`}
+                    >
+                      {paid ? "Pago" : "Em aberto"}
+                    </span>
+                    {!paid && (
+                      <button
+                        type="button"
+                        className="ml-2 text-xs text-primary hover:underline"
+                        onClick={() =>
+                          charge.mutate({
+                            businessId: b.id,
+                            month: currentMonth,
+                            status: "pago",
+                          })
+                        }
+                      >
+                        marcar pago
+                      </button>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    <Button
+                      variant={suspended ? "secondary" : "ghost"}
+                      size="sm"
+                      onClick={() =>
+                        setStatus.mutate({
+                          id: b.id,
+                          status: suspended ? "ativo" : "suspenso",
+                        })
+                      }
+                    >
+                      {suspended ? (
+                        <>
+                          <PlayCircle className="size-4" /> Reativar
+                        </>
+                      ) : (
+                        <>
+                          <Ban className="size-4" /> Suspender
+                        </>
+                      )}
+                    </Button>
+                  </td>
+                  <td className="px-4 py-3">
+                    <a
+                      href={`/agendar/${b.slug}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 text-primary hover:underline"
+                    >
+                      /agendar/{b.slug} <ExternalLink className="size-3" />
+                    </a>
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={`Remover ${b.name}`}
+                      onClick={() => remove.mutate(b.id)}
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </td>
+                </tr>
+              );
+            })}
             {!rows.length && (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
+                <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
                   Nenhum estabelecimento cadastrado ainda.
                 </td>
               </tr>
@@ -211,6 +364,7 @@ function MasterPage() {
           </tbody>
         </table>
       </div>
+
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
@@ -288,6 +442,16 @@ function MasterPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+function MetricCard({ label, value, hint }: { label: string; value: string; hint?: string }) {
+  return (
+    <div className="rounded-xl border border-border bg-card p-4">
+      <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="mt-1 text-xl font-bold">{value}</p>
+      {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
     </div>
   );
 }

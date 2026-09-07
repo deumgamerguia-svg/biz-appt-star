@@ -36,10 +36,12 @@ async function loadContext(slug: string, serviceId: string): Promise<Ctx> {
   const db = await admin();
   const { data: business } = await db
     .from("businesses")
-    .select("id")
+    .select("id, status")
     .eq("slug", slug)
     .maybeSingle();
   if (!business) throw new Error("Negócio não encontrado.");
+  if (business.status === "suspenso")
+    throw new Error("Os agendamentos deste estabelecimento estão temporariamente indisponíveis.");
   const { data: service } = await db
     .from("services")
     .select("id, name, duration_minutes, deposit_cents")
@@ -149,10 +151,11 @@ export const getOpenDays = createServerFn({ method: "POST" })
     const db = await admin();
     const { data: business } = await db
       .from("businesses")
-      .select("id")
+      .select("id, status")
       .eq("slug", data.slug)
       .maybeSingle();
-    if (!business) return { days: [] as { date: string; weekday: number }[] };
+    if (!business || business.status === "suspenso")
+      return { days: [] as { date: string; weekday: number }[] };
     const { data: hours } = await db
       .from("business_hours")
       .select("weekday")
