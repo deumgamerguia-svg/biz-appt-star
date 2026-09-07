@@ -30,6 +30,7 @@ import { Route as AuthenticatedPainelProfissionaisRouteImport } from './routes/_
 import { Route as AuthenticatedPainelRelatorioRouteImport } from './routes/_authenticated/painel.relatorio'
 import { Route as AuthenticatedPainelServicosRouteImport } from './routes/_authenticated/painel.servicos'
 import { Route as AuthenticatedPainelTemplatesRouteImport } from './routes/_authenticated/painel.templates'
+import { Route as ApiPublicMercadopagoWebhookRouteImport } from './routes/api/public/mercadopago-webhook'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -151,6 +152,12 @@ const AuthenticatedPainelTemplatesRoute =
     path: '/templates',
     getParentRoute: () => AuthenticatedPainelRoute,
   } as any)
+const ApiPublicMercadopagoWebhookRoute =
+  ApiPublicMercadopagoWebhookRouteImport.update({
+    id: '/api/public/mercadopago-webhook',
+    path: '/api/public/mercadopago-webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -172,6 +179,7 @@ export interface FileRoutesByFullPath {
   '/painel/relatorio': typeof AuthenticatedPainelRelatorioRoute
   '/painel/servicos': typeof AuthenticatedPainelServicosRoute
   '/painel/templates': typeof AuthenticatedPainelTemplatesRoute
+  '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
   '/painel/': typeof AuthenticatedPainelIndexRoute
 }
 export interface FileRoutesByTo {
@@ -193,6 +201,7 @@ export interface FileRoutesByTo {
   '/painel/relatorio': typeof AuthenticatedPainelRelatorioRoute
   '/painel/servicos': typeof AuthenticatedPainelServicosRoute
   '/painel/templates': typeof AuthenticatedPainelTemplatesRoute
+  '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
   '/painel': typeof AuthenticatedPainelIndexRoute
 }
 export interface FileRoutesById {
@@ -217,6 +226,7 @@ export interface FileRoutesById {
   '/_authenticated/painel/relatorio': typeof AuthenticatedPainelRelatorioRoute
   '/_authenticated/painel/servicos': typeof AuthenticatedPainelServicosRoute
   '/_authenticated/painel/templates': typeof AuthenticatedPainelTemplatesRoute
+  '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
   '/_authenticated/painel/': typeof AuthenticatedPainelIndexRoute
 }
 export interface FileRouteTypes {
@@ -241,6 +251,7 @@ export interface FileRouteTypes {
     | '/painel/relatorio'
     | '/painel/servicos'
     | '/painel/templates'
+    | '/api/public/mercadopago-webhook'
     | '/painel/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -262,6 +273,7 @@ export interface FileRouteTypes {
     | '/painel/relatorio'
     | '/painel/servicos'
     | '/painel/templates'
+    | '/api/public/mercadopago-webhook'
     | '/painel'
   id:
     | '__root__'
@@ -285,6 +297,7 @@ export interface FileRouteTypes {
     | '/_authenticated/painel/relatorio'
     | '/_authenticated/painel/servicos'
     | '/_authenticated/painel/templates'
+    | '/api/public/mercadopago-webhook'
     | '/_authenticated/painel/'
   fileRoutesById: FileRoutesById
 }
@@ -293,6 +306,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   AgendarSlugRoute: typeof AgendarSlugRoute
+  ApiPublicMercadopagoWebhookRoute: typeof ApiPublicMercadopagoWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -444,6 +458,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPainelTemplatesRouteImport
       parentRoute: typeof AuthenticatedPainelRoute
     }
+    '/api/public/mercadopago-webhook': {
+      id: '/api/public/mercadopago-webhook'
+      path: '/api/public/mercadopago-webhook'
+      fullPath: '/api/public/mercadopago-webhook'
+      preLoaderRoute: typeof ApiPublicMercadopagoWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -504,6 +525,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   AgendarSlugRoute: AgendarSlugRoute,
+  ApiPublicMercadopagoWebhookRoute: ApiPublicMercadopagoWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

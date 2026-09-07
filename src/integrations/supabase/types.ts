@@ -212,6 +212,78 @@ export type Database = {
           },
         ]
       }
+      deposit_payments: {
+        Row: {
+          amount_cents: number
+          appointment_id: string | null
+          business_id: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          paid_at: string | null
+          payer_name: string | null
+          payer_phone: string | null
+          provider: string
+          provider_payment_id: string | null
+          qr_code: string | null
+          qr_code_base64: string | null
+          status: string
+          ticket_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount_cents?: number
+          appointment_id?: string | null
+          business_id: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          paid_at?: string | null
+          payer_name?: string | null
+          payer_phone?: string | null
+          provider?: string
+          provider_payment_id?: string | null
+          qr_code?: string | null
+          qr_code_base64?: string | null
+          status?: string
+          ticket_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          appointment_id?: string | null
+          business_id?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          paid_at?: string | null
+          payer_name?: string | null
+          payer_phone?: string | null
+          provider?: string
+          provider_payment_id?: string | null
+          qr_code?: string | null
+          qr_code_base64?: string | null
+          status?: string
+          ticket_url?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deposit_payments_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deposit_payments_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       professionals: {
         Row: {
           active: boolean
