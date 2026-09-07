@@ -141,6 +141,7 @@ export type Database = {
           brand_background: string | null
           brand_primary: string | null
           category: string
+          confirmation_template: string | null
           created_at: string
           id: string
           logo_url: string | null
@@ -163,6 +164,7 @@ export type Database = {
           brand_background?: string | null
           brand_primary?: string | null
           category?: string
+          confirmation_template?: string | null
           created_at?: string
           id?: string
           logo_url?: string | null
@@ -185,6 +187,7 @@ export type Database = {
           brand_background?: string | null
           brand_primary?: string | null
           category?: string
+          confirmation_template?: string | null
           created_at?: string
           id?: string
           logo_url?: string | null

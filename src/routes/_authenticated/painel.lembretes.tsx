@@ -26,7 +26,10 @@ export const Route = createFileRoute("/_authenticated/painel/lembretes")({
 });
 
 const DEFAULT_TEMPLATE =
-  "Olá {nome}! Lembrete do seu horário de {servico} amanhã/às {hora} em {negocio}. Qualquer imprevisto, avisa a gente! 😊";
+  "Olá {nome}! Lembrete: seu horário de {servico} em {negocio} é {data} às {hora}. Qualquer imprevisto, avisa a gente! 😊";
+
+const DEFAULT_CONFIRMATION =
+  "Olá, {nome}! Seu sinal foi recebido e seu horário de {servico} está confirmado para {data} às {hora} em {negocio}. Até lá! ✅";
 
 function buildMessage(template: string, vars: Record<string, string>) {
   return template.replace(/\{(nome|servico|hora|data|negocio)\}/g, (_, k) => vars[k] ?? "");
@@ -42,6 +45,7 @@ function LembretesPage() {
   const { business, businessId } = useBusiness();
   const queryClient = useQueryClient();
   const [template, setTemplate] = useState<string | null>(null);
+  const [confirmTemplate, setConfirmTemplate] = useState<string | null>(null);
   const [hours, setHours] = useState<number | null>(null);
 
   const config = useQuery({
@@ -50,7 +54,9 @@ function LembretesPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("businesses")
-        .select("reminder_enabled, reminder_hours_before, reminder_template")
+        .select(
+          "reminder_enabled, reminder_hours_before, reminder_template, confirmation_template, whatsapp_status",
+        )
         .eq("id", businessId!)
         .single();
       if (error) throw error;
@@ -61,6 +67,9 @@ function LembretesPage() {
   const enabled = config.data?.reminder_enabled ?? false;
   const hoursBefore = hours ?? config.data?.reminder_hours_before ?? 24;
   const messageTemplate = template ?? config.data?.reminder_template ?? DEFAULT_TEMPLATE;
+  const confirmationTemplate =
+    confirmTemplate ?? config.data?.confirmation_template ?? DEFAULT_CONFIRMATION;
+  const whatsappConnected = config.data?.whatsapp_status === "conectado";
 
   const upcoming = useQuery({
     queryKey: ["reminder-upcoming", businessId, hoursBefore],
@@ -91,7 +100,10 @@ function LembretesPage() {
       return (appts ?? []).map((a) => ({
         ...a,
         serviceName: (services ?? []).find((s) => s.id === a.service_id)?.name ?? "Serviço",
-        reminder: (logs ?? []).find((l) => l.appointment_id === a.id) ?? null,
+        reminder:
+          (logs ?? []).find(
+            (l) => l.appointment_id === a.id && l.status === "enviado",
+          ) ?? null,
       }));
     },
     refetchInterval: 60_000,
@@ -102,7 +114,8 @@ function LembretesPage() {
       patch:
         | { reminder_enabled: boolean }
         | { reminder_hours_before: number }
-        | { reminder_template: string },
+        | { reminder_template: string }
+        | { confirmation_template: string },
     ) => {
       const { error } = await supabase.from("businesses").update(patch).eq("id", businessId!);
       if (error) throw error;
@@ -151,18 +164,51 @@ function LembretesPage() {
   return (
     <div>
       <PageHeader
-        title="Lembretes"
-        subtitle="Avise os clientes no WhatsApp antes do horário e reduza as faltas."
+        title="Mensagens automáticas"
+        subtitle="Confirmação ao pagar o sinal e lembrete antes do horário — enviadas sozinhas pelo WhatsApp conectado."
       />
 
       <div className="rounded-xl border border-border bg-card p-4">
+        <div className="flex items-center gap-3">
+          <MessageCircle className="size-5 text-primary" />
+          <div>
+            <p className="font-semibold">Mensagem 1 — Confirmação do agendamento</p>
+            <p className="text-xs text-muted-foreground">
+              Enviada automaticamente assim que o cliente paga o sinal Pix.
+            </p>
+          </div>
+        </div>
+        <div className="mt-3">
+          <Label htmlFor="tpl-confirm">Texto da confirmação</Label>
+          <Textarea
+            id="tpl-confirm"
+            className="mt-1 min-h-20"
+            value={confirmationTemplate}
+            onChange={(e) => setConfirmTemplate(e.target.value)}
+            onBlur={() => {
+              const v = confirmationTemplate.trim() || DEFAULT_CONFIRMATION;
+              setConfirmTemplate(v);
+              if (v !== config.data?.confirmation_template)
+                saveConfig.mutate({ confirmation_template: v });
+            }}
+          />
+          <p className="mt-1 text-xs text-muted-foreground">
+            Use {"{nome}"}, {"{servico}"}, {"{data}"}, {"{hora}"} e {"{negocio}"} — são
+            substituídos automaticamente.
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-4 rounded-xl border border-border bg-card p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <BellRing className="size-5 text-primary" />
             <div>
-              <p className="font-semibold">Lembretes ativados</p>
+              <p className="font-semibold">Mensagem 2 — Lembrete do horário</p>
               <p className="text-xs text-muted-foreground">
-                Lista quem deve ser avisado e envia com 1 clique — sem custo por mensagem.
+                {whatsappConnected
+                  ? "Enviada automaticamente na antecedência que você definir."
+                  : "Conecte o WhatsApp na página WhatsApp para o envio automático funcionar."}
               </p>
             </div>
           </div>
@@ -262,8 +308,8 @@ function LembretesPage() {
       {!enabled && (
         <div className="mt-6 flex items-center gap-3 rounded-xl border border-dashed border-border p-5 text-sm text-muted-foreground">
           <MessageCircle className="size-5 shrink-0 text-primary" />
-          Ative acima para ver aqui a lista de clientes que devem ser lembrados. O botão abre o
-          WhatsApp com a mensagem pronta — você só confirma o envio.
+          Ative o lembrete acima para os clientes receberem o aviso automaticamente no WhatsApp,
+          na antecedência que você definir. A lista de quem será lembrado aparece aqui.
         </div>
       )}
     </div>
