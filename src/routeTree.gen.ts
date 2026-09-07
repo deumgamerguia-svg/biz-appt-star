@@ -32,6 +32,7 @@ import { Route as AuthenticatedPainelProfissionaisRouteImport } from './routes/_
 import { Route as AuthenticatedPainelRelatorioRouteImport } from './routes/_authenticated/painel.relatorio'
 import { Route as AuthenticatedPainelServicosRouteImport } from './routes/_authenticated/painel.servicos'
 import { Route as AuthenticatedPainelTemplatesRouteImport } from './routes/_authenticated/painel.templates'
+import { Route as AuthenticatedPainelWhatsappRouteImport } from './routes/_authenticated/painel.whatsapp'
 import { Route as ApiPublicMercadopagoWebhookRouteImport } from './routes/api/public/mercadopago-webhook'
 
 const IndexRoute = IndexRouteImport.update({
@@ -165,6 +166,12 @@ const AuthenticatedPainelTemplatesRoute =
     path: '/templates',
     getParentRoute: () => AuthenticatedPainelRoute,
   } as any)
+const AuthenticatedPainelWhatsappRoute =
+  AuthenticatedPainelWhatsappRouteImport.update({
+    id: '/whatsapp',
+    path: '/whatsapp',
+    getParentRoute: () => AuthenticatedPainelRoute,
+  } as any)
 const ApiPublicMercadopagoWebhookRoute =
   ApiPublicMercadopagoWebhookRouteImport.update({
     id: '/api/public/mercadopago-webhook',
@@ -194,6 +201,7 @@ export interface FileRoutesByFullPath {
   '/painel/relatorio': typeof AuthenticatedPainelRelatorioRoute
   '/painel/servicos': typeof AuthenticatedPainelServicosRoute
   '/painel/templates': typeof AuthenticatedPainelTemplatesRoute
+  '/painel/whatsapp': typeof AuthenticatedPainelWhatsappRoute
   '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
   '/painel/': typeof AuthenticatedPainelIndexRoute
 }
@@ -218,6 +226,7 @@ export interface FileRoutesByTo {
   '/painel/relatorio': typeof AuthenticatedPainelRelatorioRoute
   '/painel/servicos': typeof AuthenticatedPainelServicosRoute
   '/painel/templates': typeof AuthenticatedPainelTemplatesRoute
+  '/painel/whatsapp': typeof AuthenticatedPainelWhatsappRoute
   '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
   '/painel': typeof AuthenticatedPainelIndexRoute
 }
@@ -245,6 +254,7 @@ export interface FileRoutesById {
   '/_authenticated/painel/relatorio': typeof AuthenticatedPainelRelatorioRoute
   '/_authenticated/painel/servicos': typeof AuthenticatedPainelServicosRoute
   '/_authenticated/painel/templates': typeof AuthenticatedPainelTemplatesRoute
+  '/_authenticated/painel/whatsapp': typeof AuthenticatedPainelWhatsappRoute
   '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
   '/_authenticated/painel/': typeof AuthenticatedPainelIndexRoute
 }
@@ -272,6 +282,7 @@ export interface FileRouteTypes {
     | '/painel/relatorio'
     | '/painel/servicos'
     | '/painel/templates'
+    | '/painel/whatsapp'
     | '/api/public/mercadopago-webhook'
     | '/painel/'
   fileRoutesByTo: FileRoutesByTo
@@ -296,6 +307,7 @@ export interface FileRouteTypes {
     | '/painel/relatorio'
     | '/painel/servicos'
     | '/painel/templates'
+    | '/painel/whatsapp'
     | '/api/public/mercadopago-webhook'
     | '/painel'
   id:
@@ -322,6 +334,7 @@ export interface FileRouteTypes {
     | '/_authenticated/painel/relatorio'
     | '/_authenticated/painel/servicos'
     | '/_authenticated/painel/templates'
+    | '/_authenticated/painel/whatsapp'
     | '/api/public/mercadopago-webhook'
     | '/_authenticated/painel/'
   fileRoutesById: FileRoutesById
@@ -497,6 +510,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPainelTemplatesRouteImport
       parentRoute: typeof AuthenticatedPainelRoute
     }
+    '/_authenticated/painel/whatsapp': {
+      id: '/_authenticated/painel/whatsapp'
+      path: '/whatsapp'
+      fullPath: '/painel/whatsapp'
+      preLoaderRoute: typeof AuthenticatedPainelWhatsappRouteImport
+      parentRoute: typeof AuthenticatedPainelRoute
+    }
     '/api/public/mercadopago-webhook': {
       id: '/api/public/mercadopago-webhook'
       path: '/api/public/mercadopago-webhook'
@@ -524,6 +544,7 @@ interface AuthenticatedPainelRouteChildren {
   AuthenticatedPainelRelatorioRoute: typeof AuthenticatedPainelRelatorioRoute
   AuthenticatedPainelServicosRoute: typeof AuthenticatedPainelServicosRoute
   AuthenticatedPainelTemplatesRoute: typeof AuthenticatedPainelTemplatesRoute
+  AuthenticatedPainelWhatsappRoute: typeof AuthenticatedPainelWhatsappRoute
   AuthenticatedPainelIndexRoute: typeof AuthenticatedPainelIndexRoute
 }
 
@@ -544,6 +565,7 @@ const AuthenticatedPainelRouteChildren: AuthenticatedPainelRouteChildren = {
   AuthenticatedPainelRelatorioRoute: AuthenticatedPainelRelatorioRoute,
   AuthenticatedPainelServicosRoute: AuthenticatedPainelServicosRoute,
   AuthenticatedPainelTemplatesRoute: AuthenticatedPainelTemplatesRoute,
+  AuthenticatedPainelWhatsappRoute: AuthenticatedPainelWhatsappRoute,
   AuthenticatedPainelIndexRoute: AuthenticatedPainelIndexRoute,
 }
 

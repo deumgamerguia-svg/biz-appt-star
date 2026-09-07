@@ -62,6 +62,7 @@ const nav = [
   { to: "/painel/templates", label: "Templates", icon: MessageSquareText },
   { to: "/painel/pagamentos", label: "Pagamentos", icon: DollarSign },
   { to: "/painel/lembretes", label: "Lembretes", icon: BellRing },
+  { to: "/painel/whatsapp", label: "WhatsApp", icon: MessageCircle },
   { to: "/painel/bloqueios", label: "Horários Bloqueados", icon: CircleX },
   { to: "/painel/funcionamento", label: "Funcionamento", icon: CalendarCheck },
   { to: "/painel/profissionais", label: "Profissionais", icon: UserRound },
@@ -163,9 +164,7 @@ function PainelLayout() {
           >
             <Menu className="size-5" />
           </Button>
-          <div className="flex flex-1 items-center justify-center rounded-md border border-success/60 px-4 py-2 text-sm font-medium text-success">
-            <MessageCircle className="mr-2 size-4" /> WHATSAPP CONECTADO
-          </div>
+          <WhatsappBadge />
           <Button variant="ghost" size="icon" className="shrink-0" aria-label="Notificações">
             <Bell className="size-5" />
           </Button>
