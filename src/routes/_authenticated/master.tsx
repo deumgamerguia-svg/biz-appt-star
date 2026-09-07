@@ -241,6 +241,7 @@ function MasterPage() {
               <th className="px-4 py-3">Mês atual</th>
               <th className="px-4 py-3">Situação</th>
               <th className="px-4 py-3">Link do cliente</th>
+              <th className="px-4 py-3">Acesso do dono</th>
               <th className="px-4 py-3" />
             </tr>
           </thead>
@@ -340,6 +341,21 @@ function MasterPage() {
                     >
                       /agendar/{b.slug} <ExternalLink className="size-3" />
                     </a>
+                  </td>
+                  <td className="px-4 py-3">
+                    <a
+                      href="/auth"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 text-primary hover:underline"
+                    >
+                      /auth <ExternalLink className="size-3" />
+                    </a>
+                    {b.phone && (
+                      <span className="block text-xs text-muted-foreground">
+                        Tel: {formatPhone(b.phone)}
+                      </span>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <Button
