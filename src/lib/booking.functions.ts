@@ -151,10 +151,11 @@ export const getOpenDays = createServerFn({ method: "POST" })
     const db = await admin();
     const { data: business } = await db
       .from("businesses")
-      .select("id")
+      .select("id, status")
       .eq("slug", data.slug)
       .maybeSingle();
-    if (!business) return { days: [] as { date: string; weekday: number }[] };
+    if (!business || business.status === "suspenso")
+      return { days: [] as { date: string; weekday: number }[] };
     const { data: hours } = await db
       .from("business_hours")
       .select("weekday")
