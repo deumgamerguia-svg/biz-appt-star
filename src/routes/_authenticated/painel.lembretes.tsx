@@ -161,18 +161,51 @@ function LembretesPage() {
   return (
     <div>
       <PageHeader
-        title="Lembretes"
-        subtitle="Avise os clientes no WhatsApp antes do horário e reduza as faltas."
+        title="Mensagens automáticas"
+        subtitle="Confirmação ao pagar o sinal e lembrete antes do horário — enviadas sozinhas pelo WhatsApp conectado."
       />
 
       <div className="rounded-xl border border-border bg-card p-4">
+        <div className="flex items-center gap-3">
+          <MessageCircle className="size-5 text-primary" />
+          <div>
+            <p className="font-semibold">Mensagem 1 — Confirmação do agendamento</p>
+            <p className="text-xs text-muted-foreground">
+              Enviada automaticamente assim que o cliente paga o sinal Pix.
+            </p>
+          </div>
+        </div>
+        <div className="mt-3">
+          <Label htmlFor="tpl-confirm">Texto da confirmação</Label>
+          <Textarea
+            id="tpl-confirm"
+            className="mt-1 min-h-20"
+            value={confirmationTemplate}
+            onChange={(e) => setConfirmTemplate(e.target.value)}
+            onBlur={() => {
+              const v = confirmationTemplate.trim() || DEFAULT_CONFIRMATION;
+              setConfirmTemplate(v);
+              if (v !== config.data?.confirmation_template)
+                saveConfig.mutate({ confirmation_template: v });
+            }}
+          />
+          <p className="mt-1 text-xs text-muted-foreground">
+            Use {"{nome}"}, {"{servico}"}, {"{data}"}, {"{hora}"} e {"{negocio}"} — são
+            substituídos automaticamente.
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-4 rounded-xl border border-border bg-card p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <BellRing className="size-5 text-primary" />
             <div>
-              <p className="font-semibold">Lembretes ativados</p>
+              <p className="font-semibold">Mensagem 2 — Lembrete do horário</p>
               <p className="text-xs text-muted-foreground">
-                Lista quem deve ser avisado e envia com 1 clique — sem custo por mensagem.
+                {whatsappConnected
+                  ? "Enviada automaticamente na antecedência que você definir."
+                  : "Conecte o WhatsApp na página WhatsApp para o envio automático funcionar."}
               </p>
             </div>
           </div>
