@@ -26,7 +26,10 @@ export const Route = createFileRoute("/_authenticated/painel/lembretes")({
 });
 
 const DEFAULT_TEMPLATE =
-  "Olá {nome}! Lembrete do seu horário de {servico} amanhã/às {hora} em {negocio}. Qualquer imprevisto, avisa a gente! 😊";
+  "Olá {nome}! Lembrete: seu horário de {servico} em {negocio} é {data} às {hora}. Qualquer imprevisto, avisa a gente! 😊";
+
+const DEFAULT_CONFIRMATION =
+  "Olá, {nome}! Seu sinal foi recebido e seu horário de {servico} está confirmado para {data} às {hora} em {negocio}. Até lá! ✅";
 
 function buildMessage(template: string, vars: Record<string, string>) {
   return template.replace(/\{(nome|servico|hora|data|negocio)\}/g, (_, k) => vars[k] ?? "");
@@ -42,6 +45,7 @@ function LembretesPage() {
   const { business, businessId } = useBusiness();
   const queryClient = useQueryClient();
   const [template, setTemplate] = useState<string | null>(null);
+  const [confirmTemplate, setConfirmTemplate] = useState<string | null>(null);
   const [hours, setHours] = useState<number | null>(null);
 
   const config = useQuery({
@@ -50,7 +54,9 @@ function LembretesPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("businesses")
-        .select("reminder_enabled, reminder_hours_before, reminder_template")
+        .select(
+          "reminder_enabled, reminder_hours_before, reminder_template, confirmation_template, whatsapp_status",
+        )
         .eq("id", businessId!)
         .single();
       if (error) throw error;
@@ -61,6 +67,9 @@ function LembretesPage() {
   const enabled = config.data?.reminder_enabled ?? false;
   const hoursBefore = hours ?? config.data?.reminder_hours_before ?? 24;
   const messageTemplate = template ?? config.data?.reminder_template ?? DEFAULT_TEMPLATE;
+  const confirmationTemplate =
+    confirmTemplate ?? config.data?.confirmation_template ?? DEFAULT_CONFIRMATION;
+  const whatsappConnected = config.data?.whatsapp_status === "conectado";
 
   const upcoming = useQuery({
     queryKey: ["reminder-upcoming", businessId, hoursBefore],
@@ -102,7 +111,8 @@ function LembretesPage() {
       patch:
         | { reminder_enabled: boolean }
         | { reminder_hours_before: number }
-        | { reminder_template: string },
+        | { reminder_template: string }
+        | { confirmation_template: string },
     ) => {
       const { error } = await supabase.from("businesses").update(patch).eq("id", businessId!);
       if (error) throw error;
