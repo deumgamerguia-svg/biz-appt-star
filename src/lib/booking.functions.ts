@@ -364,11 +364,21 @@ export const getDepositStatus = createServerFn({ method: "POST" })
     const db = await admin();
     const { data: charge } = await db
       .from("deposit_payments")
-      .select("id, status, provider_payment_id, appointment_id")
+      .select("id, status, provider_payment_id, appointment_id, expires_at")
       .eq("id", data.chargeId)
       .maybeSingle();
     if (!charge) throw new Error("Cobrança não encontrada.");
     if (charge.status === "pago") return { status: "pago" as const };
+    if (charge.status !== "pendente") return { status: "expirado" as const };
+
+    const expire = async () => {
+      await db.from("deposit_payments").update({ status: "expirado" }).eq("id", charge.id);
+      if (charge.appointment_id)
+        await db
+          .from("appointments")
+          .update({ status: "cancelado" })
+          .eq("id", charge.appointment_id);
+    };
 
     if (charge.provider_payment_id) {
       const { fetchPaymentStatus } = await import("./mercadopago.server");
@@ -387,11 +397,14 @@ export const getDepositStatus = createServerFn({ method: "POST" })
         return { status: "pago" as const };
       }
       if (["cancelled", "rejected", "expired"].includes(status)) {
-        await db.from("deposit_payments").update({ status: "expirado" }).eq("id", charge.id);
-        if (charge.appointment_id)
-          await db.from("appointments").delete().eq("id", charge.appointment_id);
+        await expire();
         return { status: "expirado" as const };
       }
     }
+    if (charge.expires_at && new Date(charge.expires_at).getTime() < Date.now()) {
+      await expire();
+      return { status: "expirado" as const };
+    }
+
     return { status: "pendente" as const };
   });
