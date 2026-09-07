@@ -155,6 +155,8 @@ export type Database = {
           slug: string
           status: string
           updated_at: string
+          whatsapp_instance: string | null
+          whatsapp_status: string
         }
         Insert: {
           address?: string | null
@@ -175,6 +177,8 @@ export type Database = {
           slug: string
           status?: string
           updated_at?: string
+          whatsapp_instance?: string | null
+          whatsapp_status?: string
         }
         Update: {
           address?: string | null
@@ -195,6 +199,8 @@ export type Database = {
           slug?: string
           status?: string
           updated_at?: string
+          whatsapp_instance?: string | null
+          whatsapp_status?: string
         }
         Relationships: []
       }
