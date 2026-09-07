@@ -28,16 +28,29 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
+const onlyDigits = (value: string) => value.replace(/\D/g, "");
+
+const formatPhone = (value: string) => {
+  const d = onlyDigits(value).slice(0, 11);
+  if (d.length <= 2) return d;
+  if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+  if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+  return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+};
+
+// Credencial interna derivada do telefone + senha do estabelecimento.
+const phoneLogin = (phone: string) => `${onlyDigits(phone)}@agenda.local`;
+const phonePassword = (senha: string) => `agendae:${senha}`;
+
 function AuthPage() {
   const { modo } = Route.useSearch();
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const [isSignup, setIsSignup] = useState(modo === "cadastro");
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
-  const [sent, setSent] = useState(false);
 
   useEffect(() => {
     if (!loading && user) void navigate({ to: "/painel" });
@@ -45,25 +58,32 @@ function AuthPage() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    const digits = onlyDigits(phone);
+    if (digits.length < 10) {
+      toast.error("Informe o telefone com DDD.");
+      return;
+    }
     setBusy(true);
     try {
       if (isSignup) {
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: window.location.origin,
-            data: { full_name: name },
-          },
+        const { error } = await supabase.auth.signUp({
+          email: phoneLogin(phone),
+          password: phonePassword(password),
+          options: { data: { full_name: name, phone: digits } },
         });
         if (error) throw error;
-        if (!data.session) {
-          setSent(true);
-          toast.success("Cadastro criado! Confirme o e-mail para entrar.");
-        }
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: phoneLogin(phone),
+          password: phonePassword(password),
+        });
+        if (signInError) throw signInError;
+        toast.success("Conta criada!");
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        const { error } = await supabase.auth.signInWithPassword({
+          email: phoneLogin(phone),
+          password: phonePassword(password),
+        });
+        if (error) throw new Error("Telefone ou senha incorretos.");
         toast.success("Bem-vindo de volta!");
       }
     } catch (error) {
@@ -73,9 +93,6 @@ function AuthPage() {
     }
   };
 
-
-
-
   return (
     <div className="flex min-h-screen items-center justify-center hero-wash px-6 py-12">
       <div className="w-full max-w-md">
@@ -84,60 +101,58 @@ function AuthPage() {
         </Link>
 
         <div className="surface p-7">
-          <h1 className="text-2xl font-bold">{isSignup ? "Criar sua conta" : "Entrar"}</h1>
+          <h1 className="text-2xl font-bold">{isSignup ? "Criar sua conta" : "Faça seu login"}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {isSignup
               ? "Cadastre seu negócio e comece a receber agendamentos."
-              : "Acesse o painel do seu negócio."}
+              : "Acesse o painel do seu negócio com telefone e senha."}
           </p>
 
-          {sent ? (
-            <p className="mt-6 rounded-lg bg-accent p-4 text-sm text-accent-foreground">
-              Enviamos um e-mail de confirmação para <strong>{email}</strong>. Clique no link para
-              ativar sua conta e depois faça login.
-            </p>
-          ) : (
-            <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-              {isSignup && (
-                <div className="space-y-2">
-                  <Label htmlFor="name">Seu nome</Label>
-                  <Input
-                    id="name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Ex.: João da Silva"
-                    required
-                  />
-                </div>
-              )}
+          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+            {isSignup && (
               <div className="space-y-2">
-                <Label htmlFor="email">E-mail</Label>
+                <Label htmlFor="name">Seu nome</Label>
                 <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="voce@empresa.com"
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Ex.: João da Silva"
                   required
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Senha</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Mínimo de 6 caracteres"
-                  minLength={6}
-                  required
-                />
-              </div>
-              <Button type="submit" className="w-full" disabled={busy}>
-                {busy ? "Aguarde..." : isSignup ? "Criar conta" : "Entrar"}
-              </Button>
-            </form>
-          )}
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="phone">Telefone</Label>
+              <Input
+                id="phone"
+                type="tel"
+                inputMode="numeric"
+                autoComplete="tel"
+                value={phone}
+                onChange={(e) => setPhone(formatPhone(e.target.value))}
+                placeholder="(11) 93935-4416"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Senha</Label>
+              <Input
+                id="password"
+                type="password"
+                inputMode="numeric"
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Ex.: 1237"
+                minLength={4}
+                required
+              />
+            </div>
+            <Button type="submit" className="w-full" disabled={busy}>
+              {busy ? "Aguarde..." : isSignup ? "Criar conta" : "Entrar"}
+            </Button>
+          </form>
+
 
 
 
@@ -148,7 +163,7 @@ function AuthPage() {
               type="button"
               className="font-semibold text-primary hover:underline"
               onClick={() => {
-                setSent(false);
+                
                 setIsSignup((v) => !v);
               }}
             >
