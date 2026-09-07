@@ -65,6 +65,11 @@ function MasterPage() {
   const claimFn = useServerFn(claimMaster);
   const createFn = useServerFn(createBusinessWithOwner);
   const deleteFn = useServerFn(deleteBusiness);
+  const metricsFn = useServerFn(getPlatformMetrics);
+  const statusUpdateFn = useServerFn(setBusinessStatus);
+  const feeFn = useServerFn(setMonthlyFee);
+  const chargeFn = useServerFn(registerSubscriptionCharge);
+  const currentMonth = new Date().toISOString().slice(0, 7);
 
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(emptyForm);
