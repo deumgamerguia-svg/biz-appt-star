@@ -62,7 +62,9 @@ export const listAllBusinesses = createServerFn({ method: "GET" })
     const supabaseAdmin = await assertSuperAdmin(context.userId);
     const { data, error } = await supabaseAdmin
       .from("businesses")
-      .select("id, name, slug, category, phone, owner_id, created_at")
+      .select(
+        "id, name, slug, category, phone, owner_id, created_at, status, monthly_fee_cents",
+      )
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     const businesses = data ?? [];
@@ -77,16 +79,26 @@ export const listAllBusinesses = createServerFn({ method: "GET" })
       counts.set(a.business_id, (counts.get(a.business_id) ?? 0) + 1);
     }
 
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    const { data: payments } = await supabaseAdmin
+      .from("subscription_payments")
+      .select("business_id, status, reference_month");
+
     return businesses.map((b) => {
       const owner = (owners ?? []).find((o) => o.id === b.owner_id);
+      const monthPayment = (payments ?? []).find(
+        (p) => p.business_id === b.id && p.reference_month.slice(0, 7) === currentMonth,
+      );
       return {
         ...b,
         owner_name: owner?.full_name ?? null,
         owner_login: owner?.email ?? null,
         appointments: counts.get(b.id) ?? 0,
+        current_month_status: monthPayment?.status ?? "pendente",
       };
     });
   });
+
 
 const createInput = z.object({
   businessName: z.string().min(2),
