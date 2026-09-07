@@ -112,18 +112,48 @@ function ClientesPage() {
     c.name.toLowerCase().includes(term.toLowerCase()),
   );
 
+  const exportCsv = () => {
+    const rows = filtered.map((c) => [
+      c.name,
+      c.phone ?? "",
+      c.email ?? "",
+      lastVisit[c.id] ? new Date(lastVisit[c.id]!).toLocaleDateString("pt-BR") : "",
+      (c.notes ?? "").replace(/\s+/g, " "),
+    ]);
+    const escape = (v: string) => `"${v.replace(/"/g, '""')}"`;
+    const csv = [
+      ["Nome", "Telefone", "E-mail", "Último atendimento", "Observações"],
+      ...rows,
+    ]
+      .map((r) => r.map((cell) => escape(String(cell))).join(";"))
+      .join("\n");
+    const blob = new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `clientes-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Lista de clientes exportada");
+  };
+
   return (
     <div>
       <PageHeader
         title="Clientes"
         subtitle="Histórico e contato de quem atende com você."
         action={
+          <div className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={exportCsv} disabled={!filtered.length}>
+            <Download className="size-4" /> Exportar
+          </Button>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="size-4" /> Novo cliente
               </Button>
             </DialogTrigger>
+
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Novo cliente</DialogTitle>
