@@ -8,9 +8,9 @@ import { PageHeader, NoBusiness, EmptyList } from "@/components/painel/PageHeade
 export const Route = createFileRoute("/_authenticated/painel/pagamentos")({
   head: () => ({
     meta: [
-      { title: "Pagamentos — Agendaê" },
+      { title: "Pagamentos — Agenda Aí" },
       { name: "description", content: "Meses em que a assinatura da agenda foi paga." },
-      { property: "og:title", content: "Pagamentos — Agendaê" },
+      { property: "og:title", content: "Pagamentos — Agenda Aí" },
       { property: "og:description", content: "Histórico de pagamentos da assinatura." },
     ],
   }),

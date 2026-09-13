@@ -29,9 +29,9 @@ import {
 export const Route = createFileRoute("/_authenticated/painel/negocios")({
   head: () => ({
     meta: [
-      { title: "Negócios — Agendaê" },
+      { title: "Negócios — Agenda Aí" },
       { name: "description", content: "Cadastre e gerencie as unidades do seu negócio." },
-      { property: "og:title", content: "Negócios — Agendaê" },
+      { property: "og:title", content: "Negócios — Agenda Aí" },
       { property: "og:description", content: "Cadastre e gerencie as unidades do seu negócio." },
     ],
   }),

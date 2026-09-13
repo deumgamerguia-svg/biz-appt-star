@@ -22,9 +22,9 @@ import {
 export const Route = createFileRoute("/_authenticated/painel/profissionais")({
   head: () => ({
     meta: [
-      { title: "Profissionais — Agendaê" },
+      { title: "Profissionais — Agenda Aí" },
       { name: "description", content: "Gerencie a equipe que atende no seu negócio." },
-      { property: "og:title", content: "Profissionais — Agendaê" },
+      { property: "og:title", content: "Profissionais — Agenda Aí" },
       { property: "og:description", content: "Gerencie a equipe que atende no seu negócio." },
     ],
   }),

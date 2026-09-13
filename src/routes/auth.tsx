@@ -16,12 +16,12 @@ export const Route = createFileRoute("/auth")({
   }),
   head: () => ({
     meta: [
-      { title: "Entrar no Agendaê — painel de agendamentos" },
+      { title: "Entrar no Agenda Aí — painel de agendamentos" },
       {
         name: "description",
         content: "Acesse o painel do seu negócio para gerenciar agenda, serviços e clientes.",
       },
-      { property: "og:title", content: "Entrar no Agendaê" },
+      { property: "og:title", content: "Entrar no Agenda Aí" },
       { property: "og:description", content: "Acesse o painel de agendamentos do seu negócio." },
     ],
   }),

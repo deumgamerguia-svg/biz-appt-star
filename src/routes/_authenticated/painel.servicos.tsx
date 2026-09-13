@@ -23,9 +23,9 @@ import {
 export const Route = createFileRoute("/_authenticated/painel/servicos")({
   head: () => ({
     meta: [
-      { title: "Serviços — Agendaê" },
+      { title: "Serviços — Agenda Aí" },
       { name: "description", content: "Cadastre serviços com duração e preço." },
-      { property: "og:title", content: "Serviços — Agendaê" },
+      { property: "og:title", content: "Serviços — Agenda Aí" },
       { property: "og:description", content: "Cadastre serviços com duração e preço." },
     ],
   }),

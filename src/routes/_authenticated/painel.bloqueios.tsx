@@ -30,9 +30,9 @@ import {
 export const Route = createFileRoute("/_authenticated/painel/bloqueios")({
   head: () => ({
     meta: [
-      { title: "Horários bloqueados — Agendaê" },
+      { title: "Horários bloqueados — Agenda Aí" },
       { name: "description", content: "Bloqueie horários recorrentes ou de uma data específica." },
-      { property: "og:title", content: "Horários bloqueados — Agendaê" },
+      { property: "og:title", content: "Horários bloqueados — Agenda Aí" },
       { property: "og:description", content: "Bloqueios recorrentes e específicos." },
     ],
   }),

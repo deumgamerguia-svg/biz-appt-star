@@ -224,7 +224,7 @@ function PublicBooking() {
     >
       <header className="bg-sidebar px-4 py-3">
         <span className="font-display text-sm font-extrabold uppercase tracking-[0.18em] text-primary">
-          Agenda Serviço
+          Agenda Aí
         </span>
       </header>
 
