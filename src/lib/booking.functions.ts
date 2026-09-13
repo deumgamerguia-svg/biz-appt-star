@@ -271,7 +271,7 @@ export const generateDepositPix = createServerFn({ method: "POST" })
       amountCents: charge.amount_cents,
       description: "Sinal do agendamento",
       payerName: charge.payer_name ?? "Cliente",
-      payerEmail: `sinal+${charge.id}@agendae.app`,
+      payerEmail: `sinal+${charge.id}@agendaai.app`,
       externalReference: charge.id,
       expiresInMinutes: 5,
     });
