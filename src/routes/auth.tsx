@@ -110,7 +110,7 @@ function AuthPage() {
     <div className="flex min-h-screen items-center justify-center hero-wash px-6 py-12">
       <div className="w-full max-w-md">
         <Link to="/" className="mb-6 block text-center font-display text-2xl font-extrabold">
-          Agenda<span className="text-primary">ê</span>
+          Agenda<span className="text-primary">Agora</span>
         </Link>
 
         <div className="surface p-7">
