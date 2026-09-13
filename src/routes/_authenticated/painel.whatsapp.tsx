@@ -18,9 +18,9 @@ import {
 export const Route = createFileRoute("/_authenticated/painel/whatsapp")({
   head: () => ({
     meta: [
-      { title: "WhatsApp — Agenda Agora�" },
+      { title: "WhatsApp — Agenda Agora" },
       { name: "description", content: "Conecte o WhatsApp do negócio via QR Code." },
-      { property: "og:title", content: "WhatsApp — Agenda Agora�" },
+      { property: "og:title", content: "WhatsApp — Agenda Agora" },
       { property: "og:description", content: "Conecte o WhatsApp do negócio via QR Code." },
     ],
   }),

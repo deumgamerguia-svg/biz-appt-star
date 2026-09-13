@@ -19,9 +19,9 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/_authenticated/painel/relatorio")({
   head: () => ({
     meta: [
-      { title: "Relatório — Agenda Agora�" },
+      { title: "Relatório — Agenda Agora" },
       { name: "description", content: "Desempenho de atendimentos, faturamento e ocupação." },
-      { property: "og:title", content: "Relatório — Agenda Agora�" },
+      { property: "og:title", content: "Relatório — Agenda Agora" },
       { property: "og:description", content: "Desempenho e faturamento do negócio." },
     ],
   }),

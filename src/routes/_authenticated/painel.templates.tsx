@@ -5,9 +5,9 @@ import { SoonPage } from "@/components/painel/Soon";
 export const Route = createFileRoute("/_authenticated/painel/templates")({
   head: () => ({
     meta: [
-      { title: "Templates — Agenda Agora�" },
+      { title: "Templates — Agenda Agora" },
       { name: "description", content: "Mensagens automáticas de confirmação e lembrete." },
-      { property: "og:title", content: "Templates — Agenda Agora�" },
+      { property: "og:title", content: "Templates — Agenda Agora" },
       { property: "og:description", content: "Mensagens automáticas para clientes." },
     ],
   }),
