@@ -48,7 +48,7 @@ function Home() {
     <div className="min-h-screen hero-wash">
       <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-6">
         <span className="font-display text-xl font-extrabold tracking-tight">
-          Agenda<span className="text-primary">ê</span>
+          Agenda<span className="text-primary"> Aí</span>
         </span>
         <nav className="flex items-center gap-2">
           {!loading && user ? (
