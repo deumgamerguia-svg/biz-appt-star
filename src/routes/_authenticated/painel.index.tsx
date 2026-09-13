@@ -36,9 +36,9 @@ import {
 export const Route = createFileRoute("/_authenticated/painel/")({
   head: () => ({
     meta: [
-      { title: "Agenda do dia — Agenda Aí" },
+      { title: "Agenda do dia — Agenda Agora�" },
       { name: "description", content: "Veja e gerencie os agendamentos do dia do seu negócio." },
-      { property: "og:title", content: "Agenda do dia — Agenda Aí" },
+      { property: "og:title", content: "Agenda do dia — Agenda Agora�" },
       { property: "og:description", content: "Veja e gerencie os agendamentos do dia." },
     ],
   }),

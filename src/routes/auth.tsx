@@ -16,12 +16,12 @@ export const Route = createFileRoute("/auth")({
   }),
   head: () => ({
     meta: [
-      { title: "Entrar no Agenda Aí — painel de agendamentos" },
+      { title: "Entrar no Agenda Agora� — painel de agendamentos" },
       {
         name: "description",
         content: "Acesse o painel do seu negócio para gerenciar agenda, serviços e clientes.",
       },
-      { property: "og:title", content: "Entrar no Agenda Aí" },
+      { property: "og:title", content: "Entrar no Agenda Agora�" },
       { property: "og:description", content: "Acesse o painel de agendamentos do seu negócio." },
     ],
   }),
@@ -40,7 +40,7 @@ const formatPhone = (value: string) => {
 
 // Credencial interna derivada do telefone + senha do estabelecimento.
 const phoneLogin = (phone: string) => `${onlyDigits(phone)}@agenda.local`;
-const phonePassword = (senha: string) => `agendaai:${senha}`;
+const phonePassword = (senha: string) => `agendaagora:${senha}`;
 
 function AuthPage() {
   const { modo } = Route.useSearch();
