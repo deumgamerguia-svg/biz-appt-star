@@ -54,8 +54,18 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!loading && user) void navigate({ to: "/painel" });
+    if (loading || !user) return;
+    void (async () => {
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "super_admin")
+        .maybeSingle();
+      void navigate({ to: data ? "/master" : "/painel" });
+    })();
   }, [loading, user, navigate]);
+
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
