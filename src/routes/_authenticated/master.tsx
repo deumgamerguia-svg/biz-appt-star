@@ -30,12 +30,12 @@ import {
 export const Route = createFileRoute("/_authenticated/master")({
   head: () => ({
     meta: [
-      { title: "Painel master — Agendaê" },
+      { title: "Painel master — Agenda Aí" },
       {
         name: "description",
         content: "Área da plataforma para cadastrar estabelecimentos e criar o acesso dos donos.",
       },
-      { property: "og:title", content: "Painel master — Agendaê" },
+      { property: "og:title", content: "Painel master — Agenda Aí" },
       { property: "og:description", content: "Gerencie todos os estabelecimentos da plataforma." },
     ],
   }),

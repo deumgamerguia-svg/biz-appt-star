@@ -6,13 +6,13 @@ import { useAuth } from "@/hooks/useAuth";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Agendaê — agenda online para barbearias, salões e consultórios" },
+      { title: "Agenda Aí — agenda online para barbearias, salões e consultórios" },
       {
         name: "description",
         content:
           "Organize horários, serviços, profissionais e clientes do seu negócio em um painel simples. Comece grátis em minutos.",
       },
-      { property: "og:title", content: "Agendaê — agenda online para o seu negócio" },
+      { property: "og:title", content: "Agenda Aí — agenda online para o seu negócio" },
       {
         property: "og:description",
         content:
@@ -134,7 +134,7 @@ function Home() {
       </main>
 
       <footer className="border-t border-border py-8 text-center text-sm text-muted-foreground">
-        © {new Date().getFullYear()} Agendaê — agendamento para comércios e empresas.
+        © {new Date().getFullYear()} Agenda Aí — agendamento para comércios e empresas.
       </footer>
     </div>
   );

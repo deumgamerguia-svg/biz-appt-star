@@ -16,9 +16,9 @@ import { formatPrice, formatTime } from "@/lib/format";
 export const Route = createFileRoute("/_authenticated/painel/lembretes")({
   head: () => ({
     meta: [
-      { title: "Lembretes — Agendaê" },
+      { title: "Lembretes — Agenda Aí" },
       { name: "description", content: "Lembre os clientes do horário marcado e reduza faltas." },
-      { property: "og:title", content: "Lembretes — Agendaê" },
+      { property: "og:title", content: "Lembretes — Agenda Aí" },
       { property: "og:description", content: "Lembretes de WhatsApp para os agendamentos." },
     ],
   }),

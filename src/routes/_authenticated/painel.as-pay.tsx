@@ -8,9 +8,9 @@ import { PageHeader, NoBusiness, EmptyList } from "@/components/painel/PageHeade
 export const Route = createFileRoute("/_authenticated/painel/as-pay")({
   head: () => ({
     meta: [
-      { title: "AS Pay — Agendaê" },
+      { title: "AS Pay — Agenda Aí" },
       { name: "description", content: "Saldo dos sinais pagos pelos clientes para agendar." },
-      { property: "og:title", content: "AS Pay — Agendaê" },
+      { property: "og:title", content: "AS Pay — Agenda Aí" },
       { property: "og:description", content: "Saldo dos sinais pagos pelos clientes." },
     ],
   }),
@@ -61,7 +61,7 @@ function AsPayPage() {
       </div>
 
       <p className="mx-auto mt-5 max-w-2xl text-center text-sm text-muted-foreground">
-        Todas as transações de sinal são intermediadas pelo Agendaê.
+        Todas as transações de sinal são intermediadas pelo Agenda Aí.
       </p>
 
       <h2 className="mt-8 mb-3 text-lg font-bold">Últimos sinais</h2>

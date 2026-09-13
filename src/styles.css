@@ -5,7 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Agendaê — design system
+ * Agenda Aí — design system
  * Claro, profissional, azul de confiança.
  */
 
@@ -137,7 +137,7 @@
   --slot-empty-foreground: oklch(0.55 0.02 260);
 }
 
-/* Tema escuro — padrão do painel (referência Agenda Serviço) */
+/* Tema escuro — padrão do painel (referência Agenda Aí) */
 .dark {
   --background: oklch(0.16 0.005 265);
   --foreground: oklch(0.97 0.005 250);

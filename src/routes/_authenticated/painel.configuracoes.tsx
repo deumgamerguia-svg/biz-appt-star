@@ -12,9 +12,9 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/_authenticated/painel/configuracoes")({
   head: () => ({
     meta: [
-      { title: "Configurações — Agendaê" },
+      { title: "Configurações — Agenda Aí" },
       { name: "description", content: "Defina a logotipo que aparece na página de agendamento." },
-      { property: "og:title", content: "Configurações — Agendaê" },
+      { property: "og:title", content: "Configurações — Agenda Aí" },
       { property: "og:description", content: "Defina a logotipo do seu negócio." },
     ],
   }),
