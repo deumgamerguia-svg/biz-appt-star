@@ -40,7 +40,7 @@ const formatPhone = (value: string) => {
 
 // Credencial interna derivada do telefone + senha do estabelecimento.
 const phoneLogin = (phone: string) => `${onlyDigits(phone)}@agenda.local`;
-const phonePassword = (senha: string) => `agendae:${senha}`;
+const phonePassword = (senha: string) => `agendaai:${senha}`;
 
 function AuthPage() {
   const { modo } = Route.useSearch();
