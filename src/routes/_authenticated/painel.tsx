@@ -177,7 +177,7 @@ function PainelLayout() {
             className="mt-1 w-full justify-start text-sidebar-foreground"
             onClick={async () => {
               await signOut();
-              void navigate({ to: "/" });
+              void navigate({ to: "/auth" });
             }}
           >
             <LogOut className="size-4" /> Sair
