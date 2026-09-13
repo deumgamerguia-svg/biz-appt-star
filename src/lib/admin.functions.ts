@@ -4,7 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const onlyDigits = (value: string) => value.replace(/\D/g, "");
 const phoneLogin = (phone: string) => `${onlyDigits(phone)}@agenda.local`;
-const phonePassword = (senha: string) => `agendaai:${senha}`;
+const phonePassword = (senha: string) => `agendaagora:${senha}`;
 
 async function assertSuperAdmin(userId: string) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

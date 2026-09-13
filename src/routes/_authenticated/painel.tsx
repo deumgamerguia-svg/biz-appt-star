@@ -42,9 +42,9 @@ import {
 export const Route = createFileRoute("/_authenticated/painel")({
   head: () => ({
     meta: [
-      { title: "Painel — Agenda Aí" },
+      { title: "Painel — Agenda Agora" },
       { name: "description", content: "Gerencie a agenda, os serviços e os clientes do negócio." },
-      { property: "og:title", content: "Painel — Agenda Aí" },
+      { property: "og:title", content: "Painel — Agenda Agora" },
       { property: "og:description", content: "Gerencie a agenda do seu negócio." },
     ],
   }),
@@ -124,7 +124,7 @@ function PainelLayout() {
           to="/painel"
           className="block px-3 py-3 font-display text-lg font-extrabold uppercase tracking-[0.12em] text-primary"
         >
-          Agenda Aí
+          Agenda Agora
         </Link>
 
         <div className="px-1 pb-3">

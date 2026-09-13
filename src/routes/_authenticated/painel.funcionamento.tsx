@@ -29,9 +29,9 @@ import {
 export const Route = createFileRoute("/_authenticated/painel/funcionamento")({
   head: () => ({
     meta: [
-      { title: "Funcionamento — Agenda Aí" },
+      { title: "Funcionamento — Agenda Agora" },
       { name: "description", content: "Dias e horários fixos de atendimento do seu negócio." },
-      { property: "og:title", content: "Funcionamento — Agenda Aí" },
+      { property: "og:title", content: "Funcionamento — Agenda Agora" },
       { property: "og:description", content: "Dias e horários fixos de atendimento." },
     ],
   }),

@@ -12,7 +12,7 @@ export type Business = {
   address: string | null;
 };
 
-const STORAGE_KEY = "agendaai:business";
+const STORAGE_KEY = "agendaagora:business";
 
 type BusinessState = {
   businesses: Business[];

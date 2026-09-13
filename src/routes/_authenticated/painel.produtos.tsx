@@ -5,9 +5,9 @@ import { SoonPage } from "@/components/painel/Soon";
 export const Route = createFileRoute("/_authenticated/painel/produtos")({
   head: () => ({
     meta: [
-      { title: "Produtos — Agenda Aí" },
+      { title: "Produtos — Agenda Agora" },
       { name: "description", content: "Produtos vendidos no balcão e controle de estoque." },
-      { property: "og:title", content: "Produtos — Agenda Aí" },
+      { property: "og:title", content: "Produtos — Agenda Agora" },
       { property: "og:description", content: "Produtos e estoque do negócio." },
     ],
   }),
