@@ -139,11 +139,13 @@ function AuthPage() {
               <div className="relative">
                 <Input
                   id="phone"
-                  type="tel"
-                  inputMode="numeric"
-                  autoComplete="tel"
+                  type="text"
+                  autoComplete="username"
                   value={phone}
-                  onChange={(e) => setPhone(formatPhone(e.target.value))}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setPhone(v.includes("@") ? v.trim() : formatPhone(v));
+                  }}
                   placeholder="(11) 93935-4416"
                   required
                   className="peer pr-10"
