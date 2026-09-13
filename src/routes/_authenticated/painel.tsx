@@ -108,12 +108,7 @@ function PainelLayout() {
   const { businesses, businessId, setBusinessId } = useBusiness();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const statusFn = useServerFn(getMasterStatus);
-  const { data: masterStatus } = useQuery({
-    queryKey: ["master-status"],
-    queryFn: () => statusFn(),
-  });
-  const isMaster = !!masterStatus?.isMaster;
+
 
   return (
     <div className="min-h-screen bg-background lg:flex">
