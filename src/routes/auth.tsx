@@ -59,8 +59,9 @@ function AuthPage() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    const isEmail = phone.includes("@");
     const digits = onlyDigits(phone);
-    if (digits.length < 10) {
+    if (!isEmail && digits.length < 10) {
       toast.error("Informe o telefone com DDD.");
       return;
     }
@@ -70,7 +71,14 @@ function AuthPage() {
     }
     setBusy(true);
     try {
-      if (isSignup) {
+      if (isEmail) {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: phone.trim().toLowerCase(),
+          password: phonePassword(password),
+        });
+        if (error) throw new Error("E-mail ou senha incorretos.");
+        toast.success("Bem-vindo de volta!");
+      } else if (isSignup) {
         const { error } = await supabase.auth.signUp({
           email: phoneLogin(phone),
           password: phonePassword(password),
