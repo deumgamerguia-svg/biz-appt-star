@@ -21,12 +21,10 @@ import {
   Settings2,
   Plus,
   MessageCircle,
-  ShieldCheck,
 } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
-import { getMasterStatus } from "@/lib/admin.functions";
+
 import { useAuth } from "@/hooks/useAuth";
 import { useBusiness } from "@/lib/business";
 import { supabase } from "@/integrations/supabase/client";
@@ -108,12 +106,7 @@ function PainelLayout() {
   const { businesses, businessId, setBusinessId } = useBusiness();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const statusFn = useServerFn(getMasterStatus);
-  const { data: masterStatus } = useQuery({
-    queryKey: ["master-status"],
-    queryFn: () => statusFn(),
-  });
-  const isMaster = !!masterStatus?.isMaster;
+
 
   return (
     <div className="min-h-screen bg-background lg:flex">
@@ -162,16 +155,8 @@ function PainelLayout() {
         </nav>
 
         <div className="mt-6 border-t border-sidebar-border pt-3">
-          {isMaster && (
-            <Link
-              to="/master"
-              onClick={() => setOpen(false)}
-              className="mb-2 flex items-center gap-3 rounded-md px-3 py-2.5 text-[0.95rem] font-medium text-sidebar-foreground transition-colors hover:bg-sidebar-accent"
-            >
-              <ShieldCheck className="size-[18px] text-primary" /> Painel master
-            </Link>
-          )}
           <p className="truncate px-3 text-xs text-muted-foreground">{user?.email}</p>
+
           <Button
             variant="ghost"
             className="mt-1 w-full justify-start text-sidebar-foreground"
