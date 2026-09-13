@@ -162,16 +162,8 @@ function PainelLayout() {
         </nav>
 
         <div className="mt-6 border-t border-sidebar-border pt-3">
-          {isMaster && (
-            <Link
-              to="/master"
-              onClick={() => setOpen(false)}
-              className="mb-2 flex items-center gap-3 rounded-md px-3 py-2.5 text-[0.95rem] font-medium text-sidebar-foreground transition-colors hover:bg-sidebar-accent"
-            >
-              <ShieldCheck className="size-[18px] text-primary" /> Painel master
-            </Link>
-          )}
           <p className="truncate px-3 text-xs text-muted-foreground">{user?.email}</p>
+
           <Button
             variant="ghost"
             className="mt-1 w-full justify-start text-sidebar-foreground"
