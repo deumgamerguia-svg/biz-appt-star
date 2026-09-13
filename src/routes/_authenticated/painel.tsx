@@ -121,7 +121,7 @@ function PainelLayout() {
         className={`${open ? "block" : "hidden"} bg-sidebar p-3 lg:sticky lg:top-0 lg:block lg:h-screen lg:w-64 lg:shrink-0 lg:overflow-y-auto`}
       >
         <Link
-          to="/"
+          to="/painel"
           className="block px-3 py-3 font-display text-lg font-extrabold uppercase tracking-[0.12em] text-primary"
         >
           Agenda Aí
@@ -177,7 +177,7 @@ function PainelLayout() {
             className="mt-1 w-full justify-start text-sidebar-foreground"
             onClick={async () => {
               await signOut();
-              void navigate({ to: "/" });
+              void navigate({ to: "/auth" });
             }}
           >
             <LogOut className="size-4" /> Sair
