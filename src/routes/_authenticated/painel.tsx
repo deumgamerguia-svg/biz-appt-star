@@ -153,7 +153,7 @@ function PainelLayout() {
         className={`${open ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"} fixed inset-0 z-40 h-auto w-auto rounded-none bg-background/75 p-0 backdrop-blur-[2px] transition-opacity hover:bg-background/75 lg:hidden`}
       />
       <aside
-        className={`${open ? "translate-x-0" : "-translate-x-full"} fixed inset-y-0 left-0 z-50 flex w-[min(84vw,20rem)] flex-col border-r border-sidebar-border bg-sidebar px-5 py-4 shadow-2xl transition-transform duration-200 ease-out lg:sticky lg:top-0 lg:h-screen lg:w-[18.5rem] lg:shrink-0 lg:translate-x-0 lg:overflow-y-auto lg:px-5 lg:shadow-none`}
+        className={`${open ? "translate-x-0" : "-translate-x-full"} fixed inset-y-0 left-0 z-50 flex w-[17.5rem] max-w-[78vw] flex-col border-r border-sidebar-border bg-sidebar px-5 py-4 shadow-2xl transition-transform duration-200 ease-out lg:sticky lg:top-0 lg:h-screen lg:w-[18.5rem] lg:max-w-none lg:shrink-0 lg:translate-x-0 lg:overflow-y-auto lg:px-5 lg:shadow-none`}
       >
         <Link
           to="/painel"
