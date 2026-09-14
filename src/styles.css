@@ -100,7 +100,7 @@
   --destructive: oklch(0.58 0.22 25);
   --destructive-foreground: oklch(0.99 0.005 250);
 
-  --success: oklch(0.62 0.15 155);
+  --success: oklch(0.58 0.2 261);
   --success-foreground: oklch(0.99 0.005 250);
 
   --warning: oklch(0.75 0.15 75);
@@ -155,8 +155,8 @@
   --accent-foreground: oklch(0.88 0.1 180);
   --destructive: oklch(0.6 0.2 25);
   --destructive-foreground: oklch(0.98 0.005 250);
-  --success: oklch(0.7 0.15 160);
-  --success-foreground: oklch(0.16 0.03 160);
+  --success: oklch(0.69 0.17 255);
+  --success-foreground: oklch(0.98 0.005 255);
   --warning: oklch(0.82 0.14 90);
   --warning-foreground: oklch(0.2 0.05 60);
   --border: oklch(1 0 0 / 12%);
@@ -226,6 +226,8 @@
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 13%);
   --ring: oklch(0.5756 0.2222 261.22);
+  --success: oklch(0.64 0.2 257);
+  --success-foreground: oklch(0.99 0.002 255);
   --sidebar: oklch(0 0 0);
   --sidebar-foreground: oklch(0.72 0.012 255);
   --sidebar-primary: oklch(0.5756 0.2222 261.22);
@@ -270,11 +272,60 @@
 .owner-panel .owner-nav-active::before {
   content: "";
   position: absolute;
-  inset-block: 0.5rem;
+  inset-block: 0.35rem;
   left: 0;
-  width: 2px;
+  width: 3px;
   border-radius: 999px;
   background: var(--color-primary);
+  box-shadow: 0 0 10px color-mix(in oklab, var(--color-primary) 72%, transparent);
+}
+
+.owner-panel .owner-nav-active > svg {
+  color: var(--color-primary);
+  filter: drop-shadow(0 0 5px color-mix(in oklab, var(--color-primary) 45%, transparent));
+}
+
+.owner-panel .owner-nav-active .owner-nav-hint {
+  color: color-mix(in oklab, var(--color-primary) 55%, var(--color-sidebar-foreground));
+}
+
+.owner-panel .owner-nav-item {
+  min-height: 3rem;
+}
+
+.owner-route-progress {
+  position: fixed;
+  z-index: 60;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  pointer-events: none;
+  opacity: 0;
+  transform: scaleX(0);
+  transform-origin: left;
+  background: var(--color-primary);
+  box-shadow: 0 0 12px color-mix(in oklab, var(--color-primary) 75%, transparent);
+}
+
+.owner-route-progress.is-visible {
+  opacity: 1;
+  animation: owner-route-progress 360ms ease-out both;
+}
+
+.owner-route-content {
+  animation: owner-route-enter 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes owner-route-progress {
+  0% { transform: scaleX(0); }
+  70% { transform: scaleX(0.82); }
+  100% { transform: scaleX(1); opacity: 0; }
+}
+
+@keyframes owner-route-enter {
+  from { opacity: 0; transform: translateY(7px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .owner-panel main,
@@ -288,6 +339,11 @@
   .owner-panel *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .owner-route-progress,
+  .owner-route-content {
+    animation: none !important;
   }
 }
 
@@ -337,7 +393,7 @@
   overflow: hidden;
 }
 .auth-field:focus-within {
-  border-color: oklch(0.72 0.14 175);
+  border-color: oklch(0.64 0.2 257);
 }
 .auth-field input {
   flex: 1;

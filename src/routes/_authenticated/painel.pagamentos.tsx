@@ -55,7 +55,7 @@ function PagamentosPage() {
                 key={p.id}
                 className={`flex items-center justify-between rounded-xl border px-5 py-4 text-sm font-semibold ${
                   paid
-                    ? "border-emerald-600/60 bg-emerald-700/80 text-emerald-50"
+                    ? "border-primary/60 bg-primary/20 text-primary"
                     : "border-destructive/50 bg-destructive/15 text-destructive-foreground"
                 }`}
               >

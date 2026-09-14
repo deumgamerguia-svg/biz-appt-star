@@ -101,7 +101,7 @@ function WhatsappPage() {
             {statusQuery.isLoading ? (
               <span className="text-muted-foreground">verificando…</span>
             ) : connected ? (
-              <span className="text-success">Conectado</span>
+              <span className="text-primary">Conectado</span>
             ) : status === "conectando" ? (
               <span className="text-warning">Aguardando leitura do QR Code</span>
             ) : (
