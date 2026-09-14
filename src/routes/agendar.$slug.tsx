@@ -60,7 +60,12 @@ type Service = {
   price_cents: number;
   deposit_cents: number;
   description: string | null;
+  image_path: string | null;
+  show_price: boolean;
+  show_duration: boolean;
 };
+
+type Professional = { id: string; name: string; role: string | null };
 
 const DAY_LABEL = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
 
@@ -92,6 +97,7 @@ function PublicBooking() {
   const { slug } = Route.useParams();
   const [tab, setTab] = useState<"agendar" | "historico">("agendar");
   const [service, setService] = useState<Service | null>(null);
+  const [professional, setProfessional] = useState<Professional | null>(null);
   const [date, setDate] = useState<string | null>(null);
   const [time, setTime] = useState<string | null>(null);
   const [name, setName] = useState("");
@@ -144,13 +150,30 @@ function PublicBooking() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("services")
-        .select("id, name, duration_minutes, price_cents, deposit_cents, description")
+        .select("id, name, duration_minutes, price_cents, deposit_cents, description, image_path, show_price, show_duration")
         .eq("business_id", business!.id)
         .eq("active", true)
+        .eq("show_service", true)
         .order("name");
       if (error) throw error;
       return data as Service[];
     },
+  });
+
+  const { data: professionals } = useQuery({
+    queryKey: ["public-professionals", service?.id], enabled: !!service,
+    queryFn: async () => {
+      const { data: linked, error } = await supabase.from("service_professionals").select("professional_id").eq("service_id", service!.id);
+      if (error) throw error;
+      if (!linked.length) return [] as Professional[];
+      const { data, error: peopleError } = await supabase.from("professionals").select("id,name,role").in("id", linked.map((item) => item.professional_id)).eq("active", true).order("name");
+      if (peopleError) throw peopleError; return data as Professional[];
+    },
+  });
+
+  const { data: serviceImage } = useQuery({
+    queryKey: ["public-service-image", service?.image_path], enabled: !!service?.image_path,
+    queryFn: () => getLogoUrl(service?.image_path),
   });
 
   const { data: openDays } = useQuery({
@@ -159,9 +182,9 @@ function PublicBooking() {
   });
 
   const { data: availability, isFetching: loadingSlots } = useQuery({
-    queryKey: ["public-slots", slug, service?.id, date],
-    enabled: !!service && !!date,
-    queryFn: () => availabilityFn({ data: { slug, serviceId: service!.id, date: date! } }),
+    queryKey: ["public-slots", slug, service?.id, professional?.id, date],
+    enabled: !!service && !!date && ((professionals?.length ?? 0) === 0 || !!professional),
+    queryFn: () => availabilityFn({ data: { slug, serviceId: service!.id, date: date!, professionalId: professional?.id ?? null } }),
   });
 
   const bookings = useQuery({
@@ -184,12 +207,14 @@ function PublicBooking() {
           time: time!,
           customerName: name.trim(),
           customerPhone: phone.trim(),
+          professionalId: professional?.id ?? null,
         },
       }),
     onSuccess: (r) => {
       saveCharge(r.chargeId);
       setActiveCharge(r.chargeId);
       setService(null);
+      setProfessional(null);
       setDate(null);
       setTime(null);
       setTab("historico");
@@ -207,6 +232,7 @@ function PublicBooking() {
 
   const closeModal = () => {
     setService(null);
+    setProfessional(null);
     setDate(null);
     setTime(null);
     setFormError(null);
@@ -255,6 +281,7 @@ function PublicBooking() {
                 type="button"
                 onClick={() => {
                   setService(s);
+                  setProfessional(null);
                   setDate(null);
                   setTime(null);
                   setFormError(null);
@@ -262,10 +289,8 @@ function PublicBooking() {
                 className="w-full rounded-lg border border-border bg-card px-4 py-6 text-center transition-colors hover:border-primary"
               >
                 <p className="text-lg">{s.name}</p>
-                <p className="mt-3 text-sm text-muted-foreground">{s.duration_minutes}min</p>
-                {s.description && (
-                  <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">{s.description}</p>
-                )}
+                {s.show_duration && <p className="mt-3 text-sm text-muted-foreground">{s.duration_minutes}min</p>}
+                {s.show_price && <p className="mt-1 text-sm text-muted-foreground">{formatPrice(s.price_cents)}</p>}
                 {s.deposit_cents > 0 && (
                   <p className="mt-2 text-xs font-semibold text-primary">
                     Sinal de {formatPrice(s.deposit_cents)}
@@ -296,12 +321,15 @@ function PublicBooking() {
             <div className="space-y-6 text-center">
               <div>
                 <h2 className="font-display text-xl font-bold">{service.name}</h2>
+                {serviceImage && <img src={serviceImage} alt={service.name} className="mx-auto mt-4 max-h-44 w-full rounded-md object-cover" />}
                 {service.description && (
                   <p className="mt-2 text-sm text-muted-foreground">{service.description}</p>
                 )}
               </div>
 
-              <div>
+              {!!professionals?.length && <div><p className="mb-3 text-sm font-semibold">Escolha o profissional:</p><div className="grid gap-2 sm:grid-cols-2">{professionals.map((p) => <button key={p.id} type="button" onClick={() => { setProfessional(p); setDate(null); setTime(null); }} className={`rounded-md border p-3 text-left transition-colors ${professional?.id === p.id ? "border-primary bg-primary/20" : "border-border hover:border-primary"}`}><span className="block font-semibold">{p.name}</span>{p.role && <span className="text-xs text-muted-foreground">{p.role}</span>}</button>)}</div></div>}
+
+              {((professionals?.length ?? 0) === 0 || professional) && <div>
                 <p className="mb-3 text-sm font-semibold">Selecione o dia da semana desejado:</p>
                 {!days.length ? (
                   <p className="text-sm text-muted-foreground">
@@ -349,7 +377,7 @@ function PublicBooking() {
                     </button>
                   </div>
                 )}
-              </div>
+              </div>}
 
               {date && (
                 <div>
@@ -390,7 +418,7 @@ function PublicBooking() {
                         <Info className="size-4" /> {service.name}
                       </li>
                       <li className="flex items-center justify-center gap-2">
-                        <User className="size-4" /> Profissional Agenda
+                        <User className="size-4" /> {professional?.name ?? "Profissional Agenda"}
                       </li>
                       <li className="flex items-center justify-center gap-2">
                         <CalendarDays className="size-4" /> {fullDate(date)}

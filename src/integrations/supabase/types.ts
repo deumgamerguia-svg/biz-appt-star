@@ -323,30 +323,48 @@ export type Database = {
       professionals: {
         Row: {
           active: boolean
+          avatar_path: string | null
           business_id: string
           created_at: string
+          email: string | null
           id: string
           name: string
+          permissions: Json
+          phone: string | null
           role: string | null
           updated_at: string
+          user_id: string | null
+          working_days: number[]
         }
         Insert: {
           active?: boolean
+          avatar_path?: string | null
           business_id: string
           created_at?: string
+          email?: string | null
           id?: string
           name: string
+          permissions?: Json
+          phone?: string | null
           role?: string | null
           updated_at?: string
+          user_id?: string | null
+          working_days?: number[]
         }
         Update: {
           active?: boolean
+          avatar_path?: string | null
           business_id?: string
           created_at?: string
+          email?: string | null
           id?: string
           name?: string
+          permissions?: Json
+          phone?: string | null
           role?: string | null
           updated_at?: string
+          user_id?: string | null
+          working_days?: number[]
         }
         Relationships: [
           {
@@ -433,6 +451,49 @@ export type Database = {
           },
         ]
       }
+      service_professionals: {
+        Row: {
+          business_id: string
+          created_at: string
+          professional_id: string
+          service_id: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          professional_id: string
+          service_id: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          professional_id?: string
+          service_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_professionals_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_professionals_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_professionals_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       services: {
         Row: {
           active: boolean
@@ -442,8 +503,13 @@ export type Database = {
           description: string | null
           duration_minutes: number
           id: string
+          image_path: string | null
+          is_combo: boolean
           name: string
           price_cents: number
+          show_duration: boolean
+          show_price: boolean
+          show_service: boolean
           updated_at: string
         }
         Insert: {
@@ -454,8 +520,13 @@ export type Database = {
           description?: string | null
           duration_minutes?: number
           id?: string
+          image_path?: string | null
+          is_combo?: boolean
           name: string
           price_cents?: number
+          show_duration?: boolean
+          show_price?: boolean
+          show_service?: boolean
           updated_at?: string
         }
         Update: {
@@ -466,8 +537,13 @@ export type Database = {
           description?: string | null
           duration_minutes?: number
           id?: string
+          image_path?: string | null
+          is_combo?: boolean
           name?: string
           price_cents?: number
+          show_duration?: boolean
+          show_price?: boolean
+          show_service?: boolean
           updated_at?: string
         }
         Relationships: [
@@ -604,6 +680,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      has_business_permission: {
+        Args: { _business_id: string; _permission: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -611,10 +691,11 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_business_member: { Args: { _business_id: string }; Returns: boolean }
       owns_business: { Args: { _business_id: string }; Returns: boolean }
     }
     Enums: {
-      app_role: "super_admin" | "owner"
+      app_role: "super_admin" | "owner" | "professional"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -742,7 +823,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["super_admin", "owner"],
+      app_role: ["super_admin", "owner", "professional"],
     },
   },
 } as const

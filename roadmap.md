@@ -1,6 +1,7 @@
 # Roadmap
 
 ## Em andamento
+- [x] Organizar a barra lateral em seções e criar Serviços/Profissionais completos com vínculos, imagens, login e permissões
 - [x] Redesenhar o painel do comércio fiel à referência ScaleReels, usando a logo Agenda Agora enviada e sem alterar tópicos ou funções
 - WhatsApp automático via Z-API (QR Code no painel do dono + mensagem automática na confirmação) — aguardando credenciais ZAPI_*
 

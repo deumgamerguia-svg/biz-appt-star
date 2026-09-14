@@ -10,6 +10,8 @@ export type Business = {
   category: string;
   phone: string | null;
   address: string | null;
+  status: string;
+  monthly_fee_cents: number;
 };
 
 const STORAGE_KEY = "agendaagora:business";
@@ -43,7 +45,7 @@ export function BusinessProvider({ children }: { children: ReactNode }) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("businesses")
-        .select("id, name, slug, category, phone, address")
+        .select("id, name, slug, category, phone, address, status, monthly_fee_cents")
         .order("created_at", { ascending: true });
       if (error) throw error;
       return (data ?? []) as Business[];
