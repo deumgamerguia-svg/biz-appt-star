@@ -26,8 +26,9 @@ export const saveProfessional = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     const { data: business } = await context.supabase
       .from("businesses")
-      .select("id")
+      .select("id, owner_id")
       .eq("id", data.businessId)
+      .eq("owner_id", context.userId)
       .maybeSingle();
     if (!business) throw new Error("Somente o dono pode gerenciar acessos da equipe.");
 
@@ -105,7 +106,7 @@ export const deleteProfessional = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) => z.object({ id: z.string().uuid(), businessId: z.string().uuid() }).parse(data))
   .handler(async ({ context, data }) => {
-    const { data: business } = await context.supabase.from("businesses").select("id").eq("id", data.businessId).maybeSingle();
+    const { data: business } = await context.supabase.from("businesses").select("id, owner_id").eq("id", data.businessId).eq("owner_id", context.userId).maybeSingle();
     if (!business) throw new Error("Somente o dono pode remover acessos da equipe.");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: professional } = await supabaseAdmin.from("professionals").select("user_id").eq("id", data.id).eq("business_id", data.businessId).maybeSingle();

@@ -83,6 +83,12 @@ const nav = [
   ]},
 ] as const;
 
+const routePermission: Partial<Record<string, string>> = {
+  "/painel": "view_agenda", "/painel/bloqueios": "block_schedule",
+  "/painel/clientes": "view_customer_phone", "/painel/caixa": "view_financial",
+  "/painel/pagamentos": "view_financial", "/painel/relatorio": "view_reports",
+};
+
 function WhatsappBadge() {
   const { businessId } = useBusiness();
   const { data } = useQuery({
@@ -119,6 +125,12 @@ function PainelLayout() {
   const { businesses, business, businessId, setBusinessId } = useBusiness();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const { data: member } = useQuery({
+    queryKey: ["current-professional", user?.id, businessId], enabled: !!user?.id && !!businessId,
+    queryFn: async () => { const { data } = await supabase.from("professionals").select("permissions").eq("user_id", user!.id).eq("business_id", businessId!).maybeSingle(); return data; },
+  });
+  const permissions = member?.permissions && typeof member.permissions === "object" && !Array.isArray(member.permissions) ? member.permissions as Record<string, boolean> : null;
+  const canOpen = (to: string) => !permissions || !!permissions.admin || !!permissions[routePermission[to] ?? "admin"];
 
 
   return (
@@ -157,7 +169,7 @@ function PainelLayout() {
             <section key={group.title}>
               <p className="px-3 pb-1.5 text-[0.62rem] font-bold uppercase text-muted-foreground/60">{group.title}</p>
               <div className="space-y-0.5">
-                {group.items.map((item) => (
+                {group.items.filter((item) => canOpen(item.to)).map((item) => (
                   <Link key={item.to} to={item.to} activeOptions={{ exact: "exact" in item ? item.exact : false }} onClick={() => setOpen(false)}
                     className="owner-nav-item relative flex items-center gap-3 rounded-md px-3 py-2 text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                     activeProps={{ className: "owner-nav-item owner-nav-active relative flex items-center gap-3 rounded-md bg-sidebar-accent px-3 py-2 text-sidebar-accent-foreground" }}>

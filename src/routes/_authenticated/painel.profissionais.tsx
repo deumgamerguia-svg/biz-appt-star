@@ -26,13 +26,13 @@ export const Route = createFileRoute("/_authenticated/painel/profissionais")({
 
 const DAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 const PERMISSIONS = [
-  ["view_agenda", "Ver agenda"], ["manage_appointments", "Criar e alterar agendamentos"],
-  ["view_clients", "Ver clientes"], ["manage_clients", "Cadastrar e editar clientes"],
-  ["view_financial", "Ver valores e financeiro"], ["manage_blocks", "Criar horários bloqueados"],
-  ["manage_services", "Gerenciar serviços"], ["view_reports", "Ver relatórios"],
+  ["view_agenda", "Ver agenda"], ["create_appointment", "Criar agendamentos"],
+  ["cancel_appointment", "Cancelar agendamentos"], ["complete_appointment", "Concluir agendamentos"],
+  ["view_customer_phone", "Ver telefone dos clientes"], ["block_schedule", "Criar horários bloqueados"],
+  ["view_financial", "Ver valores e financeiro"], ["view_reports", "Ver relatórios"],
 ] as const;
 type Form = { id?: string; name: string; role: string; phone: string; email: string; password: string; workingDays: number[]; serviceIds: string[]; permissions: Record<string, boolean> };
-const empty: Form = { name: "", role: "", phone: "", email: "", password: "", workingDays: [1,2,3,4,5,6], serviceIds: [], permissions: { view_agenda: true, manage_appointments: true } };
+const empty: Form = { name: "", role: "", phone: "", email: "", password: "", workingDays: [1,2,3,4,5,6], serviceIds: [], permissions: { view_agenda: true, create_appointment: true } };
 
 function ProfissionaisPage() {
   const { businessId } = useBusiness(); const qc = useQueryClient(); const saveFn = useServerFn(saveProfessional); const deleteFn = useServerFn(deleteProfessional);
