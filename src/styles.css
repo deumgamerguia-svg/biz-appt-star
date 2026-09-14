@@ -2,6 +2,38 @@
 @source "../src";
 @import "tw-animate-css";
 
+@font-face {
+  font-family: "General Sans";
+  src: url("/fonts/general-sans-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "General Sans";
+  src: url("/fonts/general-sans-500.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "General Sans";
+  src: url("/fonts/general-sans-600.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "General Sans";
+  src: url("/fonts/general-sans-700.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 /*
@@ -10,8 +42,8 @@
  */
 
 @theme inline {
-  --font-display: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "General Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "General Sans", ui-sans-serif, system-ui, sans-serif;
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -195,6 +227,9 @@
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: "tnum";
+    font-synthesis: none;
   }
 
   h1,
@@ -203,6 +238,12 @@
   h4 {
     font-family: var(--font-display);
     letter-spacing: 0;
+    font-weight: 400;
+  }
+
+  b,
+  strong {
+    font-weight: 600;
   }
 }
 
@@ -241,6 +282,51 @@
   --slot-paid: oklch(0.22 0.015 255);
   --slot-paid-foreground: oklch(0.92 0.01 255);
   --shadow-soft: 0 1px 2px oklch(0 0 0 / 35%), 0 0 18px oklch(0.5756 0.2222 261.22 / 9%);
+  font-size: 0.94rem;
+  line-height: 1.5;
+}
+
+.owner-panel h1 {
+  font-size: 1.72rem;
+  line-height: 1.1;
+  font-weight: 400;
+}
+
+.owner-panel h2 {
+  font-size: 1.2rem;
+  line-height: 1.25;
+  font-weight: 500;
+}
+
+.owner-panel h3,
+.owner-panel h4 {
+  font-weight: 500;
+}
+
+.owner-panel label {
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.owner-panel input,
+.owner-panel textarea,
+.owner-panel select,
+.owner-panel button {
+  font-family: inherit;
+}
+
+@media (max-width: 767px) {
+  .owner-panel {
+    font-size: 0.9rem;
+  }
+
+  .owner-panel h1 {
+    font-size: 1.45rem;
+  }
+
+  .owner-panel h2 {
+    font-size: 1.08rem;
+  }
 }
 
 .owner-panel .surface {

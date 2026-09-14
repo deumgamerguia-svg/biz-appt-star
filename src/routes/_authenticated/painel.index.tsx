@@ -245,12 +245,12 @@ function AgendaPage() {
         </Button>
       </div>
 
-      <p className="mt-2 pl-12 text-sm font-medium capitalize">{weekday}</p>
+      <p className="mt-2 pl-12 text-[0.82rem] font-medium capitalize">{weekday}</p>
 
       <button
         type="button"
         onClick={() => openNewAt("09:00")}
-        className="mt-2 ml-12 w-44 rounded-md bg-warning/70 px-4 py-2.5 text-sm font-semibold text-warning-foreground transition-opacity hover:opacity-90"
+        className="mt-2 ml-12 w-44 rounded-md bg-warning/70 px-4 py-2.5 text-[0.82rem] font-medium text-warning-foreground transition-opacity hover:opacity-90"
       >
         Encaixe
       </button>
@@ -259,7 +259,7 @@ function AgendaPage() {
         <span className="flex size-16 items-center justify-center rounded-full bg-secondary text-xs font-bold uppercase text-muted-foreground">
           {(business?.name ?? "??").slice(0, 2)}
         </span>
-        <h1 className="text-lg font-semibold">Agenda</h1>
+        <h1 className="text-[1.2rem] font-medium">Agenda</h1>
         <div className="ml-auto flex gap-2">
           <Button variant="secondary" size="icon" aria-label="Visualizar">
             <Eye className="size-4" />
@@ -283,7 +283,7 @@ function AgendaPage() {
                     onClick={() => openNewAt(slot)}
                     className="flex w-full items-center gap-4 border-b border-background bg-slot-free px-4 py-2.5 text-left text-slot-free-foreground transition-opacity hover:opacity-90"
                   >
-                    <span className="w-14 font-bold">{slot}</span>
+                     <span className="w-14 font-medium">{slot}</span>
                     <span className="flex-1" />
                   </button>
                   <button

@@ -13,10 +13,10 @@ export function PageHeader({
   action?: ReactNode;
 }) {
   return (
-    <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
-      <div>
-        <h1 className="text-2xl font-bold">{title}</h1>
-        {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
+    <header className="mb-7 grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4 sm:flex sm:flex-wrap sm:justify-between">
+      <div className="min-w-0">
+        <h1>{title}</h1>
+        {subtitle && <p className="mt-2 max-w-2xl text-[0.9rem] leading-relaxed text-muted-foreground">{subtitle}</p>}
       </div>
       {action}
     </header>

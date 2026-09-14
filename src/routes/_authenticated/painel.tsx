@@ -173,8 +173,8 @@ function PainelLayout() {
               {(business?.name ?? user?.email ?? "A").charAt(0).toUpperCase()}
             </span>
             <span className="min-w-0">
-              <span className="block truncate text-sm font-bold text-sidebar-accent-foreground">{business?.name ?? "Minha conta"}</span>
-              <span className="block truncate text-xs text-muted-foreground">{user?.email}</span>
+              <span className="block truncate text-[0.85rem] font-medium text-sidebar-accent-foreground">{business?.name ?? "Minha conta"}</span>
+              <span className="mt-px block truncate text-[0.72rem] text-muted-foreground">{user?.email}</span>
             </span>
           </div>
           <Select {...(businessId ? { value: businessId } : {})} onValueChange={setBusinessId}>
@@ -194,14 +194,14 @@ function PainelLayout() {
         <nav className="min-h-0 flex-1 space-y-6 overflow-y-auto py-5 pr-1">
           {nav.map((group) => (
             <section key={group.title}>
-              <p className="px-3 pb-2 text-[0.65rem] font-bold uppercase text-muted-foreground/60">{group.title}</p>
+              <p className="px-3 pb-2 text-[0.66rem] font-medium uppercase text-muted-foreground/60">{group.title}</p>
               <div className="space-y-1">
                 {group.items.filter((item) => canOpen(item.to)).map((item) => (
                   <Link key={item.to} to={item.to} activeOptions={{ exact: "exact" in item ? item.exact : false }} onClick={beginNavigation}
                     className="owner-nav-item relative flex items-center gap-3 rounded-md px-3 py-2 text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                     activeProps={{ className: "owner-nav-item owner-nav-active relative flex items-center gap-3 rounded-md bg-sidebar-accent px-3 py-2 text-sidebar-accent-foreground" }}>
                     <item.icon className="size-5 shrink-0" strokeWidth={1.8} />
-                    <span className="min-w-0"><span className="owner-nav-label block text-sm font-semibold">{item.label}</span><span className="owner-nav-hint block truncate text-[0.68rem] text-muted-foreground">{item.hint}</span></span>
+                    <span className="min-w-0 leading-[1.25]"><span className="owner-nav-label block text-[0.86rem] font-medium">{item.label}</span><span className="owner-nav-hint block truncate text-[0.7rem] font-normal text-muted-foreground">{item.hint}</span></span>
                   </Link>
                 ))}
               </div>
@@ -212,7 +212,7 @@ function PainelLayout() {
         <div className="shrink-0 border-t border-sidebar-border pt-3">
           <div className="mb-2 flex items-center gap-3 px-3 py-2">
             <UserCircle className="size-5 shrink-0 text-primary" />
-            <span className="min-w-0 flex-1"><span className="block truncate text-xs font-semibold text-sidebar-accent-foreground">Conta do estabelecimento</span><span className="block text-[0.64rem] text-muted-foreground">{business?.status === "suspenso" ? "Conta bloqueada" : "Conta ativa"}</span></span>
+            <span className="min-w-0 flex-1"><span className="block truncate text-[0.82rem] font-medium text-sidebar-accent-foreground">Conta do estabelecimento</span><span className="block text-[0.68rem] text-muted-foreground">{business?.status === "suspenso" ? "Conta bloqueada" : "Conta ativa"}</span></span>
           </div>
           <Button
             variant="ghost"
