@@ -53,12 +53,24 @@ async function loadContext(slug: string, serviceId: string): Promise<Ctx> {
   return { businessId: business.id, service };
 }
 
+async function validateProfessional(businessId: string, serviceId: string, professionalId?: string | null) {
+  const db = await admin();
+  const { data: links } = await db.from("service_professionals").select("professional_id").eq("business_id", businessId).eq("service_id", serviceId);
+  if (!links?.length) return null;
+  if (!professionalId || !links.some((link) => link.professional_id === professionalId)) throw new Error("Selecione um profissional disponível.");
+  const { data: professional } = await db.from("professionals").select("id, name, active, working_days").eq("id", professionalId).eq("business_id", businessId).maybeSingle();
+  if (!professional?.active) throw new Error("Esse profissional não está disponível.");
+  return professional;
+}
+
 export const getAvailability = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => slugSchema.parse(d))
   .handler(async ({ data }) => {
     const db = await admin();
     const { businessId, service } = await loadContext(data.slug, data.serviceId);
     const weekday = new Date(`${data.date}T12:00:00-03:00`).getDay();
+    const professional = await validateProfessional(businessId, service.id, data.professionalId);
+    if (professional && !professional.working_days.includes(weekday)) return { slots: [] as string[], depositCents: service.deposit_cents };
 
     const { data: hours } = await db
       .from("business_hours")
@@ -185,6 +197,7 @@ export const reserveBooking = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const db = await admin();
     const { businessId, service } = await loadContext(data.slug, data.serviceId);
+    await validateProfessional(businessId, service.id, data.professionalId);
     if (!service.deposit_cents || service.deposit_cents <= 0)
       throw new Error("Este serviço ainda não tem valor de sinal configurado.");
 
@@ -193,14 +206,15 @@ export const reserveBooking = createServerFn({ method: "POST" })
       new Date(startsAt).getTime() + service.duration_minutes * 60_000,
     ).toISOString();
 
-    const { data: clash } = await db
+    let clashQuery = db
       .from("appointments")
       .select("id")
       .eq("business_id", businessId)
       .lt("starts_at", endsAt)
       .gt("ends_at", startsAt)
-      .not("status", "in", '("cancelado","aguardando_sinal")')
-      .limit(1);
+      .not("status", "in", '("cancelado","aguardando_sinal")');
+    if (data.professionalId) clashQuery = clashQuery.eq("professional_id", data.professionalId);
+    const { data: clash } = await clashQuery.limit(1);
     if (clash?.length) throw new Error("Esse horário acabou de ser ocupado. Escolha outro.");
 
     const { data: appointment, error: apptError } = await db
