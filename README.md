@@ -1,14 +1,20 @@
-# Welcome to your Lovable project
+# SAAS AGENDAMENTO FUTURA
+
+QUERIA CRIAR UM SAAS DE AGENDAMENTO PRA COMERCIOS E EMPRESAS POR EXEMPLO UM CONSULTORIO DE DENTISTA BARBEARIA E ETC VOU TE MANDAR O LINK DE UM SAAS DE EXEMPLO DE AGENDAMENTO
+
+https://agendas.link/painel-adm/public/pages/login/login.php#addFun3
 
 This project was built with [Lovable](https://lovable.dev).
 
+**Live app**: https://biz-appt-star.lovable.app
+
 ## Build with Lovable
 
-Open your project in the [Lovable editor](https://lovable.dev) and keep building.
+Continue developing this project in the [Lovable editor](https://lovable.dev/projects/bfefe583-3d24-407d-bf4b-eb4bf3082941).
 
 - **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: connect the project to GitHub and every change made in Lovable is committed straight to your repository.
-- **Full ownership**: this code is yours. Push to your repository and your changes sync back into Lovable, ready for your next prompt.
+- **Stay in sync**: every change made in Lovable is committed straight to this repository.
+- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
 
 ## Development
 
@@ -20,10 +26,3 @@ cd <repository-name>
 npm i
 npm run dev
 ```
-
-## Built with
-
-- TanStack Start
-- TypeScript
-- React
-- Tailwind CSS
