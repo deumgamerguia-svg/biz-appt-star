@@ -1,4 +1,4 @@
-import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   CalendarDays,
   Users,
@@ -12,8 +12,6 @@ import {
   Gem,
   PieChart,
   Calculator,
-  CreditCard,
-  ShoppingBasket,
   MessageSquareText,
   DollarSign,
   CircleX,
@@ -24,7 +22,7 @@ import {
   UserCircle,
   Clock3,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { useAuth } from "@/hooks/useAuth";
@@ -62,7 +60,6 @@ const nav = [
     { to: "/painel/clientes", label: "Clientes", hint: "Cadastro de clientes", icon: Users },
     { to: "/painel/profissionais", label: "Profissionais", hint: "Equipe e permissões", icon: UserRound },
     { to: "/painel/servicos", label: "Serviço", hint: "Serviços e valores", icon: Scissors },
-    { to: "/painel/produtos", label: "Produtos", hint: "Produtos e estoque", icon: ShoppingBasket },
   ]},
   { title: "Financeiro", items: [
     { to: "/painel/as-pay", label: "AS Pay", hint: "Saldo dos sinais", icon: Gem },
@@ -78,7 +75,6 @@ const nav = [
   { title: "Sistema", items: [
     { to: "/painel/configuracoes", label: "Configurações", hint: "Preferências do negócio", icon: Settings2 },
     { to: "/painel/integracoes", label: "Integrações", hint: "Serviços conectados", icon: Plus },
-    { to: "/painel/assinatura", label: "Assinatura", hint: "Plano e vencimento", icon: CreditCard },
     { to: "/painel/negocios", label: "Negócios", hint: "Gerenciar unidades", icon: Store },
   ]},
 ] as const;
@@ -110,7 +106,7 @@ function WhatsappBadge() {
       to="/painel/whatsapp"
       className={`flex flex-1 items-center justify-center rounded-md border px-4 py-2 text-sm font-medium ${
         connected
-          ? "border-success/60 text-success"
+          ? "border-primary/60 text-primary"
           : "border-destructive/50 text-destructive"
       }`}
     >
@@ -125,12 +121,25 @@ function PainelLayout() {
   const { businesses, business, businessId, setBusinessId } = useBusiness();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const [transitioning, setTransitioning] = useState(false);
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
   const { data: member } = useQuery({
     queryKey: ["current-professional", user?.id, businessId], enabled: !!user?.id && !!businessId,
     queryFn: async () => { const { data } = await supabase.from("professionals").select("permissions").eq("user_id", user!.id).eq("business_id", businessId!).maybeSingle(); return data; },
   });
   const permissions = member?.permissions && typeof member.permissions === "object" && !Array.isArray(member.permissions) ? member.permissions as Record<string, boolean> : null;
   const canOpen = (to: string) => !permissions || !!permissions["admin"] || !!permissions[routePermission[to] ?? "admin"];
+
+  useEffect(() => {
+    if (!transitioning) return;
+    const timer = window.setTimeout(() => setTransitioning(false), 360);
+    return () => window.clearTimeout(timer);
+  }, [pathname, transitioning]);
+
+  const beginNavigation = () => {
+    setOpen(false);
+    setTransitioning(true);
+  };
 
 
   return (
@@ -170,11 +179,11 @@ function PainelLayout() {
               <p className="px-3 pb-1.5 text-[0.62rem] font-bold uppercase text-muted-foreground/60">{group.title}</p>
               <div className="space-y-0.5">
                 {group.items.filter((item) => canOpen(item.to)).map((item) => (
-                  <Link key={item.to} to={item.to} activeOptions={{ exact: "exact" in item ? item.exact : false }} onClick={() => setOpen(false)}
+                  <Link key={item.to} to={item.to} activeOptions={{ exact: "exact" in item ? item.exact : false }} onClick={beginNavigation}
                     className="owner-nav-item relative flex items-center gap-3 rounded-md px-3 py-2 text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                     activeProps={{ className: "owner-nav-item owner-nav-active relative flex items-center gap-3 rounded-md bg-sidebar-accent px-3 py-2 text-sidebar-accent-foreground" }}>
                     <item.icon className="size-[18px] shrink-0" strokeWidth={1.8} />
-                    <span className="min-w-0"><span className="block text-[0.84rem] font-semibold">{item.label}</span><span className="block truncate text-[0.64rem] text-muted-foreground">{item.hint}</span></span>
+                    <span className="min-w-0"><span className="owner-nav-label block text-[0.84rem] font-semibold">{item.label}</span><span className="owner-nav-hint block truncate text-[0.64rem] text-muted-foreground">{item.hint}</span></span>
                   </Link>
                 ))}
               </div>
@@ -183,10 +192,10 @@ function PainelLayout() {
         </nav>
 
         <div className="mt-2 border-t border-sidebar-border pt-3">
-          <Link to="/painel/assinatura" className="mb-2 flex items-center gap-3 rounded-md border border-sidebar-border bg-sidebar-accent/40 p-3">
+          <div className="mb-2 flex items-center gap-3 rounded-md border border-sidebar-border bg-sidebar-accent/40 p-3">
             <span className="flex size-9 items-center justify-center rounded-full bg-primary/15 text-primary"><UserCircle className="size-5" /></span>
-            <span className="min-w-0 flex-1"><span className="block truncate text-xs font-semibold text-sidebar-accent-foreground">{business?.name ?? "Minha conta"}</span><span className="block text-[0.64rem] text-muted-foreground">{business?.status === "suspenso" ? "Assinatura bloqueada" : "Assinatura ativa"}</span></span>
-          </Link>
+            <span className="min-w-0 flex-1"><span className="block truncate text-xs font-semibold text-sidebar-accent-foreground">{business?.name ?? "Minha conta"}</span><span className="block text-[0.64rem] text-muted-foreground">{business?.status === "suspenso" ? "Conta bloqueada" : "Conta ativa"}</span></span>
+          </div>
           <p className="truncate px-3 text-xs text-muted-foreground">{user?.email}</p>
 
           <Button
@@ -203,6 +212,7 @@ function PainelLayout() {
       </aside>
 
       <div className="min-w-0 flex-1">
+        <div aria-hidden="true" className={`owner-route-progress ${transitioning ? "is-visible" : ""}`} />
         <header className="flex min-h-16 items-center gap-3 border-b border-border bg-card px-3 py-3 sm:px-6">
           <Button
             variant="ghost"
@@ -219,7 +229,9 @@ function PainelLayout() {
           </Button>
         </header>
         <main className="mx-auto w-full max-w-7xl p-4 sm:p-8">
-          <Outlet />
+          <div key={pathname} className="owner-route-content">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

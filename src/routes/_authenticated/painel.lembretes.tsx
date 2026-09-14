@@ -290,7 +290,7 @@ function LembretesPage() {
                     </p>
                   </div>
                   {a.reminder ? (
-                    <span className="flex items-center gap-1.5 text-sm font-medium text-success">
+                    <span className="flex items-center gap-1.5 text-sm font-medium text-primary">
                       <CheckCheck className="size-4" /> Lembrado
                     </span>
                   ) : (
