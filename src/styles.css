@@ -209,36 +209,36 @@
 /* Painel do proprietário — console escuro Agenda Agora */
 .owner-panel {
   --radius: 0.5rem;
-  --background: oklch(0.09 0.006 265);
+  --background: oklch(0 0 0);
   --foreground: oklch(0.96 0.004 255);
-  --card: oklch(0.105 0.007 265);
+  --card: oklch(0.1303 0.0073 285.34);
   --card-foreground: oklch(0.96 0.004 255);
-  --popover: oklch(0.13 0.008 265);
+  --popover: oklch(0.1496 0 0);
   --popover-foreground: oklch(0.96 0.004 255);
-  --primary: oklch(0.63 0.22 255);
+  --primary: oklch(0.5756 0.2222 261.22);
   --primary-foreground: oklch(0.99 0.002 255);
-  --secondary: oklch(0.15 0.008 265);
+  --secondary: oklch(0.1496 0 0);
   --secondary-foreground: oklch(0.9 0.008 255);
-  --muted: oklch(0.14 0.008 265);
+  --muted: oklch(0.1496 0 0);
   --muted-foreground: oklch(0.61 0.012 255);
-  --accent: oklch(0.2 0.055 258);
+  --accent: oklch(0.205 0.058 261.22);
   --accent-foreground: oklch(0.86 0.1 250);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 13%);
-  --ring: oklch(0.63 0.22 255);
-  --sidebar: oklch(0.085 0.007 265);
+  --ring: oklch(0.5756 0.2222 261.22);
+  --sidebar: oklch(0 0 0);
   --sidebar-foreground: oklch(0.72 0.012 255);
-  --sidebar-primary: oklch(0.63 0.22 255);
+  --sidebar-primary: oklch(0.5756 0.2222 261.22);
   --sidebar-primary-foreground: oklch(0.99 0.002 255);
-  --sidebar-accent: oklch(0.18 0.05 258);
+  --sidebar-accent: oklch(0.205 0.058 261.22);
   --sidebar-accent-foreground: oklch(0.97 0.004 255);
   --sidebar-border: oklch(1 0 0 / 9%);
-  --sidebar-ring: oklch(0.63 0.22 255);
-  --slot-free: oklch(0.145 0.008 265);
+  --sidebar-ring: oklch(0.5756 0.2222 261.22);
+  --slot-free: oklch(0.1496 0 0);
   --slot-free-foreground: oklch(0.65 0.012 255);
   --slot-paid: oklch(0.22 0.015 255);
   --slot-paid-foreground: oklch(0.92 0.01 255);
-  --shadow-soft: 0 1px 2px oklch(0 0 0 / 35%), 0 0 18px oklch(0.63 0.22 255 / 8%);
+  --shadow-soft: 0 1px 2px oklch(0 0 0 / 35%), 0 0 18px oklch(0.5756 0.2222 261.22 / 9%);
 }
 
 .owner-panel .surface {
