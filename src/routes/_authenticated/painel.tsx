@@ -21,6 +21,8 @@ import {
   Settings2,
   Plus,
   MessageCircle,
+  UserCircle,
+  Clock3,
 } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -51,24 +53,34 @@ export const Route = createFileRoute("/_authenticated/painel")({
 });
 
 const nav = [
-  { to: "/painel", label: "Agenda", icon: CalendarDays, exact: true },
-  { to: "/painel/as-pay", label: "AS Pay", icon: Gem },
-  { to: "/painel/relatorio", label: "Relatório", icon: PieChart },
-  { to: "/painel/caixa", label: "Caixa", icon: Calculator },
-  { to: "/painel/assinatura", label: "Assinatura", icon: CreditCard },
-  { to: "/painel/produtos", label: "Produtos", icon: ShoppingBasket },
-  { to: "/painel/servicos", label: "Serviço", icon: Scissors },
-  { to: "/painel/clientes", label: "Clientes", icon: Users },
-  { to: "/painel/templates", label: "Templates", icon: MessageSquareText },
-  { to: "/painel/pagamentos", label: "Pagamentos", icon: DollarSign },
-  { to: "/painel/lembretes", label: "Lembretes", icon: BellRing },
-  { to: "/painel/whatsapp", label: "WhatsApp", icon: MessageCircle },
-  { to: "/painel/bloqueios", label: "Horários Bloqueados", icon: CircleX },
-  { to: "/painel/funcionamento", label: "Funcionamento", icon: CalendarCheck },
-  { to: "/painel/profissionais", label: "Profissionais", icon: UserRound },
-  { to: "/painel/configuracoes", label: "Configurações", icon: Settings2 },
-  { to: "/painel/integracoes", label: "Integrações", icon: Plus },
-  { to: "/painel/negocios", label: "Negócios", icon: Store },
+  { title: "Agenda", items: [
+    { to: "/painel", label: "Agenda", hint: "Visão dos horários", icon: CalendarDays, exact: true },
+    { to: "/painel/bloqueios", label: "Horários Bloqueados", hint: "Folgas e indisponibilidades", icon: CircleX },
+    { to: "/painel/funcionamento", label: "Funcionamento", hint: "Dias e horários", icon: Clock3 },
+  ]},
+  { title: "Gestão", items: [
+    { to: "/painel/clientes", label: "Clientes", hint: "Cadastro de clientes", icon: Users },
+    { to: "/painel/profissionais", label: "Profissionais", hint: "Equipe e permissões", icon: UserRound },
+    { to: "/painel/servicos", label: "Serviço", hint: "Serviços e valores", icon: Scissors },
+    { to: "/painel/produtos", label: "Produtos", hint: "Produtos e estoque", icon: ShoppingBasket },
+  ]},
+  { title: "Financeiro", items: [
+    { to: "/painel/as-pay", label: "AS Pay", hint: "Saldo dos sinais", icon: Gem },
+    { to: "/painel/caixa", label: "Caixa", hint: "Entradas e saídas", icon: Calculator },
+    { to: "/painel/pagamentos", label: "Pagamentos", hint: "Histórico da assinatura", icon: DollarSign },
+    { to: "/painel/relatorio", label: "Relatório", hint: "Métricas e resultados", icon: PieChart },
+  ]},
+  { title: "Comunicação", items: [
+    { to: "/painel/templates", label: "Templates", hint: "Mensagens prontas", icon: MessageSquareText },
+    { to: "/painel/whatsapp", label: "WhatsApp", hint: "Conexão e mensagens", icon: MessageCircle },
+    { to: "/painel/lembretes", label: "Lembretes", hint: "Envios automáticos", icon: BellRing },
+  ]},
+  { title: "Sistema", items: [
+    { to: "/painel/configuracoes", label: "Configurações", hint: "Preferências do negócio", icon: Settings2 },
+    { to: "/painel/integracoes", label: "Integrações", hint: "Serviços conectados", icon: Plus },
+    { to: "/painel/assinatura", label: "Assinatura", hint: "Plano e vencimento", icon: CreditCard },
+    { to: "/painel/negocios", label: "Negócios", hint: "Gerenciar unidades", icon: Store },
+  ]},
 ] as const;
 
 function WhatsappBadge() {
@@ -104,7 +116,7 @@ function WhatsappBadge() {
 
 function PainelLayout() {
   const { user, signOut } = useAuth();
-  const { businesses, businessId, setBusinessId } = useBusiness();
+  const { businesses, business, businessId, setBusinessId } = useBusiness();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
@@ -140,26 +152,29 @@ function PainelLayout() {
           </Select>
         </div>
 
-        <nav className="space-y-0.5 py-4">
-          {nav.map((item) => (
-            <Link
-              key={item.to}
-              to={item.to}
-              activeOptions={{ exact: "exact" in item ? item.exact : false }}
-              onClick={() => setOpen(false)}
-              className="flex items-center gap-3 rounded-md border border-transparent px-3 py-2.5 text-[0.86rem] font-medium text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-              activeProps={{
-                className:
-                  "flex items-center gap-3 rounded-md border border-sidebar-ring/35 bg-sidebar-accent px-3 py-2.5 text-[0.86rem] font-semibold text-sidebar-accent-foreground shadow-soft",
-              }}
-            >
-              <item.icon className="size-[17px] text-primary" />
-              {item.label}
-            </Link>
+        <nav className="space-y-5 py-4">
+          {nav.map((group) => (
+            <section key={group.title}>
+              <p className="px-3 pb-1.5 text-[0.62rem] font-bold uppercase text-muted-foreground/60">{group.title}</p>
+              <div className="space-y-0.5">
+                {group.items.map((item) => (
+                  <Link key={item.to} to={item.to} activeOptions={{ exact: "exact" in item ? item.exact : false }} onClick={() => setOpen(false)}
+                    className="owner-nav-item relative flex items-center gap-3 rounded-md px-3 py-2 text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                    activeProps={{ className: "owner-nav-item owner-nav-active relative flex items-center gap-3 rounded-md bg-sidebar-accent px-3 py-2 text-sidebar-accent-foreground" }}>
+                    <item.icon className="size-[18px] shrink-0" strokeWidth={1.8} />
+                    <span className="min-w-0"><span className="block text-[0.84rem] font-semibold">{item.label}</span><span className="block truncate text-[0.64rem] text-muted-foreground">{item.hint}</span></span>
+                  </Link>
+                ))}
+              </div>
+            </section>
           ))}
         </nav>
 
         <div className="mt-2 border-t border-sidebar-border pt-3">
+          <Link to="/painel/assinatura" className="mb-2 flex items-center gap-3 rounded-md border border-sidebar-border bg-sidebar-accent/40 p-3">
+            <span className="flex size-9 items-center justify-center rounded-full bg-primary/15 text-primary"><UserCircle className="size-5" /></span>
+            <span className="min-w-0 flex-1"><span className="block truncate text-xs font-semibold text-sidebar-accent-foreground">{business?.name ?? "Minha conta"}</span><span className="block text-[0.64rem] text-muted-foreground">{business?.status === "suspenso" ? "Assinatura bloqueada" : "Assinatura ativa"}</span></span>
+          </Link>
           <p className="truncate px-3 text-xs text-muted-foreground">{user?.email}</p>
 
           <Button
