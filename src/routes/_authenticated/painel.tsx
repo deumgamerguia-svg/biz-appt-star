@@ -21,6 +21,7 @@ import {
   MessageCircle,
   UserCircle,
   Clock3,
+  LoaderCircle,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -143,24 +144,41 @@ function PainelLayout() {
 
 
   return (
-    <div className="owner-panel min-h-screen bg-background lg:flex">
+    <div className="owner-panel min-h-screen overflow-x-hidden bg-background lg:flex">
+      <Button
+        type="button"
+        variant="ghost"
+        aria-label="Fechar menu"
+        onClick={() => setOpen(false)}
+        className={`${open ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"} fixed inset-0 z-40 h-auto w-auto rounded-none bg-background/75 p-0 backdrop-blur-[2px] transition-opacity hover:bg-background/75 lg:hidden`}
+      />
       <aside
-        className={`${open ? "block" : "hidden"} border-b border-sidebar-border bg-sidebar px-3 py-3 lg:sticky lg:top-0 lg:block lg:h-screen lg:w-64 lg:shrink-0 lg:overflow-y-auto lg:border-r lg:border-b-0`}
+        className={`${open ? "translate-x-0" : "-translate-x-full"} fixed inset-y-0 left-0 z-50 flex w-[min(84vw,20rem)] flex-col border-r border-sidebar-border bg-sidebar px-5 py-4 shadow-2xl transition-transform duration-200 ease-out lg:sticky lg:top-0 lg:h-screen lg:w-[18.5rem] lg:shrink-0 lg:translate-x-0 lg:overflow-y-auto lg:px-5 lg:shadow-none`}
       >
         <Link
           to="/painel"
-          className="flex h-14 items-center px-1"
+          onClick={beginNavigation}
+          className="flex h-[5.25rem] shrink-0 items-center border-b border-sidebar-border px-1"
         >
           <img
             src={brandLogo.url}
             alt="Agenda Agora"
-            className="h-9 w-auto max-w-[190px] object-contain object-left"
+            className="h-11 w-auto max-w-[220px] object-contain object-left"
           />
         </Link>
 
-        <div className="border-b border-sidebar-border px-1 pb-4 pt-2">
+        <div className="border-b border-sidebar-border px-1 py-4">
+          <div className="mb-3 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3">
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-foreground font-display text-base font-bold text-background">
+              {(business?.name ?? user?.email ?? "A").charAt(0).toUpperCase()}
+            </span>
+            <span className="min-w-0">
+              <span className="block truncate text-sm font-bold text-sidebar-accent-foreground">{business?.name ?? "Minha conta"}</span>
+              <span className="block truncate text-xs text-muted-foreground">{user?.email}</span>
+            </span>
+          </div>
           <Select {...(businessId ? { value: businessId } : {})} onValueChange={setBusinessId}>
-            <SelectTrigger className="w-full border-sidebar-border bg-sidebar-accent text-sidebar-foreground">
+            <SelectTrigger className="h-12 w-full border-sidebar-border bg-card px-3 text-sidebar-foreground">
               <SelectValue placeholder="Nenhum negócio" />
             </SelectTrigger>
             <SelectContent>
@@ -173,17 +191,17 @@ function PainelLayout() {
           </Select>
         </div>
 
-        <nav className="space-y-5 py-4">
+        <nav className="min-h-0 flex-1 space-y-6 overflow-y-auto py-5 pr-1">
           {nav.map((group) => (
             <section key={group.title}>
-              <p className="px-3 pb-1.5 text-[0.62rem] font-bold uppercase text-muted-foreground/60">{group.title}</p>
-              <div className="space-y-0.5">
+              <p className="px-3 pb-2 text-[0.65rem] font-bold uppercase text-muted-foreground/60">{group.title}</p>
+              <div className="space-y-1">
                 {group.items.filter((item) => canOpen(item.to)).map((item) => (
                   <Link key={item.to} to={item.to} activeOptions={{ exact: "exact" in item ? item.exact : false }} onClick={beginNavigation}
                     className="owner-nav-item relative flex items-center gap-3 rounded-md px-3 py-2 text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                     activeProps={{ className: "owner-nav-item owner-nav-active relative flex items-center gap-3 rounded-md bg-sidebar-accent px-3 py-2 text-sidebar-accent-foreground" }}>
-                    <item.icon className="size-[18px] shrink-0" strokeWidth={1.8} />
-                    <span className="min-w-0"><span className="owner-nav-label block text-[0.84rem] font-semibold">{item.label}</span><span className="owner-nav-hint block truncate text-[0.64rem] text-muted-foreground">{item.hint}</span></span>
+                    <item.icon className="size-5 shrink-0" strokeWidth={1.8} />
+                    <span className="min-w-0"><span className="owner-nav-label block text-sm font-semibold">{item.label}</span><span className="owner-nav-hint block truncate text-[0.68rem] text-muted-foreground">{item.hint}</span></span>
                   </Link>
                 ))}
               </div>
@@ -191,13 +209,11 @@ function PainelLayout() {
           ))}
         </nav>
 
-        <div className="mt-2 border-t border-sidebar-border pt-3">
-          <div className="mb-2 flex items-center gap-3 rounded-md border border-sidebar-border bg-sidebar-accent/40 p-3">
-            <span className="flex size-9 items-center justify-center rounded-full bg-primary/15 text-primary"><UserCircle className="size-5" /></span>
-            <span className="min-w-0 flex-1"><span className="block truncate text-xs font-semibold text-sidebar-accent-foreground">{business?.name ?? "Minha conta"}</span><span className="block text-[0.64rem] text-muted-foreground">{business?.status === "suspenso" ? "Conta bloqueada" : "Conta ativa"}</span></span>
+        <div className="shrink-0 border-t border-sidebar-border pt-3">
+          <div className="mb-2 flex items-center gap-3 px-3 py-2">
+            <UserCircle className="size-5 shrink-0 text-primary" />
+            <span className="min-w-0 flex-1"><span className="block truncate text-xs font-semibold text-sidebar-accent-foreground">Conta do estabelecimento</span><span className="block text-[0.64rem] text-muted-foreground">{business?.status === "suspenso" ? "Conta bloqueada" : "Conta ativa"}</span></span>
           </div>
-          <p className="truncate px-3 text-xs text-muted-foreground">{user?.email}</p>
-
           <Button
             variant="ghost"
             className="mt-1 w-full justify-start text-sidebar-foreground"
@@ -213,7 +229,7 @@ function PainelLayout() {
 
       <div className="min-w-0 flex-1">
         <div aria-hidden="true" className={`owner-route-progress ${transitioning ? "is-visible" : ""}`} />
-        <header className="flex min-h-16 items-center gap-3 border-b border-border bg-card px-3 py-3 sm:px-6">
+        <header className="sticky top-0 z-30 grid min-h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-b border-border bg-background/95 px-3 py-3 backdrop-blur sm:px-6">
           <Button
             variant="ghost"
             size="icon"
@@ -228,7 +244,12 @@ function PainelLayout() {
             <Bell className="size-5" />
           </Button>
         </header>
-        <main className="mx-auto w-full max-w-7xl p-4 sm:p-8">
+        <main className="relative mx-auto w-full max-w-7xl p-4 sm:p-7 lg:p-8">
+          {transitioning && (
+            <div className="owner-route-loader" aria-label="Carregando página" role="status">
+              <LoaderCircle className="size-6 animate-spin text-primary" />
+            </div>
+          )}
           <div key={pathname} className="owner-route-content">
             <Outlet />
           </div>

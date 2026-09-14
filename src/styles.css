@@ -211,17 +211,17 @@
   --radius: 0.5rem;
   --background: oklch(0 0 0);
   --foreground: oklch(0.96 0.004 255);
-  --card: oklch(0.1303 0.0073 285.34);
+  --card: oklch(0.115 0.004 265);
   --card-foreground: oklch(0.96 0.004 255);
   --popover: oklch(0.1496 0 0);
   --popover-foreground: oklch(0.96 0.004 255);
   --primary: oklch(0.5756 0.2222 261.22);
   --primary-foreground: oklch(0.99 0.002 255);
-  --secondary: oklch(0.1496 0 0);
+  --secondary: oklch(0.145 0.004 265);
   --secondary-foreground: oklch(0.9 0.008 255);
-  --muted: oklch(0.1496 0 0);
+  --muted: oklch(0.145 0.004 265);
   --muted-foreground: oklch(0.61 0.012 255);
-  --accent: oklch(0.205 0.058 261.22);
+  --accent: oklch(0.16 0.018 265);
   --accent-foreground: oklch(0.86 0.1 250);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 13%);
@@ -232,7 +232,7 @@
   --sidebar-foreground: oklch(0.72 0.012 255);
   --sidebar-primary: oklch(0.5756 0.2222 261.22);
   --sidebar-primary-foreground: oklch(0.99 0.002 255);
-  --sidebar-accent: oklch(0.205 0.058 261.22);
+  --sidebar-accent: oklch(0.145 0.006 265);
   --sidebar-accent-foreground: oklch(0.97 0.004 255);
   --sidebar-border: oklch(1 0 0 / 9%);
   --sidebar-ring: oklch(0.5756 0.2222 261.22);
@@ -262,7 +262,7 @@
 }
 
 .owner-panel nav a:hover {
-  transform: translateX(2px);
+  transform: translateX(3px);
 }
 
 .owner-panel nav a:active {
@@ -272,9 +272,9 @@
 .owner-panel .owner-nav-active::before {
   content: "";
   position: absolute;
-  inset-block: 0.35rem;
-  left: 0;
-  width: 3px;
+  inset-block: 0.3rem;
+  left: -0.75rem;
+  width: 4px;
   border-radius: 999px;
   background: var(--color-primary);
   box-shadow: 0 0 10px color-mix(in oklab, var(--color-primary) 72%, transparent);
@@ -290,7 +290,7 @@
 }
 
 .owner-panel .owner-nav-item {
-  min-height: 3rem;
+  min-height: 3.45rem;
 }
 
 .owner-route-progress {
@@ -314,7 +314,20 @@
 }
 
 .owner-route-content {
-  animation: owner-route-enter 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: owner-route-enter 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.owner-route-loader {
+  position: absolute;
+  z-index: 20;
+  inset: 1rem;
+  min-height: 12rem;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-lg);
+  background: color-mix(in oklab, var(--color-background) 88%, transparent);
+  backdrop-filter: blur(4px);
+  animation: owner-loader-in 120ms ease-out both;
 }
 
 @keyframes owner-route-progress {
@@ -326,6 +339,11 @@
 @keyframes owner-route-enter {
   from { opacity: 0; transform: translateY(7px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes owner-loader-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .owner-panel main,
