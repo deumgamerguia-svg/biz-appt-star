@@ -130,7 +130,7 @@ function PainelLayout() {
     queryFn: async () => { const { data } = await supabase.from("professionals").select("permissions").eq("user_id", user!.id).eq("business_id", businessId!).maybeSingle(); return data; },
   });
   const permissions = member?.permissions && typeof member.permissions === "object" && !Array.isArray(member.permissions) ? member.permissions as Record<string, boolean> : null;
-  const canOpen = (to: string) => !permissions || !!permissions.admin || !!permissions[routePermission[to] ?? "admin"];
+  const canOpen = (to: string) => !permissions || !!permissions["admin"] || !!permissions[routePermission[to] ?? "admin"];
 
 
   return (
