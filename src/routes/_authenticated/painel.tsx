@@ -29,6 +29,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useBusiness } from "@/lib/business";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import brandLogo from "@/assets/agenda-agora-logo.png.asset.json";
 import {
   Select,
   SelectContent,
@@ -109,18 +110,22 @@ function PainelLayout() {
 
 
   return (
-    <div className="min-h-screen bg-background lg:flex">
+    <div className="owner-panel min-h-screen bg-background lg:flex">
       <aside
-        className={`${open ? "block" : "hidden"} bg-sidebar p-3 lg:sticky lg:top-0 lg:block lg:h-screen lg:w-64 lg:shrink-0 lg:overflow-y-auto`}
+        className={`${open ? "block" : "hidden"} border-b border-sidebar-border bg-sidebar px-3 py-3 lg:sticky lg:top-0 lg:block lg:h-screen lg:w-64 lg:shrink-0 lg:overflow-y-auto lg:border-r lg:border-b-0`}
       >
         <Link
           to="/painel"
-          className="block px-3 py-3 font-display text-lg font-extrabold uppercase tracking-[0.12em] text-primary"
+          className="flex h-14 items-center px-1"
         >
-          Agenda Agora
+          <img
+            src={brandLogo.url}
+            alt="Agenda Agora"
+            className="h-9 w-auto max-w-[190px] object-contain object-left"
+          />
         </Link>
 
-        <div className="px-1 pb-3">
+        <div className="border-b border-sidebar-border px-1 pb-4 pt-2">
           <Select {...(businessId ? { value: businessId } : {})} onValueChange={setBusinessId}>
             <SelectTrigger className="w-full border-sidebar-border bg-sidebar-accent text-sidebar-foreground">
               <SelectValue placeholder="Nenhum negócio" />
@@ -135,26 +140,26 @@ function PainelLayout() {
           </Select>
         </div>
 
-        <nav className="space-y-0.5">
+        <nav className="space-y-0.5 py-4">
           {nav.map((item) => (
             <Link
               key={item.to}
               to={item.to}
               activeOptions={{ exact: "exact" in item ? item.exact : false }}
               onClick={() => setOpen(false)}
-              className="flex items-center gap-3 rounded-md px-3 py-2.5 text-[0.95rem] font-medium text-sidebar-foreground transition-colors hover:bg-sidebar-accent"
+              className="flex items-center gap-3 rounded-md border border-transparent px-3 py-2.5 text-[0.86rem] font-medium text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
               activeProps={{
                 className:
-                  "flex items-center gap-3 rounded-md px-3 py-2.5 text-[0.95rem] font-semibold bg-sidebar-accent text-sidebar-accent-foreground",
+                  "flex items-center gap-3 rounded-md border border-sidebar-ring/35 bg-sidebar-accent px-3 py-2.5 text-[0.86rem] font-semibold text-sidebar-accent-foreground shadow-soft",
               }}
             >
-              <item.icon className="size-[18px] text-primary" />
+              <item.icon className="size-[17px] text-primary" />
               {item.label}
             </Link>
           ))}
         </nav>
 
-        <div className="mt-6 border-t border-sidebar-border pt-3">
+        <div className="mt-2 border-t border-sidebar-border pt-3">
           <p className="truncate px-3 text-xs text-muted-foreground">{user?.email}</p>
 
           <Button
@@ -171,7 +176,7 @@ function PainelLayout() {
       </aside>
 
       <div className="min-w-0 flex-1">
-        <header className="flex items-center gap-3 bg-card px-3 py-3">
+        <header className="flex min-h-16 items-center gap-3 border-b border-border bg-card px-3 py-3 sm:px-6">
           <Button
             variant="ghost"
             size="icon"
@@ -186,7 +191,7 @@ function PainelLayout() {
             <Bell className="size-5" />
           </Button>
         </header>
-        <main className="mx-auto w-full max-w-6xl p-3 sm:p-6">
+        <main className="mx-auto w-full max-w-7xl p-4 sm:p-8">
           <Outlet />
         </main>
       </div>
