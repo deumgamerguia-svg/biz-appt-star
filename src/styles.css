@@ -245,6 +245,42 @@
   box-shadow: none;
 }
 
+.owner-panel button,
+.owner-panel [role="button"],
+.owner-panel a {
+  transition-duration: 120ms;
+  transition-timing-function: ease-out;
+}
+
+.owner-panel button:active:not(:disabled),
+.owner-panel [role="button"]:active:not(:disabled),
+.owner-panel a:active {
+  transform: scale(0.98);
+  filter: brightness(1.12);
+}
+
+.owner-panel nav a:hover {
+  transform: translateX(2px);
+}
+
+.owner-panel nav a:active {
+  transform: translateX(2px) scale(0.98);
+}
+
+.owner-panel main,
+.owner-panel [data-slot="card"] {
+  animation-duration: 180ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .owner-panel *,
+  .owner-panel *::before,
+  .owner-panel *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 @utility surface {
   background-color: var(--color-card);
   border: 1px solid var(--color-border);
