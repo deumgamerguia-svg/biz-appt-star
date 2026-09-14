@@ -1,6 +1,7 @@
 # Roadmap
 
 ## Em andamento
+- [x] Reproduzir as proporções desktop/Android da barra lateral ScaleReels e o carregamento curto entre tópicos
 - [x] Remover Produtos e Assinatura e consolidar o painel em azul, preto e cinza com navegação animada
 - [x] Organizar a barra lateral em seções e criar Serviços/Profissionais completos com vínculos, imagens, login e permissões
 - [x] Redesenhar o painel do comércio fiel à referência ScaleReels, usando a logo Agenda Agora enviada e sem alterar tópicos ou funções
