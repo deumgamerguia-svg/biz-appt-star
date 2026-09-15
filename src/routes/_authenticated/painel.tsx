@@ -134,15 +134,6 @@ const nav = [
   },
 ] as const;
 
-const routePermission: Partial<Record<string, string>> = {
-  "/painel": "view_agenda",
-  "/painel/bloqueios": "block_schedule",
-  "/painel/clientes": "view_customer_phone",
-  "/painel/caixa": "view_financial",
-  "/painel/pagamentos": "view_financial",
-  "/painel/relatorio": "view_reports",
-};
-
 const WEEKDAYS = ["DOMINGO", "SEGUNDA", "TERÇA", "QUARTA", "QUINTA", "SEXTA", "SÁBADO"] as const;
 const MONTHS = [
   "JANEIRO",
@@ -204,7 +195,7 @@ function WhatsappBadge() {
 
 function PainelLayout() {
   const { user, signOut } = useAuth();
-  const { businesses, business, businessId } = useBusiness();
+  const { business, businessId } = useBusiness();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [transitioning, setTransitioning] = useState(false);
@@ -224,28 +215,6 @@ function PainelLayout() {
       return data;
     },
   });
-
-  const { data: member } = useQuery({
-    queryKey: ["current-professional", user?.id, businessId],
-    enabled: !!user?.id && !!businessId,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("professionals")
-        .select("permissions")
-        .eq("user_id", user!.id)
-        .eq("business_id", businessId!)
-        .maybeSingle();
-      return data;
-    },
-  });
-
-  const permissions =
-    member?.permissions && typeof member.permissions === "object" && !Array.isArray(member.permissions)
-      ? (member.permissions as Record<string, boolean>)
-      : null;
-
-  const canOpen = (to: string) =>
-    !permissions || !!permissions["admin"] || !!permissions[routePermission[to] ?? "admin"];
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 60000);
@@ -326,21 +295,11 @@ function PainelLayout() {
             </span>
           </div>
 
-          {business ? (
+          {business && (
             <div className="mt-3 rounded-xl border border-[#25282c] bg-[#0b0d0f]/80 px-3 py-2.5 text-[0.75rem] text-[#626a75]">
               <span className="block font-medium text-[#aeb4bd]">Estabelecimento configurado</span>
               <span className="mt-0.5 block truncate">{business.slug}</span>
             </div>
-          ) : (
-            <div className="mt-3 rounded-xl border border-dashed border-[#25282c] px-3 py-2.5 text-[0.75rem] text-[#626a75]">
-              Aguardando configuração pelo painel Master.
-            </div>
-          )}
-
-          {businesses.length > 1 && (
-            <p className="mt-2 text-[0.68rem] text-[#555d68]">
-              Este acesso possui mais de uma unidade vinculada. A seleção de unidade é administrada pelo Master.
-            </p>
           )}
         </div>
 
@@ -351,34 +310,32 @@ function PainelLayout() {
                 {group.title}
               </p>
               <div className="space-y-1">
-                {group.items
-                  .filter((item) => canOpen(item.to))
-                  .map((item) => (
-                    <Link
-                      key={item.to}
-                      to={item.to}
-                      activeOptions={{ exact: "exact" in item ? item.exact : false }}
-                      onClick={beginNavigation}
-                      className="owner-nav-item group relative flex items-center gap-3 rounded-xl border border-transparent px-3 py-2.5 text-[#7f8793] transition-all duration-200 hover:border-[#1677ff]/10 hover:bg-[#1677ff]/[0.055] hover:text-[#e5e7eb]"
-                      activeProps={{
-                        className:
-                          "owner-nav-item owner-nav-active group relative flex items-center gap-3 rounded-xl border border-[#1677ff]/15 bg-[#1677ff]/[0.09] px-3 py-2.5 text-[#f3f4f6] shadow-[0_8px_24px_rgba(0,0,0,0.12)]",
-                      }}
-                    >
-                      <item.icon
-                        className="size-5 shrink-0 transition-colors group-hover:text-[#5da8ff]"
-                        strokeWidth={1.8}
-                      />
-                      <span className="min-w-0 leading-[1.25]">
-                        <span className="owner-nav-label block text-[0.86rem] font-medium">
-                          {item.label}
-                        </span>
-                        <span className="owner-nav-hint block truncate text-[0.7rem] font-normal text-[#555d68]">
-                          {item.hint}
-                        </span>
+                {group.items.map((item) => (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    activeOptions={{ exact: "exact" in item ? item.exact : false }}
+                    onClick={beginNavigation}
+                    className="owner-nav-item group relative flex items-center gap-3 rounded-xl border border-transparent px-3 py-2.5 text-[#7f8793] transition-all duration-200 hover:border-[#1677ff]/10 hover:bg-[#1677ff]/[0.055] hover:text-[#e5e7eb]"
+                    activeProps={{
+                      className:
+                        "owner-nav-item owner-nav-active group relative flex items-center gap-3 rounded-xl border border-[#1677ff]/15 bg-[#1677ff]/[0.09] px-3 py-2.5 text-[#f3f4f6] shadow-[0_8px_24px_rgba(0,0,0,0.12)]",
+                    }}
+                  >
+                    <item.icon
+                      className="size-5 shrink-0 transition-colors group-hover:text-[#5da8ff]"
+                      strokeWidth={1.8}
+                    />
+                    <span className="min-w-0 leading-[1.25]">
+                      <span className="owner-nav-label block text-[0.86rem] font-medium">
+                        {item.label}
                       </span>
-                    </Link>
-                  ))}
+                      <span className="owner-nav-hint block truncate text-[0.7rem] font-normal text-[#555d68]">
+                        {item.hint}
+                      </span>
+                    </span>
+                  </Link>
+                ))}
               </div>
             </section>
           ))}
