@@ -143,6 +143,33 @@ const routePermission: Partial<Record<string, string>> = {
   "/painel/relatorio": "view_reports",
 };
 
+const WEEKDAYS = ["DOMINGO", "SEGUNDA", "TERÇA", "QUARTA", "QUINTA", "SEXTA", "SÁBADO"] as const;
+const MONTHS = [
+  "JANEIRO",
+  "FEVEREIRO",
+  "MARÇO",
+  "ABRIL",
+  "MAIO",
+  "JUNHO",
+  "JULHO",
+  "AGOSTO",
+  "SETEMBRO",
+  "OUTUBRO",
+  "NOVEMBRO",
+  "DEZEMBRO",
+] as const;
+
+function greetingFor(date: Date) {
+  const hour = date.getHours();
+  if (hour >= 5 && hour < 12) return "Bom dia";
+  if (hour >= 12 && hour < 18) return "Boa tarde";
+  return "Boa noite";
+}
+
+function panelDate(date: Date) {
+  return `${WEEKDAYS[date.getDay()]}, ${date.getDate()} DE ${MONTHS[date.getMonth()]} DE ${date.getFullYear()}`;
+}
+
 function WhatsappBadge() {
   const { businessId } = useBusiness();
   const { data } = useQuery({
@@ -181,7 +208,22 @@ function PainelLayout() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [transitioning, setTransitioning] = useState(false);
+  const [now, setNow] = useState(() => new Date());
   const pathname = useRouterState({ select: (state) => state.location.pathname });
+
+  const { data: greetingProfile } = useQuery({
+    queryKey: ["owner-greeting-name", user?.id],
+    enabled: !!user?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", user!.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
 
   const { data: member } = useQuery({
     queryKey: ["current-professional", user?.id, businessId],
@@ -206,6 +248,11 @@ function PainelLayout() {
     !permissions || !!permissions["admin"] || !!permissions[routePermission[to] ?? "admin"];
 
   useEffect(() => {
+    const timer = window.setInterval(() => setNow(new Date()), 60000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
     if (!transitioning) return;
     const timer = window.setTimeout(() => setTransitioning(false), 360);
     return () => window.clearTimeout(timer);
@@ -215,6 +262,8 @@ function PainelLayout() {
     setOpen(false);
     setTransitioning(true);
   };
+
+  const greetingName = greetingProfile?.full_name?.trim() || business?.name || "Usuário";
 
   return (
     <div className="owner-panel relative min-h-screen overflow-x-hidden bg-[#050607] text-[#f3f4f6] lg:flex">
@@ -366,15 +415,31 @@ function PainelLayout() {
           className={`owner-route-progress ${transitioning ? "is-visible" : ""}`}
         />
         <header className="sticky top-0 z-30 grid min-h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-b border-[#25282c] bg-[#050607]/90 px-3 py-3 shadow-[0_10px_35px_rgba(0,0,0,0.16)] backdrop-blur-xl sm:px-6">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="shrink-0 rounded-xl text-[#7f8793] hover:bg-[#1677ff]/[0.055] hover:text-[#f3f4f6]"
-            onClick={() => setOpen((v) => !v)}
-            aria-label="Abrir menu"
-          >
-            <Menu className="size-5" />
-          </Button>
+          <div className="flex min-w-0 items-center gap-2.5">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-9 shrink-0 rounded-[11px] border border-[#2b2b2e] bg-[#0d0d10] text-[#e6e6e6] shadow-none hover:bg-[#121216] hover:text-white"
+              onClick={() => setOpen((v) => !v)}
+              aria-label="Abrir menu"
+            >
+              <Menu className="size-5" />
+            </Button>
+            <div className="min-w-0">
+              <p className="truncate text-[14px] font-semibold leading-[16px] tracking-[-0.012em] text-[#e6e6e6]">
+                {greetingFor(now)},{" "}
+                <span
+                  key={greetingName}
+                  className="inline-block font-bold text-[#1f6df9] animate-in fade-in slide-in-from-bottom-1 duration-500"
+                >
+                  {greetingName}
+                </span>
+              </p>
+              <p className="mt-[5px] truncate text-[10px] font-medium uppercase leading-[12px] tracking-[0.09em] text-[#6a6a73]">
+                {panelDate(now)}
+              </p>
+            </div>
+          </div>
           <WhatsappBadge />
           <Button
             variant="ghost"
