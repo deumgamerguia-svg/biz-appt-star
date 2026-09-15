@@ -593,3 +593,67 @@ main, [data-slot="card"] {
 .owner-panel .owner-nav-active .owner-nav-hint {
   color: #97a9ca;
 }
+
+/* Ajuste visual mobile: saudação acima, WhatsApp centralizado e controles da data enquadrados. */
+@media (max-width: 639px) {
+  .owner-panel header.sticky {
+    grid-template-columns: 36px minmax(0, 1fr) 36px;
+    grid-template-rows: auto auto;
+    column-gap: 8px;
+    row-gap: 8px;
+  }
+
+  .owner-panel header.sticky > div:first-child {
+    display: contents;
+  }
+
+  .owner-panel header.sticky > div:first-child > button {
+    grid-column: 1;
+    grid-row: 2;
+    width: 36px;
+    height: 36px;
+  }
+
+  .owner-panel header.sticky > div:first-child > div {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    min-width: 0;
+    padding-inline: 1px;
+  }
+
+  .owner-panel header.sticky > a[href="/painel/whatsapp"] {
+    grid-column: 2;
+    grid-row: 2;
+    width: 100%;
+    min-width: 0;
+    white-space: nowrap;
+  }
+
+  .owner-panel header.sticky > button[aria-label="Notificações"] {
+    grid-column: 3;
+    grid-row: 2;
+    width: 36px;
+    height: 36px;
+  }
+
+  .owner-panel main .owner-route-content > div > div:has(> input[type="date"]) {
+    width: max-content;
+    max-width: 100%;
+    margin-inline: auto;
+  }
+
+  .owner-panel main .owner-route-content > div > div:has(> input[type="date"]) + div {
+    width: 11rem;
+    max-width: 100%;
+    margin-inline: auto;
+    padding-left: 0;
+  }
+
+  .owner-panel main .owner-route-content > div > div:has(> input[type="date"]) + div + button {
+    display: block;
+    width: 11rem;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
