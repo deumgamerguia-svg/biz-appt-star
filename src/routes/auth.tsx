@@ -106,11 +106,7 @@ function AuthPage() {
         <div className="rounded-[30px] border border-white/10 bg-[#050a12]/90 p-6 shadow-[0_28px_90px_rgba(0,0,0,0.55)] backdrop-blur-xl sm:rounded-[34px] sm:p-9 md:p-10">
           <div className="mb-8 flex items-center justify-center sm:mb-10">
             <div className="flex items-center gap-3">
-              <img
-                src="/agenda-agora-logo.svg"
-                alt="Agenda Agora"
-                className="size-[58px] shrink-0 object-contain sm:size-[66px]"
-              />
+              <img src="/agenda-agora-logo.svg" alt="Agenda Agora" className="size-[58px] shrink-0 object-contain sm:size-[66px]" />
               <div className="font-sans text-[26px] font-medium tracking-[-0.04em] sm:text-[31px]">
                 <span className="text-white">Agenda </span>
                 <span className="bg-gradient-to-r from-[#1584ff] to-[#19bdf4] bg-clip-text text-transparent">Agora</span>
@@ -119,72 +115,31 @@ function AuthPage() {
           </div>
 
           <div className="mb-8 sm:mb-9">
-            <h1 className="text-[34px] font-normal leading-[1.08] tracking-[-0.045em] text-white sm:text-[40px]">
-              Acesse sua conta
-            </h1>
-            <p className="mt-3 text-[15px] leading-6 text-[#74839b] sm:text-[16px]">
-              Insira suas credenciais de acesso abaixo.
-            </p>
+            <h1 className="text-[34px] font-normal leading-[1.08] tracking-[-0.045em] text-white sm:text-[40px]">Acesse sua conta</h1>
+            <p className="mt-3 text-[15px] leading-6 text-[#74839b] sm:text-[16px]">Insira suas credenciais de acesso abaixo.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
             <div>
-              <label htmlFor="phone" className="mb-2.5 block text-[12px] font-semibold uppercase tracking-[0.20em] text-[#8294af] sm:text-[13px]">
-                Telefone
-              </label>
+              <label htmlFor="phone" className="mb-2.5 block text-[12px] font-semibold uppercase tracking-[0.20em] text-[#8294af] sm:text-[13px]">Telefone</label>
               <div className="group relative">
                 <Phone className="pointer-events-none absolute left-5 top-1/2 size-5 -translate-y-1/2 text-[#5f7595] transition-colors group-focus-within:text-[#2195ff]" />
-                <input
-                  id="phone"
-                  type="tel"
-                  inputMode="numeric"
-                  autoComplete="username"
-                  value={phone}
-                  onChange={(event) => setPhone(formatPhone(event.target.value))}
-                  placeholder="(11) 99999-9999"
-                  maxLength={15}
-                  required
-                  className="h-[64px] w-full rounded-[18px] border border-[#263d59] bg-[#07101b]/80 pl-14 pr-5 text-[17px] text-white outline-none transition-all placeholder:text-[#566b88] focus:border-[#167cff] focus:ring-4 focus:ring-blue-500/10 sm:h-[68px] sm:rounded-[20px]"
-                />
+                <input id="phone" type="tel" inputMode="numeric" autoComplete="username" value={phone} onChange={(event) => setPhone(formatPhone(event.target.value))} placeholder="(11) 99999-9999" maxLength={15} required className="h-[64px] w-full rounded-[18px] border border-[#263d59] bg-[#07101b]/80 pl-14 pr-5 text-[17px] text-white outline-none transition-all placeholder:text-[#566b88] focus:border-[#167cff] focus:ring-4 focus:ring-blue-500/10 sm:h-[68px] sm:rounded-[20px]" />
               </div>
             </div>
 
             <div>
-              <label htmlFor="password" className="mb-2.5 block text-[12px] font-semibold uppercase tracking-[0.20em] text-[#8294af] sm:text-[13px]">
-                Senha
-              </label>
+              <label htmlFor="password" className="mb-2.5 block text-[12px] font-semibold uppercase tracking-[0.20em] text-[#8294af] sm:text-[13px]">Senha</label>
               <div className="group relative">
                 <LockKeyhole className="pointer-events-none absolute left-5 top-1/2 size-5 -translate-y-1/2 text-[#5f7595] transition-colors group-focus-within:text-[#2195ff]" />
-                <input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  inputMode="numeric"
-                  autoComplete="current-password"
-                  value={password}
-                  onChange={(event) => setPassword(onlyDigits(event.target.value).slice(0, 4))}
-                  placeholder="••••"
-                  minLength={4}
-                  maxLength={4}
-                  pattern="\\d{4}"
-                  required
-                  className="h-[64px] w-full rounded-[18px] border border-[#263d59] bg-[#07101b]/80 pl-14 pr-14 text-[18px] tracking-[0.28em] text-white outline-none transition-all placeholder:tracking-[0.28em] placeholder:text-[#566b88] focus:border-[#167cff] focus:ring-4 focus:ring-blue-500/10 sm:h-[68px] sm:rounded-[20px]"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((visible) => !visible)}
-                  aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-                  className="absolute right-5 top-1/2 -translate-y-1/2 text-[#607696] transition-colors hover:text-[#9bb4d5]"
-                >
+                <input id="password" type={showPassword ? "text" : "password"} inputMode="numeric" autoComplete="current-password" value={password} onChange={(event) => setPassword(onlyDigits(event.target.value).slice(0, 4))} placeholder="••••" minLength={4} maxLength={4} required className="h-[64px] w-full rounded-[18px] border border-[#263d59] bg-[#07101b]/80 pl-14 pr-14 text-[18px] tracking-[0.28em] text-white outline-none transition-all placeholder:tracking-[0.28em] placeholder:text-[#566b88] focus:border-[#167cff] focus:ring-4 focus:ring-blue-500/10 sm:h-[68px] sm:rounded-[20px]" />
+                <button type="button" onClick={() => setShowPassword((visible) => !visible)} aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"} className="absolute right-5 top-1/2 -translate-y-1/2 text-[#607696] transition-colors hover:text-[#9bb4d5]">
                   {showPassword ? <EyeOff className="size-5" /> : <Eye className="size-5" />}
                 </button>
               </div>
             </div>
 
-            <button
-              type="submit"
-              disabled={busy}
-              className="mt-2 h-[62px] w-full rounded-full bg-gradient-to-r from-[#0877ff] via-[#087cff] to-[#13b9ec] text-[17px] font-medium text-white shadow-[0_12px_32px_rgba(0,119,255,0.25)] transition-all hover:brightness-110 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 sm:h-[66px] sm:text-[18px]"
-            >
+            <button type="submit" disabled={busy} className="mt-2 h-[62px] w-full rounded-full bg-gradient-to-r from-[#0877ff] via-[#087cff] to-[#13b9ec] text-[17px] font-medium text-white shadow-[0_12px_32px_rgba(0,119,255,0.25)] transition-all hover:brightness-110 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 sm:h-[66px] sm:text-[18px]">
               {busy ? "Entrando..." : "Entrar"}
             </button>
           </form>
