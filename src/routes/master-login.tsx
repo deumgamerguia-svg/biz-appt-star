@@ -1,15 +1,16 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Eye, EyeOff, ShieldCheck, KeyRound } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { masterLogin } from "@/lib/admin.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 const MASTER_CODE = "16092006";
-const MASTER_LOGIN = `${MASTER_CODE}@agenda.local`;
 
 export const Route = createFileRoute("/master-login")({
   head: () => ({ meta: [
@@ -22,6 +23,7 @@ export const Route = createFileRoute("/master-login")({
 function MasterLoginPage() {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
+  const masterLoginFn = useServerFn(masterLogin);
   const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -37,24 +39,25 @@ function MasterLoginPage() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (code.trim() !== MASTER_CODE || !password) {
+    if (code.trim() !== MASTER_CODE || password.trim() !== MASTER_CODE) {
       toast.error("Código ou senha Master inválidos.");
       return;
     }
     setBusy(true);
     try {
-      const { data: authData, error } = await supabase.auth.signInWithPassword({ email: MASTER_LOGIN, password });
-      if (error || !authData.user) throw new Error("Código ou senha Master inválidos.");
-      const { data: role, error: roleError } = await supabase.from("user_roles").select("role").eq("user_id", authData.user.id).eq("role", "super_admin").maybeSingle();
-      if (roleError || !role) {
-        await supabase.auth.signOut();
-        throw new Error("Esta conta não possui acesso ao painel Master.");
-      }
+      const session = await masterLoginFn({ data: { code: code.trim(), password: password.trim() } });
+      const { error } = await supabase.auth.setSession({
+        access_token: session.access_token,
+        refresh_token: session.refresh_token,
+      });
+      if (error) throw error;
       toast.success("Acesso Master autorizado.");
       void navigate({ to: "/master" });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Não foi possível entrar.");
-    } finally { setBusy(false); }
+      toast.error(error instanceof Error ? error.message : "Não foi possível entrar no Master.");
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
