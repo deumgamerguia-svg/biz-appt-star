@@ -5,7 +5,6 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { ShieldCheck, Trash2, Plus, ExternalLink, Ban, PlayCircle } from "lucide-react";
 import {
-  claimMaster,
   createBusinessWithOwner,
   deleteBusiness,
   getMasterStatus,
@@ -14,7 +13,8 @@ import {
   registerSubscriptionCharge,
   setBusinessStatus,
   setMonthlyFee,
-} from "@/lib/admin.functions";
+} from "@/lib/master-dashboard.functions";
+import { useAuth } from "@/hooks/useAuth";
 import { formatPrice } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,9 +60,10 @@ const formatPhone = (value: string) => {
 
 function MasterPage() {
   const queryClient = useQueryClient();
+  const { session } = useAuth();
+  const accessToken = session?.access_token ?? "";
   const statusFn = useServerFn(getMasterStatus);
   const listFn = useServerFn(listAllBusinesses);
-  const claimFn = useServerFn(claimMaster);
   const createFn = useServerFn(createBusinessWithOwner);
   const deleteFn = useServerFn(deleteBusiness);
   const metricsFn = useServerFn(getPlatformMetrics);
@@ -74,39 +75,37 @@ function MasterPage() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(emptyForm);
 
-  const status = useQuery({ queryKey: ["master-status"], queryFn: () => statusFn() });
+  const status = useQuery({
+    queryKey: ["master-status", session?.user.id],
+    enabled: !!accessToken,
+    queryFn: () => statusFn({ data: { accessToken } }),
+    retry: 1,
+  });
 
   const businesses = useQuery({
     queryKey: ["master-businesses"],
-    enabled: !!status.data?.isMaster,
-    queryFn: () => listFn(),
-  });
-
-  const claim = useMutation({
-    mutationFn: () => claimFn(),
-    onSuccess: () => {
-      toast.success("Você agora é o master da plataforma.");
-      void queryClient.invalidateQueries({ queryKey: ["master-status"] });
-    },
-    onError: (e: Error) => toast.error(e.message),
+    enabled: !!accessToken && !!status.data?.isMaster,
+    queryFn: () => listFn({ data: { accessToken } }),
   });
 
   const create = useMutation({
-    mutationFn: () => createFn({ data: form }),
+    mutationFn: () => createFn({ data: { ...form, accessToken } }),
     onSuccess: () => {
       toast.success("Estabelecimento e acesso do dono criados!");
       setOpen(false);
       setForm(emptyForm);
       void queryClient.invalidateQueries({ queryKey: ["master-businesses"] });
+      void queryClient.invalidateQueries({ queryKey: ["master-metrics"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
 
   const remove = useMutation({
-    mutationFn: (id: string) => deleteFn({ data: { id } }),
+    mutationFn: (id: string) => deleteFn({ data: { id, accessToken } }),
     onSuccess: () => {
       toast.success("Estabelecimento removido.");
       void queryClient.invalidateQueries({ queryKey: ["master-businesses"] });
+      void queryClient.invalidateQueries({ queryKey: ["master-metrics"] });
     },
     onError: () =>
       toast.error("Não foi possível remover: existem agendamentos vinculados a este negócio."),
@@ -114,8 +113,8 @@ function MasterPage() {
 
   const metrics = useQuery({
     queryKey: ["master-metrics"],
-    enabled: !!status.data?.isMaster,
-    queryFn: () => metricsFn(),
+    enabled: !!accessToken && !!status.data?.isMaster,
+    queryFn: () => metricsFn({ data: { accessToken } }),
   });
 
   const refreshAll = () => {
@@ -125,7 +124,7 @@ function MasterPage() {
 
   const setStatus = useMutation({
     mutationFn: (vars: { id: string; status: "ativo" | "suspenso" }) =>
-      statusUpdateFn({ data: vars }),
+      statusUpdateFn({ data: { ...vars, accessToken } }),
     onSuccess: (_r, vars) => {
       toast.success(
         vars.status === "suspenso"
@@ -138,7 +137,8 @@ function MasterPage() {
   });
 
   const fee = useMutation({
-    mutationFn: (vars: { id: string; amountCents: number }) => feeFn({ data: vars }),
+    mutationFn: (vars: { id: string; amountCents: number }) =>
+      feeFn({ data: { ...vars, accessToken } }),
     onSuccess: () => {
       toast.success("Mensalidade atualizada.");
       refreshAll();
@@ -148,7 +148,7 @@ function MasterPage() {
 
   const charge = useMutation({
     mutationFn: (vars: { businessId: string; month: string; status: "pago" | "pendente" }) =>
-      chargeFn({ data: vars }),
+      chargeFn({ data: { ...vars, accessToken } }),
     onSuccess: () => {
       toast.success("Cobrança registrada como paga.");
       refreshAll();
@@ -156,31 +156,20 @@ function MasterPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  if (status.isLoading) {
+  if (!accessToken || status.isLoading) {
     return <p className="p-8 text-sm text-muted-foreground">Carregando...</p>;
   }
 
-  if (!status.data?.isMaster) {
+  if (status.isError || !status.data?.isMaster) {
     return (
       <div className="mx-auto max-w-md p-8 text-center">
         <ShieldCheck className="mx-auto size-10 text-primary" />
         <h1 className="mt-4 text-xl font-bold">Painel master</h1>
-        {status.data?.hasMaster ? (
-          <p className="mt-2 text-sm text-muted-foreground">
-            Esta área é restrita ao responsável pela plataforma.
-          </p>
-        ) : (
-          <>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Ninguém assumiu esta área ainda. Assuma agora com a sua conta.
-            </p>
-            <Button className="mt-4" onClick={() => claim.mutate()} disabled={claim.isPending}>
-              Assumir o painel master
-            </Button>
-          </>
-        )}
-        <Link to="/painel" className="mt-6 block text-sm text-primary hover:underline">
-          Voltar ao painel
+        <p className="mt-2 text-sm text-muted-foreground">
+          Sua sessão Master precisa ser validada novamente.
+        </p>
+        <Link to="/master-login" className="mt-6 block text-sm text-primary hover:underline">
+          Entrar novamente no Master
         </Link>
       </div>
     );
@@ -381,7 +370,6 @@ function MasterPage() {
         </table>
       </div>
 
-
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
@@ -432,7 +420,12 @@ function MasterPage() {
                   id="opass"
                   inputMode="numeric"
                   value={form.password}
-                  onChange={(e) => setForm({ ...form, password: e.target.value.replace(/\D/g, "").slice(0, 4) })}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      password: e.target.value.replace(/\D/g, "").slice(0, 4),
+                    })
+                  }
                   placeholder="Ex.: 1237"
                   maxLength={4}
                 />
