@@ -16,10 +16,14 @@ const AuthContext = createContext<AuthState>({
   signOut: async () => {},
 });
 
-function clearServerSessionCookie() {
+function syncServerSessionCookie(accessToken: string | null) {
   if (typeof document === "undefined") return;
   const secure = window.location.protocol === "https:" ? "; Secure" : "";
-  document.cookie = `agenda_supabase_session=; Path=/; Max-Age=0; SameSite=Lax${secure}`;
+  if (!accessToken) {
+    document.cookie = `agenda_supabase_session=; Path=/; Max-Age=0; SameSite=Lax${secure}`;
+    return;
+  }
+  document.cookie = `agenda_supabase_session=${encodeURIComponent(accessToken)}; Path=/; SameSite=Lax${secure}`;
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -28,11 +32,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      syncServerSessionCookie(nextSession?.access_token ?? null);
       setSession(nextSession);
       setLoading(false);
     });
 
     supabase.auth.getSession().then(({ data }) => {
+      syncServerSessionCookie(data.session?.access_token ?? null);
       setSession(data.session);
       setLoading(false);
     });
@@ -45,7 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user: session?.user ?? null,
     loading,
     signOut: async () => {
-      clearServerSessionCookie();
+      syncServerSessionCookie(null);
       await supabase.auth.signOut();
     },
   };
