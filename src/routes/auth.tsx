@@ -136,13 +136,13 @@ function AuthPage() {
           <p className="text-center text-[12px] leading-5 text-[#626871]">Ao entrar, você acessa o painel de gerenciamento do seu estabelecimento.</p>
         </div>
 
-        <div className="mt-5 grid grid-cols-2 overflow-hidden rounded-xl border border-[#1d2228] bg-[#07090c]/45 divide-x divide-[#1d2228]">
+        <div className="mt-5 grid grid-cols-2">
           <div className="flex min-h-[58px] items-center gap-2.5 px-3.5 py-3 sm:px-5">
-            <div className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-blue-500/20 bg-blue-500/[0.06] text-[#1677ff]"><UsersRound className="size-[15px]" /></div>
+            <div className="flex size-8 shrink-0 items-center justify-center text-[#1677ff]"><UsersRound className="size-[15px]" /></div>
             <div className="min-w-0"><p className="text-[13px] font-semibold leading-4 text-[#e5e7eb]">+10.000</p><p className="mt-0.5 text-[9px] font-medium uppercase tracking-[0.04em] text-[#626a75]">Usuários ativos</p></div>
           </div>
           <div className="flex min-h-[58px] items-center gap-2.5 px-3.5 py-3 sm:px-5">
-            <div className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-blue-500/20 bg-blue-500/[0.06] text-[#1677ff]"><Headphones className="size-[15px]" /></div>
+            <div className="flex size-8 shrink-0 items-center justify-center text-[#1677ff]"><Headphones className="size-[15px]" /></div>
             <div className="min-w-0"><p className="text-[13px] font-semibold leading-4 text-[#e5e7eb]">Suporte</p><p className="mt-0.5 text-[9px] font-medium uppercase tracking-[0.04em] text-[#626a75]">Ativo 24 hrs</p></div>
           </div>
         </div>
