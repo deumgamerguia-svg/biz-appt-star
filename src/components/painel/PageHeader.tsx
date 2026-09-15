@@ -1,7 +1,5 @@
 import type { ReactNode } from "react";
-import { Link } from "@tanstack/react-router";
 import { Store } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 export function PageHeader({
   title,
@@ -27,19 +25,14 @@ export function NoBusiness() {
   return (
     <div className="surface flex flex-col items-center p-10 text-center">
       <Store className="size-8 text-primary" />
-      <h2 className="mt-4 text-lg font-bold">Cadastre seu primeiro negócio</h2>
-      <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-        Crie a barbearia, o salão ou o consultório para começar a organizar a agenda.
+      <h2 className="mt-4 text-lg font-bold">Painel aguardando configuração</h2>
+      <p className="mt-2 max-w-md text-sm text-muted-foreground">
+        Este acesso do estabelecimento é fixo. O negócio e o link de agendamento são configurados exclusivamente pelo painel Master.
       </p>
-      <Button asChild className="mt-5">
-        <Link to="/painel/negocios">Criar negócio</Link>
-      </Button>
     </div>
   );
 }
 
 export function EmptyList({ text }: { text: string }) {
-  return (
-    <div className="surface p-10 text-center text-sm text-muted-foreground">{text}</div>
-  );
+  return <div className="surface p-10 text-center text-sm text-muted-foreground">{text}</div>;
 }
