@@ -1,20 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Agenda Agora">
   <defs>
-    <linearGradient id="a" x1="90" y1="450" x2="410" y2="80" gradientUnits="userSpaceOnUse">
+    <linearGradient id="brand" x1="88" y1="438" x2="424" y2="74" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#087BFF"/>
-      <stop offset="0.52" stop-color="#16B8FF"/>
-      <stop offset="1" stop-color="#57E7F3"/>
+      <stop offset="0.52" stop-color="#20A7FF"/>
+      <stop offset="1" stop-color="#62E7F3"/>
     </linearGradient>
-    <linearGradient id="a2" x1="150" y1="410" x2="350" y2="110" gradientUnits="userSpaceOnUse">
+    <linearGradient id="shine" x1="160" y1="390" x2="360" y2="120" gradientUnits="userSpaceOnUse">
       <stop stop-color="#0059F5"/>
       <stop offset="1" stop-color="#12D7F1"/>
     </linearGradient>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
   </defs>
-  <circle cx="256" cy="256" r="236" fill="#fff"/>
-  <circle cx="256" cy="256" r="218" fill="#05080D"/>
-  <path d="M101 380c39-123 93-228 155-294 62 66 116 171 155 294l-53 25c-27-82-61-150-102-204-41 54-75 122-102 204z" fill="url(#a)"/>
-  <path d="M159 354c25-88 57-156 97-209 40 53 72 121 97 209l-43 20c-15-54-33-101-54-139-21 38-39 85-54 139z" fill="url(#a2)" opacity=".9"/>
-  <path d="M84 363c43 40 91 58 145 55 43-2 80-17 111-43 31 26 68 41 111 43-26 46-91 73-195 73S110 464 84 418c-10-17-10-38 0-55z" fill="#050505"/>
-  <path d="M92 373c46 30 101 42 164 36 57-5 108-25 153-60-30 47-83 79-153 91-67 11-123 0-164-34-14-12-14-22 0-33z" fill="#111" opacity=".9"/>
-  <circle cx="256" cy="256" r="236" fill="none" stroke="#f8fbff" stroke-width="8"/>
+  <circle cx="256" cy="256" r="244" fill="#05080D"/>
+  <circle cx="256" cy="256" r="238" fill="none" stroke="#F8FBFF" stroke-width="8" opacity=".96"/>
+  <circle cx="256" cy="256" r="208" fill="url(#brand)" opacity=".09"/>
+  <path d="M145 151h222a42 42 0 0 1 42 42v132a42 42 0 0 1-42 42H145a42 42 0 0 1-42-42V193a42 42 0 0 1 42-42Z" fill="#08111E" stroke="url(#brand)" stroke-width="12"/>
+  <path d="M103 218h306" stroke="url(#brand)" stroke-width="12"/>
+  <path d="M163 126v58M349 126v58" stroke="url(#brand)" stroke-width="18" stroke-linecap="round"/>
+  <path d="M174 270l44 0 24 68 46-117 23 69 27 0" fill="none" stroke="url(#shine)" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" filter="url(#soft)"/>
+  <circle cx="256" cy="287" r="15" fill="#F8FBFF"/>
+  <circle cx="256" cy="287" r="8" fill="#1677FF"/>
 </svg>
