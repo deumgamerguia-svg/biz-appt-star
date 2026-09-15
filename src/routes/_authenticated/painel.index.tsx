@@ -69,7 +69,7 @@ function buildSlots(hours: ScheduleHour[]) {
   for (const hour of hours) {
     const start = minutesOf(hour.starts_at);
     const end = minutesOf(hour.ends_at);
-    for (let cursor = start; cursor < end; cursor += 30) slots.add(timeOf(cursor));
+    for (let cursor = start; cursor < end; cursor += 60) slots.add(timeOf(cursor));
   }
   return [...slots].sort((a, b) => minutesOf(a) - minutesOf(b));
 }
@@ -81,8 +81,8 @@ function slotOf(iso: string) {
     minute: "2-digit",
     hour12: false,
   });
-  const [hour, minute] = value.split(":");
-  return `${hour}:${Number(minute) < 30 ? "00" : "30"}`;
+  const [hour] = value.split(":");
+  return `${hour}:00`;
 }
 
 const emptyForm = {
@@ -229,7 +229,7 @@ function AgendaPage() {
         block_date: day,
         weekday: null,
         starts_at: time,
-        ends_at: timeOf(minutesOf(time) + 30),
+        ends_at: timeOf(minutesOf(time) + 60),
         reason: "Bloqueio rápido pela agenda",
       });
       if (error) throw error;
