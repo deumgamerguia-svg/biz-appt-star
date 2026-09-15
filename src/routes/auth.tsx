@@ -93,14 +93,10 @@ function AuthPage() {
 
       <section className="relative z-10 w-full max-w-[430px]">
         <div className="mb-7 text-center sm:mb-8">
-          <div className="mb-3 flex items-center justify-center gap-2.5">
-            <div className="relative flex size-11 items-center justify-center">
-              <div className="absolute inset-0 rounded-full bg-blue-500/20 blur-md animate-pulse" />
-              <img src="/agenda-agora-logo.svg" alt="Agenda Agora" className="relative size-11 object-contain drop-shadow-[0_0_18px_rgba(22,119,255,0.28)] transition-transform duration-500 hover:scale-105" />
-            </div>
-            <div className="text-[28px] font-semibold tracking-[-0.055em]">
-              <span className="text-[#f3f4f6]">Agenda </span>
-              <span className="bg-gradient-to-r from-[#1677ff] via-[#20a7ff] to-[#62e7f3] bg-clip-text text-transparent">Agora</span>
+          <div className="mb-3 flex items-center justify-center">
+            <div className="relative inline-flex items-center text-[31px] font-bold leading-none tracking-[-0.065em] drop-shadow-[0_0_14px_rgba(255,255,255,0.05)] transition-transform duration-500 hover:scale-[1.015]">
+              <span className="text-[#f3f4f6]">Agenda</span>
+              <span className="ml-[3px] text-[#1da1ff] drop-shadow-[0_0_12px_rgba(29,161,255,0.16)] animate-pulse [animation-duration:3.4s]">Agora</span>
             </div>
           </div>
           <p className="text-[14px] text-[#7f8793]">Seu negócio organizado. Seus horários sob controle.</p>
