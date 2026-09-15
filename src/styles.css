@@ -106,48 +106,36 @@
   --shadow-lift: 0 2px 4px oklch(0.22 0.06 258 / 0.06), 0 18px 40px oklch(0.22 0.06 258 / 0.1);
 }
 
-
 :root {
   --radius: 0.75rem;
-
   --background: oklch(1 0 0);
   --foreground: oklch(0.21 0.04 260);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.21 0.04 260);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.21 0.04 260);
-
   --primary: oklch(0.51 0.22 264);
   --primary-foreground: oklch(0.99 0.005 250);
-
   --secondary: oklch(0.97 0.008 255);
   --secondary-foreground: oklch(0.29 0.05 261);
-
   --muted: oklch(0.97 0.008 255);
   --muted-foreground: oklch(0.53 0.03 257);
-
   --accent: oklch(0.95 0.03 255);
   --accent-foreground: oklch(0.4 0.16 264);
-
   --destructive: oklch(0.58 0.22 25);
   --destructive-foreground: oklch(0.99 0.005 250);
-
   --success: oklch(0.58 0.2 261);
   --success-foreground: oklch(0.99 0.005 250);
-
   --warning: oklch(0.75 0.15 75);
   --warning-foreground: oklch(0.25 0.05 60);
-
   --border: oklch(0.92 0.01 256);
   --input: oklch(0.92 0.01 256);
   --ring: oklch(0.51 0.22 264);
-
   --chart-1: oklch(0.51 0.22 264);
   --chart-2: oklch(0.62 0.15 155);
   --chart-3: oklch(0.75 0.15 75);
   --chart-4: oklch(0.6 0.16 300);
   --chart-5: oklch(0.58 0.22 25);
-
   --sidebar: oklch(0.98 0.006 255);
   --sidebar-foreground: oklch(0.29 0.04 260);
   --sidebar-primary: oklch(0.51 0.22 264);
@@ -156,7 +144,6 @@
   --sidebar-accent-foreground: oklch(0.4 0.16 264);
   --sidebar-border: oklch(0.92 0.01 256);
   --sidebar-ring: oklch(0.51 0.22 264);
-
   --slot-free: oklch(0.94 0.004 260);
   --slot-free-foreground: oklch(0.55 0.02 260);
   --slot-booked: oklch(0.72 0.17 300);
@@ -169,7 +156,6 @@
   --slot-empty-foreground: oklch(0.55 0.02 260);
 }
 
-/* Tema escuro — padrão do painel (referência Agenda Agora) */
 .dark {
   --background: oklch(0.16 0.005 265);
   --foreground: oklch(0.97 0.005 250);
@@ -194,7 +180,6 @@
   --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 16%);
   --ring: oklch(0.5756 0.2222 261.22);
-
   --sidebar: oklch(0.16 0.05 265);
   --sidebar-foreground: oklch(0.85 0.03 250);
   --sidebar-primary: oklch(0.5756 0.2222 261.22);
@@ -203,7 +188,6 @@
   --sidebar-accent-foreground: oklch(0.98 0.005 250);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.5756 0.2222 261.22);
-
   --slot-free: oklch(0.28 0.005 265);
   --slot-free-foreground: oklch(0.6 0.01 260);
   --slot-booked: oklch(0.7 0.18 300);
@@ -216,12 +200,8 @@
   --slot-empty-foreground: oklch(0.6 0.01 260);
 }
 
-
 @layer base {
-  * {
-    border-color: var(--color-border);
-  }
-
+  * { border-color: var(--color-border); }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
@@ -231,23 +211,10 @@
     font-feature-settings: "tnum";
     font-synthesis: none;
   }
-
-  h1,
-  h2,
-  h3,
-  h4 {
-    font-family: var(--font-display);
-    letter-spacing: 0;
-    font-weight: 400;
-  }
-
-  b,
-  strong {
-    font-weight: 600;
-  }
+  h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: 0; font-weight: 400; }
+  b, strong { font-weight: 600; }
 }
 
-/* Painel do proprietário — console escuro Agenda Agora */
 .owner-panel {
   --radius: 0.5rem;
   --background: oklch(0 0 0);
@@ -286,169 +253,42 @@
   line-height: 1.5;
 }
 
-.owner-panel h1 {
-  font-size: 1.72rem;
-  line-height: 1.1;
-  font-weight: 400;
-}
-
-.owner-panel h2 {
-  font-size: 1.2rem;
-  line-height: 1.25;
-  font-weight: 500;
-}
-
-.owner-panel h3,
-.owner-panel h4 {
-  font-weight: 500;
-}
-
-.owner-panel label {
-  font-size: 0.78rem;
-  font-weight: 500;
-}
-
-.owner-panel input,
-.owner-panel textarea,
-.owner-panel select,
-.owner-panel button {
-  font-family: inherit;
-}
+.owner-panel h1 { font-size: 1.72rem; line-height: 1.1; font-weight: 400; }
+.owner-panel h2 { font-size: 1.2rem; line-height: 1.25; font-weight: 500; }
+.owner-panel h3, .owner-panel h4 { font-weight: 500; }
+.owner-panel label { font-size: 0.78rem; font-weight: 500; }
+.owner-panel input, .owner-panel textarea, .owner-panel select, .owner-panel button { font-family: inherit; }
 
 @media (max-width: 767px) {
-  .owner-panel {
-    font-size: 0.9rem;
-  }
-
-  .owner-panel h1 {
-    font-size: 1.45rem;
-  }
-
-  .owner-panel h2 {
-    font-size: 1.08rem;
-  }
+  .owner-panel { font-size: 0.9rem; }
+  .owner-panel h1 { font-size: 1.45rem; }
+  .owner-panel h2 { font-size: 1.08rem; }
 }
 
-.owner-panel .surface {
-  box-shadow: none;
-}
+.owner-panel .surface { box-shadow: none; }
+.owner-panel button, .owner-panel [role="button"], .owner-panel a { transition-duration: 120ms; transition-timing-function: ease-out; }
+.owner-panel button:active:not(:disabled), .owner-panel [role="button"]:active:not(:disabled), .owner-panel a:active { transform: scale(0.98); filter: brightness(1.12); }
+.owner-panel nav a:hover { transform: translateX(3px); }
+.owner-panel nav a:active { transform: translateX(2px) scale(0.98); }
+.owner-panel .owner-nav-active::before { content: ""; position: absolute; inset-block: 0.3rem; left: -0.75rem; width: 4px; border-radius: 999px; background: var(--color-primary); box-shadow: 0 0 10px color-mix(in oklab, var(--color-primary) 72%, transparent); }
+.owner-panel .owner-nav-active > svg { color: var(--color-primary); filter: drop-shadow(0 0 5px color-mix(in oklab, var(--color-primary) 45%, transparent)); }
+.owner-panel .owner-nav-active .owner-nav-hint { color: color-mix(in oklab, var(--color-primary) 55%, var(--color-sidebar-foreground)); }
+.owner-panel .owner-nav-item { min-height: 3.45rem; }
 
-.owner-panel button,
-.owner-panel [role="button"],
-.owner-panel a {
-  transition-duration: 120ms;
-  transition-timing-function: ease-out;
-}
+.owner-route-progress { position: fixed; z-index: 60; top: 0; left: 0; width: 100%; height: 2px; pointer-events: none; opacity: 0; transform: scaleX(0); transform-origin: left; background: var(--color-primary); box-shadow: 0 0 12px color-mix(in oklab, var(--color-primary) 75%, transparent); }
+.owner-route-progress.is-visible { opacity: 1; animation: owner-route-progress 360ms ease-out both; }
+.owner-route-content { animation: owner-route-enter 220ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+.owner-route-loader { position: absolute; z-index: 20; inset: 1rem; min-height: 12rem; display: grid; place-items: center; border-radius: var(--radius-lg); background: color-mix(in oklab, var(--color-background) 88%, transparent); backdrop-filter: blur(4px); animation: owner-loader-in 120ms ease-out both; }
 
-.owner-panel button:active:not(:disabled),
-.owner-panel [role="button"]:active:not(:disabled),
-.owner-panel a:active {
-  transform: scale(0.98);
-  filter: brightness(1.12);
-}
+@keyframes owner-route-progress { 0% { transform: scaleX(0); } 70% { transform: scaleX(0.82); } 100% { transform: scaleX(1); opacity: 0; } }
+@keyframes owner-route-enter { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes owner-loader-in { from { opacity: 0; } to { opacity: 1; } }
 
-.owner-panel nav a:hover {
-  transform: translateX(3px);
-}
-
-.owner-panel nav a:active {
-  transform: translateX(2px) scale(0.98);
-}
-
-.owner-panel .owner-nav-active::before {
-  content: "";
-  position: absolute;
-  inset-block: 0.3rem;
-  left: -0.75rem;
-  width: 4px;
-  border-radius: 999px;
-  background: var(--color-primary);
-  box-shadow: 0 0 10px color-mix(in oklab, var(--color-primary) 72%, transparent);
-}
-
-.owner-panel .owner-nav-active > svg {
-  color: var(--color-primary);
-  filter: drop-shadow(0 0 5px color-mix(in oklab, var(--color-primary) 45%, transparent));
-}
-
-.owner-panel .owner-nav-active .owner-nav-hint {
-  color: color-mix(in oklab, var(--color-primary) 55%, var(--color-sidebar-foreground));
-}
-
-.owner-panel .owner-nav-item {
-  min-height: 3.45rem;
-}
-
-.owner-route-progress {
-  position: fixed;
-  z-index: 60;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  pointer-events: none;
-  opacity: 0;
-  transform: scaleX(0);
-  transform-origin: left;
-  background: var(--color-primary);
-  box-shadow: 0 0 12px color-mix(in oklab, var(--color-primary) 75%, transparent);
-}
-
-.owner-route-progress.is-visible {
-  opacity: 1;
-  animation: owner-route-progress 360ms ease-out both;
-}
-
-.owner-route-content {
-  animation: owner-route-enter 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.owner-route-loader {
-  position: absolute;
-  z-index: 20;
-  inset: 1rem;
-  min-height: 12rem;
-  display: grid;
-  place-items: center;
-  border-radius: var(--radius-lg);
-  background: color-mix(in oklab, var(--color-background) 88%, transparent);
-  backdrop-filter: blur(4px);
-  animation: owner-loader-in 120ms ease-out both;
-}
-
-@keyframes owner-route-progress {
-  0% { transform: scaleX(0); }
-  70% { transform: scaleX(0.82); }
-  100% { transform: scaleX(1); opacity: 0; }
-}
-
-@keyframes owner-route-enter {
-  from { opacity: 0; transform: translateY(7px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes owner-loader-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.owner-panel main,
-.owner-panel [data-slot="card"] {
-  animation-duration: 180ms;
-}
+.owner-panel main, .owner-panel [data-slot="card"] { animation-duration: 180ms; }
 
 @media (prefers-reduced-motion: reduce) {
-  .owner-panel *,
-  .owner-panel *::before,
-  .owner-panel *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
-  }
-
-  .owner-route-progress,
-  .owner-route-content {
-    animation: none !important;
-  }
+  .owner-panel *, .owner-panel *::before, .owner-panel *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  .owner-route-progress, .owner-route-content { animation: none !important; }
 }
 
 @utility surface {
@@ -459,201 +299,109 @@
 }
 
 @utility grid-canvas {
-  background-image:
-    linear-gradient(to right, oklch(0.51 0.22 264 / 0.06) 1px, transparent 1px),
-    linear-gradient(to bottom, oklch(0.51 0.22 264 / 0.06) 1px, transparent 1px);
+  background-image: linear-gradient(to right, oklch(0.51 0.22 264 / 0.06) 1px, transparent 1px), linear-gradient(to bottom, oklch(0.51 0.22 264 / 0.06) 1px, transparent 1px);
   background-size: 32px 32px;
 }
 
 @utility hero-wash {
-  background:
-    radial-gradient(60rem 30rem at 85% -10%, oklch(0.51 0.22 264 / 0.14), transparent 60%),
-    radial-gradient(40rem 24rem at 0% 0%, oklch(0.62 0.15 200 / 0.1), transparent 60%),
-    var(--color-background);
+  background: radial-gradient(60rem 30rem at 85% -10%, oklch(0.51 0.22 264 / 0.14), transparent 60%), radial-gradient(40rem 24rem at 0% 0%, oklch(0.62 0.15 200 / 0.1), transparent 60%), var(--color-background);
 }
 
-/* ===== Tela de login (cartão claro sobre fundo escuro) ===== */
-.auth-card {
-  background: oklch(0.99 0.002 260);
-  color: oklch(0.22 0.03 260);
-  border-radius: 0.75rem;
-  overflow: hidden;
-  box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.55);
-}
-.auth-card-title {
-  padding: 1.1rem 1.25rem 0.9rem;
-  text-align: center;
-  font-family: var(--font-display);
-  font-size: 1.6rem;
-  font-weight: 800;
-  border-bottom: 1px solid oklch(0.92 0.01 260);
-}
-.auth-field {
-  display: flex;
-  align-items: center;
-  background: oklch(0.97 0.005 260);
-  border: 1px solid oklch(0.9 0.01 260);
-  border-radius: 0.5rem;
-  overflow: hidden;
-}
-.auth-field:focus-within {
-  border-color: oklch(0.64 0.2 257);
-}
-.auth-field input {
-  flex: 1;
-  min-width: 0;
-  background: transparent;
-  border: none;
-  outline: none;
-  padding: 0.7rem 0.9rem;
-  font-size: 0.95rem;
-  color: inherit;
-}
-.auth-field input::placeholder {
-  color: oklch(0.6 0.02 260);
-}
-.auth-field-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  align-self: stretch;
-  padding: 0 0.85rem;
-  background: oklch(0.93 0.01 260);
-  color: oklch(0.45 0.03 260);
-  border-left: 1px solid oklch(0.9 0.01 260);
-}
-.auth-submit {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border-radius: 0.5rem;
-  background: var(--background);
-  color: oklch(0.98 0.005 260);
-  font-weight: 700;
-  transition: opacity 150ms;
-}
+.auth-card { background: oklch(0.99 0.002 260); color: oklch(0.22 0.03 260); border-radius: 0.75rem; overflow: hidden; box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.55); }
+.auth-card-title { padding: 1.1rem 1.25rem 0.9rem; text-align: center; font-family: var(--font-display); font-size: 1.6rem; font-weight: 800; border-bottom: 1px solid oklch(0.92 0.01 260); }
+.auth-field { display: flex; align-items: center; background: oklch(0.97 0.005 260); border: 1px solid oklch(0.9 0.01 260); border-radius: 0.5rem; overflow: hidden; }
+.auth-field:focus-within { border-color: oklch(0.64 0.2 257); }
+.auth-field input { flex: 1; min-width: 0; background: transparent; border: none; outline: none; padding: 0.7rem 0.9rem; font-size: 0.95rem; color: inherit; }
+.auth-field input::placeholder { color: oklch(0.6 0.02 260); }
+.auth-field-icon { display: flex; align-items: center; justify-content: center; align-self: stretch; padding: 0 0.85rem; background: oklch(0.93 0.01 260); color: oklch(0.45 0.03 260); border-left: 1px solid oklch(0.9 0.01 260); }
+.auth-submit { width: 100%; padding: 0.75rem 1rem; border-radius: 0.5rem; background: var(--background); color: oklch(0.98 0.005 260); font-weight: 700; transition: opacity 150ms; }
 .auth-submit:hover { opacity: 0.9; }
 .auth-submit:disabled { opacity: 0.6; cursor: not-allowed; }
 
-/* Animações suaves globais */
-button, [role="button"], a {
-  transition: transform 160ms cubic-bezier(0.4, 0, 0.2, 1), opacity 160ms ease,
-    background-color 200ms ease, color 200ms ease, border-color 200ms ease,
-    box-shadow 200ms ease;
-}
-button:active:not(:disabled), [role="button"]:active:not(:disabled) {
-  transform: scale(0.96);
-}
-a:active {
-  transform: scale(0.98);
-}
-input, select, textarea {
-  transition: border-color 200ms ease, box-shadow 200ms ease, background-color 200ms ease;
-}
-input:focus-visible, select:focus-visible, textarea:focus-visible {
-  box-shadow: 0 0 0 3px oklch(from var(--primary) l c h / 0.18);
-}
-@keyframes page-fade-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-main, [data-slot="card"] {
-  animation: page-fade-in 280ms ease-out both;
-}
+button, [role="button"], a { transition: transform 160ms cubic-bezier(0.4, 0, 0.2, 1), opacity 160ms ease, background-color 200ms ease, color 200ms ease, border-color 200ms ease, box-shadow 200ms ease; }
+button:active:not(:disabled), [role="button"]:active:not(:disabled) { transform: scale(0.96); }
+a:active { transform: scale(0.98); }
+input, select, textarea { transition: border-color 200ms ease, box-shadow 200ms ease, background-color 200ms ease; }
+input:focus-visible, select:focus-visible, textarea:focus-visible { box-shadow: 0 0 0 3px oklch(from var(--primary) l c h / 0.18); }
+@keyframes page-fade-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+main, [data-slot="card"] { animation: page-fade-in 280ms ease-out both; }
 
-/* Sidebar ativa — reprodução do estado selecionado da referência ScaleReels. */
-.owner-panel .owner-nav-active {
-  position: relative;
-  overflow: hidden;
-  border-radius: 8px;
-  background: #121215;
-  border: 0;
-  color: #ffffff;
-  box-shadow: none;
-}
+.owner-panel .owner-nav-active { position: relative; overflow: hidden; border-radius: 8px; background: #121215; border: 0; color: #ffffff; box-shadow: none; }
+.owner-panel .owner-nav-active::before { content: ""; display: block; position: absolute; top: 50%; left: 0; width: 3px; height: 20px; transform: translateY(-50%); border-radius: 0 999px 999px 0; background: #1f6df9; box-shadow: none; }
+.owner-panel .owner-nav-active > svg { color: #5f97fb; filter: none; }
+.owner-panel .owner-nav-active .owner-nav-hint { color: #97a9ca; }
 
-.owner-panel .owner-nav-active::before {
-  content: "";
-  display: block;
-  position: absolute;
-  top: 50%;
-  left: 0;
-  width: 3px;
-  height: 20px;
-  transform: translateY(-50%);
-  border-radius: 0 999px 999px 0;
-  background: #1f6df9;
-  box-shadow: none;
-}
-
-.owner-panel .owner-nav-active > svg {
-  color: #5f97fb;
-  filter: none;
-}
-
-.owner-panel .owner-nav-active .owner-nav-hint {
-  color: #97a9ca;
-}
-
-/* Ajuste visual mobile: saudação acima, WhatsApp centralizado e controles da data enquadrados. */
 @media (max-width: 639px) {
-  .owner-panel header.sticky {
-    grid-template-columns: 36px minmax(0, 1fr) 36px;
-    grid-template-rows: auto auto;
-    column-gap: 8px;
-    row-gap: 8px;
+  .owner-panel header.sticky { grid-template-columns: 36px minmax(0, 1fr) 36px; grid-template-rows: auto auto; column-gap: 8px; row-gap: 8px; }
+  .owner-panel header.sticky > div:first-child { display: contents; }
+  .owner-panel header.sticky > div:first-child > button { grid-column: 1; grid-row: 2; width: 36px; height: 36px; }
+  .owner-panel header.sticky > div:first-child > div { grid-column: 1 / -1; grid-row: 1; min-width: 0; padding-inline: 1px; }
+  .owner-panel header.sticky > a[href="/painel/whatsapp"] { grid-column: 2; grid-row: 2; width: 100%; min-width: 0; white-space: nowrap; }
+  .owner-panel header.sticky > button[aria-label="Notificações"] { grid-column: 3; grid-row: 2; width: 36px; height: 36px; }
+  .owner-panel main .owner-route-content > div > div:has(> input[type="date"]) { width: max-content; max-width: 100%; margin-inline: auto; }
+  .owner-panel main .owner-route-content > div > div:has(> input[type="date"]) + div { width: 11rem; max-width: 100%; margin-inline: auto; padding-left: 0; }
+  .owner-panel main .owner-route-content > div > div:has(> input[type="date"]) + div + button { display: block; width: 11rem; max-width: 100%; margin-left: auto; margin-right: auto; }
+}
+
+/* Agenda principal — timeline vazia e enquadrada como a referência enviada. */
+.owner-panel main .owner-route-content > div:has(input[type="date"]) {
+  width: 100%;
+  max-width: 46rem;
+  margin-inline: auto;
+}
+
+.owner-panel main .owner-route-content > div:has(input[type="date"]) > div:has(> ul) {
+  overflow: hidden;
+  border-color: rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  background: #4b4b4d;
+}
+
+.owner-panel main .owner-route-content > div:has(input[type="date"]) > div:has(> ul) > div:first-child {
+  background: #4b4b4d;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.owner-panel main .owner-route-content > div:has(input[type="date"]) button.bg-slot-free {
+  min-height: 40px;
+  padding: 0 5px;
+  gap: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  background: #4b4b4d;
+  color: #858589;
+}
+
+.owner-panel main .owner-route-content > div:has(input[type="date"]) button.bg-slot-free:hover {
+  background: #535356;
+  opacity: 1;
+}
+
+.owner-panel main .owner-route-content > div:has(input[type="date"]) button.bg-slot-free > span:first-child {
+  width: auto;
+  min-width: 3.2rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.owner-panel main .owner-route-content > div:has(input[type="date"]) button.bg-slot-free > span:not(:first-child) {
+  display: none;
+}
+
+/* No mobile, o formulário aberto ao clicar no horário mantém proporção compacta e centralizada. */
+@media (max-width: 639px) {
+  body:has(.owner-panel input[type="date"]) [role="dialog"] {
+    width: calc(100vw - 24px);
+    max-width: 340px;
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+    border-radius: 12px;
+    border-color: #454548;
+    background: #333335;
+    padding: 16px;
   }
 
-  .owner-panel header.sticky > div:first-child {
-    display: contents;
-  }
-
-  .owner-panel header.sticky > div:first-child > button {
-    grid-column: 1;
-    grid-row: 2;
-    width: 36px;
-    height: 36px;
-  }
-
-  .owner-panel header.sticky > div:first-child > div {
-    grid-column: 1 / -1;
-    grid-row: 1;
-    min-width: 0;
-    padding-inline: 1px;
-  }
-
-  .owner-panel header.sticky > a[href="/painel/whatsapp"] {
-    grid-column: 2;
-    grid-row: 2;
-    width: 100%;
-    min-width: 0;
-    white-space: nowrap;
-  }
-
-  .owner-panel header.sticky > button[aria-label="Notificações"] {
-    grid-column: 3;
-    grid-row: 2;
-    width: 36px;
-    height: 36px;
-  }
-
-  .owner-panel main .owner-route-content > div > div:has(> input[type="date"]) {
-    width: max-content;
-    max-width: 100%;
-    margin-inline: auto;
-  }
-
-  .owner-panel main .owner-route-content > div > div:has(> input[type="date"]) + div {
-    width: 11rem;
-    max-width: 100%;
-    margin-inline: auto;
-    padding-left: 0;
-  }
-
-  .owner-panel main .owner-route-content > div > div:has(> input[type="date"]) + div + button {
-    display: block;
-    width: 11rem;
-    max-width: 100%;
-    margin-left: auto;
-    margin-right: auto;
+  body:has(.owner-panel input[type="date"]) [role="dialog"] [class~="grid-cols-2"] {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
