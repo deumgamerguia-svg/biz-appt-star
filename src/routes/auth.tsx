@@ -43,8 +43,7 @@ function AuthPage() {
   };
 
   return (
-    <main className="relative flex min-h-[100svh] items-center justify-center overflow-hidden bg-[#f7f8fa] px-4 py-8 text-[#111827] sm:px-6">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(37,99,235,0.08),transparent_34%)]" />
+    <main className="relative flex min-h-[100svh] items-center justify-center overflow-hidden bg-[#f8fafc] px-4 py-8 text-[#111827] sm:px-6">
       <section className="relative z-10 w-full max-w-[430px]">
         <div className="mb-7 text-center sm:mb-8">
           <div className="mb-3 flex items-center justify-center gap-2.5">
