@@ -292,7 +292,7 @@ function AgendaPage() {
     setDay(toDateInput(next));
   };
 
-  const slots = buildSlots(businessHours ?? []);
+  const slots = buildSlots([{ starts_at: "08:00", ends_at: "20:00" }]);
   const bySlot = new Map<string, (typeof appointments extends (infer T)[] | undefined ? T : never)[]>();
   for (const appointment of appointments ?? []) {
     const key = slotOf(appointment.starts_at);
