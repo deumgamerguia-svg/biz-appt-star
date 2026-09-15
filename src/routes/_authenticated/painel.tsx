@@ -15,13 +15,13 @@ import {
   MessageSquareText,
   DollarSign,
   CircleX,
-  CalendarCheck,
   Settings2,
   Plus,
   MessageCircle,
   UserCircle,
   Clock3,
   LoaderCircle,
+  Package,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -61,6 +61,7 @@ const nav = [
     { to: "/painel/clientes", label: "Clientes", hint: "Cadastro de clientes", icon: Users },
     { to: "/painel/profissionais", label: "Profissionais", hint: "Equipe e permissões", icon: UserRound },
     { to: "/painel/servicos", label: "Serviço", hint: "Serviços e valores", icon: Scissors },
+    { to: "/painel/produtos", label: "Produtos", hint: "Produtos e catálogo", icon: Package },
   ]},
   { title: "Financeiro", items: [
     { to: "/painel/as-pay", label: "AS Pay", hint: "Saldo dos sinais", icon: Gem },
