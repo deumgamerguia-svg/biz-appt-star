@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { Eye, EyeOff, LockKeyhole, Phone } from "lucide-react";
+import { Eye, EyeOff, Headphones, LockKeyhole, Phone, UsersRound } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -78,7 +78,25 @@ function AuthPage() {
           <div className="my-6 flex items-center gap-3"><div className="h-px flex-1 bg-[#24272b]" /><span className="text-[11px] font-medium uppercase tracking-[0.12em] text-[#666b73]">Acesso seguro</span><div className="h-px flex-1 bg-[#24272b]" /></div>
           <p className="text-center text-[12px] leading-5 text-[#626871]">Ao entrar, você acessa o painel de gerenciamento do seu estabelecimento.</p>
         </div>
-        <p className="mt-6 text-center text-[12px] text-[#555b65]">© 2026 Agenda Agora. Todos os direitos reservados.</p>
+
+        <div className="mt-5 grid grid-cols-2 overflow-hidden rounded-xl border border-[#1d2228] bg-[#07090c]/45 divide-x divide-[#1d2228]">
+          <div className="flex min-h-[58px] items-center gap-2.5 px-3.5 py-3 sm:px-5">
+            <div className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-blue-500/20 bg-blue-500/[0.06] text-[#1677ff]"><UsersRound className="size-[15px]" /></div>
+            <div className="min-w-0">
+              <p className="text-[13px] font-semibold leading-4 text-[#e5e7eb]">+10.000</p>
+              <p className="mt-0.5 text-[9px] font-medium uppercase tracking-[0.04em] text-[#626a75]">Usuários ativos</p>
+            </div>
+          </div>
+          <div className="flex min-h-[58px] items-center gap-2.5 px-3.5 py-3 sm:px-5">
+            <div className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-blue-500/20 bg-blue-500/[0.06] text-[#1677ff]"><Headphones className="size-[15px]" /></div>
+            <div className="min-w-0">
+              <p className="text-[13px] font-semibold leading-4 text-[#e5e7eb]">Suporte</p>
+              <p className="mt-0.5 text-[9px] font-medium uppercase tracking-[0.04em] text-[#626a75]">Ativo 24 hrs</p>
+            </div>
+          </div>
+        </div>
+
+        <p className="mt-5 text-center text-[12px] text-[#555b65]">© 2026 Agenda Agora. Todos os direitos reservados.</p>
       </section>
     </main>
   );
