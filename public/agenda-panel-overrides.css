@@ -1,0 +1,24 @@
+/* Ajustes visuais exclusivos da Agenda principal do Painel 2. */
+.owner-panel main .owner-route-content > div:has(input[type="date"]) > div.mt-2.pl-12 {
+  display: none;
+}
+
+.owner-panel main .owner-route-content > div:has(input[type="date"]) > button[type="button"] {
+  display: block;
+  width: 100%;
+  max-width: none;
+  min-height: 52px;
+  margin: 12px 0 0;
+  padding: 14px 16px;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 639px) {
+  .owner-panel main .owner-route-content > div:has(input[type="date"]) > button[type="button"] {
+    width: 100%;
+    max-width: none;
+    min-height: 54px;
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
