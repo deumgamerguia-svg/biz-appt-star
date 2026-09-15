@@ -1,16 +1,15 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Eye, EyeOff, ShieldCheck, KeyRound } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { masterLogin } from "@/lib/admin.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 const MASTER_CODE = "16092006";
+const MASTER_EMAIL = `${MASTER_CODE}@agenda.local`;
 
 export const Route = createFileRoute("/master-login")({
   head: () => ({ meta: [
@@ -23,7 +22,6 @@ export const Route = createFileRoute("/master-login")({
 function MasterLoginPage() {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
-  const masterLoginFn = useServerFn(masterLogin);
   const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -32,7 +30,12 @@ function MasterLoginPage() {
   useEffect(() => {
     if (loading || !user) return;
     void (async () => {
-      const { data } = await supabase.from("user_roles").select("role").eq("user_id", user.id).eq("role", "super_admin").maybeSingle();
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "super_admin")
+        .maybeSingle();
       if (data) void navigate({ to: "/master" });
     })();
   }, [loading, user, navigate]);
@@ -43,14 +46,28 @@ function MasterLoginPage() {
       toast.error("Código ou senha Master inválidos.");
       return;
     }
+
     setBusy(true);
     try {
-      const session = await masterLoginFn({ data: { code: code.trim(), password: password.trim() } });
-      const { error } = await supabase.auth.setSession({
-        access_token: session.access_token,
-        refresh_token: session.refresh_token,
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: MASTER_EMAIL,
+        password: MASTER_CODE,
       });
-      if (error) throw error;
+      if (authError) throw authError;
+      if (!authData.user) throw new Error("Não foi possível iniciar a sessão Master.");
+
+      const { data: role, error: roleError } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", authData.user.id)
+        .eq("role", "super_admin")
+        .maybeSingle();
+      if (roleError) throw roleError;
+      if (!role) {
+        await supabase.auth.signOut();
+        throw new Error("Usuário Master sem permissão super_admin no Supabase.");
+      }
+
       toast.success("Acesso Master autorizado.");
       void navigate({ to: "/master" });
     } catch (error) {
