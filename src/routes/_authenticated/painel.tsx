@@ -3,6 +3,7 @@ import {
   CalendarDays,
   Users,
   Scissors,
+  Store,
   UserRound,
   LogOut,
   Menu,
@@ -11,6 +12,7 @@ import {
   Gem,
   PieChart,
   Calculator,
+  CreditCard,
   MessageSquareText,
   DollarSign,
   CircleX,
@@ -126,6 +128,8 @@ const nav = [
         icon: Settings2,
       },
       { to: "/painel/integracoes", label: "Integrações", hint: "Serviços conectados", icon: Plus },
+      { to: "/painel/assinatura", label: "Assinatura", hint: "Plano e vencimento", icon: CreditCard },
+      { to: "/painel/negocios", label: "Negócios", hint: "Configurar Painel 1", icon: Store },
     ],
   },
 ] as const;
@@ -332,7 +336,7 @@ function PainelLayout() {
         </nav>
 
         <div className="shrink-0 border-t border-[#25282c] pt-3">
-          <div className="mb-2 flex items-center gap-3 rounded-xl px-3 py-2">
+          <Link to="/painel/assinatura" className="mb-2 flex items-center gap-3 rounded-xl px-3 py-2">
             <UserCircle className="size-5 shrink-0 text-[#1677ff]" />
             <span className="min-w-0 flex-1">
               <span className="block truncate text-[0.82rem] font-medium text-[#d7dbe1]">
@@ -342,7 +346,7 @@ function PainelLayout() {
                 {business?.status === "suspenso" ? "Conta bloqueada" : "Conta ativa"}
               </span>
             </span>
-          </div>
+          </Link>
           <Button
             variant="ghost"
             className="mt-1 w-full justify-start rounded-xl text-[#7f8793] hover:bg-[#1677ff]/[0.055] hover:text-[#f3f4f6]"
