@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -34,10 +34,20 @@ const BusinessContext = createContext<BusinessState>({
   refresh: () => {},
 });
 
+const slugify = (value: string) =>
+  value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "")
+    .slice(0, 36);
+
 export function BusinessProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [businessId, setBusinessIdState] = useState<string | null>(null);
+  const bootstrapRef = useRef<string | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ["businesses", user?.id],
@@ -53,6 +63,37 @@ export function BusinessProvider({ children }: { children: ReactNode }) {
   });
 
   const businesses = useMemo(() => data ?? [], [data]);
+
+  useEffect(() => {
+    if (!user || isLoading || businesses.length > 0) return;
+    if (bootstrapRef.current === user.id) return;
+    bootstrapRef.current = user.id;
+
+    void (async () => {
+      const metadataName =
+        typeof user.user_metadata?.full_name === "string" ? user.user_metadata.full_name.trim() : "";
+      const metadataPhone =
+        typeof user.user_metadata?.phone === "string" ? user.user_metadata.phone.replace(/\D/g, "") : null;
+      const name = metadataName || "Meu estabelecimento";
+      const base = slugify(name) || "estabelecimento";
+      const slug = `${base}-${user.id.slice(0, 8)}`;
+
+      const { error } = await supabase.from("businesses").insert({
+        owner_id: user.id,
+        name,
+        slug,
+        category: "outro",
+        phone: metadataPhone,
+      });
+
+      if (error && !error.message.toLowerCase().includes("duplicate")) {
+        bootstrapRef.current = null;
+        return;
+      }
+
+      await queryClient.invalidateQueries({ queryKey: ["businesses", user.id] });
+    })();
+  }, [businesses.length, isLoading, queryClient, user]);
 
   useEffect(() => {
     if (!businesses.length) {
@@ -77,7 +118,7 @@ export function BusinessProvider({ children }: { children: ReactNode }) {
     businessId,
     business: businesses.find((b) => b.id === businessId) ?? null,
     setBusinessId,
-    loading: isLoading,
+    loading: isLoading || (!!user && !businesses.length),
     refresh: () => {
       void queryClient.invalidateQueries({ queryKey: ["businesses"] });
     },
