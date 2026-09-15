@@ -95,8 +95,6 @@ function AuthPage() {
             </div>
           </div>
         </div>
-
-        <p className="mt-5 text-center text-[12px] text-[#555b65]">© 2026 Agenda Agora. Todos os direitos reservados.</p>
       </section>
     </main>
   );
