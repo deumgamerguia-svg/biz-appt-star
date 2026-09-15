@@ -85,28 +85,28 @@ function AuthPage() {
   };
 
   return (
-    <main className="agenda-login relative flex min-h-[100svh] items-center justify-center overflow-hidden bg-[#050607] px-4 py-8 text-[#f3f4f6] sm:px-6">
-      <div className="agenda-login__ambient pointer-events-none absolute inset-0" />
-      <div className="agenda-login__grid pointer-events-none absolute inset-0" />
-      <div className="agenda-login__orb agenda-login__orb--one pointer-events-none absolute" />
-      <div className="agenda-login__orb agenda-login__orb--two pointer-events-none absolute" />
+    <main className="relative flex min-h-[100svh] items-center justify-center overflow-hidden bg-[#050607] px-4 py-8 text-[#f3f4f6] sm:px-6">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_0%_20%,rgba(15,48,86,0.55),transparent_42%),radial-gradient(circle_at_100%_100%,rgba(0,70,150,0.2),transparent_38%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,rgba(11,29,49,0.3),transparent_32%,transparent_70%,rgba(4,15,28,0.24))]" />
+      <div className="pointer-events-none absolute -left-32 top-1/4 size-80 rounded-full bg-blue-600/[0.08] blur-3xl animate-pulse" />
+      <div className="pointer-events-none absolute -right-32 bottom-0 size-96 rounded-full bg-cyan-400/[0.06] blur-3xl animate-pulse [animation-delay:1.5s]" />
 
       <section className="relative z-10 w-full max-w-[430px]">
-        <div className="agenda-brand mb-7 text-center sm:mb-8">
+        <div className="mb-7 text-center sm:mb-8">
           <div className="mb-3 flex items-center justify-center gap-2.5">
-            <div className="agenda-logo-wrap" aria-hidden="true">
-              <div className="agenda-logo-glow" />
-              <img src="/agenda-agora-logo.svg" alt="Agenda Agora" className="agenda-logo relative size-11 object-contain" />
+            <div className="relative flex size-11 items-center justify-center">
+              <div className="absolute inset-0 rounded-full bg-blue-500/20 blur-md animate-pulse" />
+              <img src="/agenda-agora-logo.svg" alt="Agenda Agora" className="relative size-11 object-contain drop-shadow-[0_0_18px_rgba(22,119,255,0.28)] transition-transform duration-500 hover:scale-105" />
             </div>
             <div className="text-[28px] font-semibold tracking-[-0.055em]">
               <span className="text-[#f3f4f6]">Agenda </span>
-              <span className="agenda-brand-gradient">Agora</span>
+              <span className="bg-gradient-to-r from-[#1677ff] via-[#20a7ff] to-[#62e7f3] bg-clip-text text-transparent">Agora</span>
             </div>
           </div>
           <p className="text-[14px] text-[#7f8793]">Seu negócio organizado. Seus horários sob controle.</p>
         </div>
 
-        <div className="agenda-login-card rounded-2xl border border-[#25282c] bg-transparent p-6 sm:p-8">
+        <div className="rounded-2xl border border-[#25282c] bg-transparent p-6 shadow-[0_18px_55px_rgba(0,0,0,0.35)] backdrop-blur-[2px] sm:p-8">
           <div className="mb-7 text-center">
             <h1 className="text-[27px] font-semibold tracking-[-0.035em] text-[#f3f4f6]">Acesse sua conta</h1>
             <p className="mt-2 text-[14px] leading-5 text-[#737983]">Insira suas credenciais de acesso abaixo.</p>
@@ -133,7 +133,7 @@ function AuthPage() {
               </div>
             </div>
 
-            <button type="submit" disabled={busy} className="agenda-login-button h-12 w-full rounded-full bg-[#f5f5f5] text-[15px] font-semibold text-[#111111] shadow-[0_5px_20px_rgba(255,255,255,0.08)] transition hover:bg-white active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60">{busy ? "Entrando..." : "Entrar"}</button>
+            <button type="submit" disabled={busy} className="h-12 w-full rounded-full bg-[#f5f5f5] text-[15px] font-semibold text-[#111111] shadow-[0_5px_20px_rgba(255,255,255,0.08)] transition hover:-translate-y-px hover:bg-white hover:shadow-[0_8px_28px_rgba(255,255,255,0.12)] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60">{busy ? "Entrando..." : "Entrar"}</button>
           </form>
 
           <div className="my-6 flex items-center gap-3"><div className="h-px flex-1 bg-[#24272b]" /><span className="text-[11px] font-medium uppercase tracking-[0.12em] text-[#666b73]">Acesso seguro</span><div className="h-px flex-1 bg-[#24272b]" /></div>
