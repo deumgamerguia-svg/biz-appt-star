@@ -4,10 +4,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ImagePlus, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { useBusiness } from "@/lib/business";
 import { LOGO_BUCKET, getLogoUrl } from "@/lib/logo";
 import { PageHeader, NoBusiness } from "@/components/painel/PageHeader";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export const Route = createFileRoute("/_authenticated/painel/configuracoes")({
   head: () => ({
@@ -22,6 +24,7 @@ export const Route = createFileRoute("/_authenticated/painel/configuracoes")({
 });
 
 function ConfiguracoesPage() {
+  const { user } = useAuth();
   const { businessId } = useBusiness();
   const queryClient = useQueryClient();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -95,6 +98,8 @@ function ConfiguracoesPage() {
         subtitle="A logotipo aparece no topo da página em que o cliente agenda."
       />
 
+      <GreetingNameSettings userId={user?.id ?? null} />
+
       <div className="rounded-xl border border-border bg-card p-6">
         <div className="flex flex-col items-center gap-5">
           <div className="flex h-36 w-full max-w-sm items-center justify-center rounded-xl border border-dashed border-border bg-background">
@@ -145,6 +150,75 @@ function ConfiguracoesPage() {
       </div>
 
       <BrandColors businessId={businessId} />
+    </div>
+  );
+}
+
+function GreetingNameSettings({ userId }: { userId: string | null }) {
+  const queryClient = useQueryClient();
+  const [name, setName] = useState("");
+
+  const { data: profile } = useQuery({
+    queryKey: ["owner-greeting-name", userId],
+    enabled: !!userId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", userId!)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  useEffect(() => {
+    if (profile?.full_name !== undefined) setName(profile.full_name ?? "");
+  }, [profile?.full_name]);
+
+  const saveName = useMutation({
+    mutationFn: async () => {
+      if (!userId) throw new Error("Usuário não identificado");
+      const cleanName = name.trim();
+      if (!cleanName) throw new Error("Digite o nome que deve aparecer na saudação");
+      const { error } = await supabase
+        .from("profiles")
+        .update({ full_name: cleanName })
+        .eq("id", userId);
+      if (error) throw error;
+      return cleanName;
+    },
+    onSuccess: (cleanName) => {
+      setName(cleanName);
+      toast.success("Nome da saudação atualizado");
+      void queryClient.invalidateQueries({ queryKey: ["owner-greeting-name", userId] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <div className="rounded-xl border border-border bg-card p-6">
+      <h2 className="text-lg font-bold">Nome da saudação</h2>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Edite somente o nome que aparece em azul na saudação do Painel 2.
+      </p>
+      <div className="mt-5 max-w-md space-y-2">
+        <label htmlFor="greeting-name" className="text-sm font-medium">
+          Nome exibido
+        </label>
+        <Input
+          id="greeting-name"
+          value={name}
+          onChange={(e) => setName(e.target.value.slice(0, 40))}
+          placeholder="Ex.: Guilherme"
+          maxLength={40}
+        />
+      </div>
+      <div className="mt-5">
+        <Button onClick={() => saveName.mutate()} disabled={saveName.isPending || !name.trim()}>
+          {saveName.isPending ? "Salvando..." : "Salvar nome"}
+        </Button>
+      </div>
     </div>
   );
 }
