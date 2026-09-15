@@ -25,10 +25,42 @@ const formatPhone = (value: string) => {
 };
 const phoneLogin = (phone: string) => `${onlyDigits(phone)}@agenda.local`;
 const phonePassword = (senha: string) => `agendaagora:${senha}`;
+const phoneE164 = (phone: string) => {
+  const digits = onlyDigits(phone);
+  return digits.startsWith("55") ? `+${digits}` : `+55${digits}`;
+};
 
 async function getRole(userId: string) {
   const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId).maybeSingle();
   return data?.role ?? null;
+}
+
+async function signInOwner(phone: string, password: string) {
+  const digits = onlyDigits(phone);
+  const attempts = [
+    () =>
+      supabase.auth.signInWithPassword({
+        email: phoneLogin(digits),
+        password: phonePassword(password),
+      }),
+    () =>
+      supabase.auth.signInWithPassword({
+        email: phoneLogin(digits),
+        password,
+      }),
+    () =>
+      supabase.auth.signInWithPassword({
+        phone: phoneE164(digits),
+        password,
+      }),
+  ];
+
+  for (const attempt of attempts) {
+    const { data, error } = await attempt();
+    if (!error && data.user) return data.user;
+  }
+
+  throw new Error("Telefone ou senha incorretos.");
 }
 
 function AuthPage() {
@@ -64,16 +96,12 @@ function AuthPage() {
     }
     setBusy(true);
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: phoneLogin(phone),
-        password: phonePassword(password),
-      });
-      if (error || !data.user) throw new Error("Telefone ou senha incorretos.");
-      const role = await getRole(data.user.id);
+      const signedUser = await signInOwner(phone, password);
+      const role = await getRole(signedUser.id);
       if (role !== "owner") {
         await supabase.auth.signOut();
         if (role === "super_admin") throw new Error("Esta é a conta Master. Use o acesso exclusivo do Master.");
-        throw new Error("Esta conta não possui acesso de estabelecimento.");
+        throw new Error("Login reconhecido, mas esta conta ainda não possui a função owner no Supabase.");
       }
       toast.success("Bem-vindo de volta!");
       void navigate({ to: "/painel" });
