@@ -9,14 +9,12 @@ import { Button } from "@/components/ui/button";
 import brandLogo from "@/assets/agenda-agora-logo.png.asset.json";
 
 export const Route = createFileRoute("/_authenticated/painel")({
-  head: () => ({
-    meta: [
-      { title: "Painel — Agenda Agora" },
-      { name: "description", content: "Gerencie a agenda, os serviços e os clientes do negócio." },
-      { property: "og:title", content: "Painel — Agenda Agora" },
-      { property: "og:description", content: "Gerencie a agenda do seu negócio." },
-    ],
-  }),
+  head: () => ({ meta: [
+    { title: "Painel — Agenda Agora" },
+    { name: "description", content: "Gerencie a agenda, os serviços e os clientes do negócio." },
+    { property: "og:title", content: "Painel — Agenda Agora" },
+    { property: "og:description", content: "Gerencie a agenda do seu negócio." },
+  ]}),
   component: PainelLayout,
 });
 
@@ -44,10 +42,8 @@ const nav = [
     { to: "/painel/lembretes", label: "Lembretes", hint: "Envios automáticos", icon: BellRing },
   ]},
   { title: "Sistema", items: [
-    { title: "Sistema", items: [
-      { to: "/painel/configuracoes", label: "Configurações", hint: "Preferências do negócio", icon: Settings2 },
-      { to: "/painel/integracoes", label: "Integrações", hint: "Serviços conectados", icon: Plus },
-    ]},
+    { to: "/painel/configuracoes", label: "Configurações", hint: "Preferências do negócio", icon: Settings2 },
+    { to: "/painel/integracoes", label: "Integrações", hint: "Serviços conectados", icon: Plus },
   ]},
 ] as const;
 
@@ -61,10 +57,7 @@ function WhatsappBadge() {
   const { businessId } = useBusiness();
   const { data } = useQuery({
     queryKey: ["whatsapp-badge", businessId],
-    queryFn: async () => {
-      const { data: row } = await supabase.from("businesses").select("whatsapp_status").eq("id", businessId!).maybeSingle();
-      return row?.whatsapp_status ?? "desconectado";
-    },
+    queryFn: async () => { const { data: row } = await supabase.from("businesses").select("whatsapp_status").eq("id", businessId!).maybeSingle(); return row?.whatsapp_status ?? "desconectado"; },
     enabled: !!businessId,
     refetchInterval: 15000,
   });
@@ -97,10 +90,7 @@ function PainelLayout() {
     return () => window.clearTimeout(timer);
   }, [pathname, transitioning]);
 
-  const beginNavigation = () => {
-    setOpen(false);
-    setTransitioning(true);
-  };
+  const beginNavigation = () => { setOpen(false); setTransitioning(true); };
 
   return (
     <div className="owner-panel relative min-h-screen overflow-x-hidden bg-[#050607] text-[#f3f4f6] lg:flex">
@@ -117,9 +107,7 @@ function PainelLayout() {
 
         <div className="border-b border-[#25282c] px-1 py-4">
           <div className="flex items-center gap-3">
-            <span className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-[#1677ff]/25 bg-[#1677ff]/[0.09] font-display text-base font-bold text-[#5da8ff] shadow-[0_0_24px_rgba(22,119,255,0.08)]">
-              {(business?.name ?? user?.email ?? "A").charAt(0).toUpperCase()}
-            </span>
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-[#1677ff]/25 bg-[#1677ff]/[0.09] font-display text-base font-bold text-[#5da8ff] shadow-[0_0_24px_rgba(22,119,255,0.08)]">{(business?.name ?? user?.email ?? "A").charAt(0).toUpperCase()}</span>
             <span className="min-w-0">
               <span className="block truncate text-[0.85rem] font-medium text-[#e5e7eb]">{business?.name ?? "Acesso do estabelecimento"}</span>
               <span className="mt-px block truncate text-[0.72rem] text-[#626a75]">{user?.email}</span>
@@ -131,9 +119,7 @@ function PainelLayout() {
               <span className="mt-0.5 block truncate">{business.slug}</span>
             </div>
           ) : (
-            <div className="mt-3 rounded-xl border border-dashed border-[#25282c] px-3 py-2.5 text-[0.75rem] text-[#626a75]">
-              Aguardando configuração pelo painel Master.
-            </div>
+            <div className="mt-3 rounded-xl border border-dashed border-[#25282c] px-3 py-2.5 text-[0.75rem] text-[#626a75]">Aguardando configuração pelo painel Master.</div>
           )}
           {businesses.length > 1 && <p className="mt-2 text-[0.68rem] text-[#555d68]">Este acesso possui mais de uma unidade vinculada. A seleção de unidade é administrada pelo Master.</p>}
         </div>
@@ -174,7 +160,7 @@ function PainelLayout() {
         </header>
         <main className="relative mx-auto w-full max-w-7xl p-4 sm:p-7 lg:p-8">
           {transitioning && <div className="owner-route-loader" aria-label="Carregando página" role="status"><LoaderCircle className="size-6 animate-spin text-[#1677ff]" /></div>}
-          <div key={pathname} className="owner-route-content"> <Outlet /></div>
+          <div key={pathname} className="owner-route-content"><Outlet /></div>
         </main>
       </div>
     </div>
