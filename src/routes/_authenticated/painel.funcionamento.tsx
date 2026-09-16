@@ -2,7 +2,7 @@ import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useBusiness } from "@/lib/business";
 import { WEEKDAYS, weekdayLabel, hhmm } from "@/lib/format";
@@ -38,11 +38,14 @@ export const Route = createFileRoute("/_authenticated/painel/funcionamento")({
   component: FuncionamentoPage,
 });
 
+const initialForm = { weekday: "1", starts: "08:30", ends: "19:00" };
+
 function FuncionamentoPage() {
   const { businessId } = useBusiness();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ weekday: "1", starts: "08:30", ends: "19:00" });
+  const [form, setForm] = useState(initialForm);
+  const [editingDay, setEditingDay] = useState<number | null>(null);
 
   const { data: hours } = useQuery({
     queryKey: ["business_hours", businessId],
@@ -61,12 +64,35 @@ function FuncionamentoPage() {
   const invalidate = () =>
     queryClient.invalidateQueries({ queryKey: ["business_hours", businessId] });
 
+  const close = () => {
+    setOpen(false);
+    setEditingDay(null);
+    setForm(initialForm);
+  };
+
   const save = useMutation({
     mutationFn: async () => {
+      if (!businessId) throw new Error("Estabelecimento não selecionado.");
+      if (!form.starts || !form.ends || form.starts >= form.ends) {
+        throw new Error("O horário final precisa ser depois do horário inicial.");
+      }
+      const weekday = Number(form.weekday);
+
+      // Se o dia foi trocado durante uma edição, remove a configuração antiga
+      // antes do upsert para manter exatamente um expediente por dia.
+      if (editingDay !== null && editingDay !== weekday) {
+        const removed = await supabase
+          .from("business_hours")
+          .delete()
+          .eq("business_id", businessId)
+          .eq("weekday", editingDay);
+        if (removed.error) throw removed.error;
+      }
+
       const { error } = await supabase.from("business_hours").upsert(
         {
-          business_id: businessId!,
-          weekday: Number(form.weekday),
+          business_id: businessId,
+          weekday,
           starts_at: form.starts,
           ends_at: form.ends,
         },
@@ -75,8 +101,8 @@ function FuncionamentoPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Horário salvo!");
-      setOpen(false);
+      toast.success(editingDay === null ? "Horário cadastrado!" : "Horário atualizado!");
+      close();
       void invalidate();
     },
     onError: (e: Error) => toast.error(e.message),
@@ -84,11 +110,29 @@ function FuncionamentoPage() {
 
   const remove = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("business_hours").delete().eq("id", id);
+      const { error } = await supabase
+        .from("business_hours")
+        .delete()
+        .eq("id", id)
+        .eq("business_id", businessId!);
       if (error) throw error;
     },
-    onSuccess: () => void invalidate(),
+    onSuccess: () => {
+      toast.success("Dia removido do atendimento.");
+      void invalidate();
+    },
+    onError: (e: Error) => toast.error(e.message),
   });
+
+  const edit = (hour: NonNullable<typeof hours>[number]) => {
+    setEditingDay(hour.weekday);
+    setForm({
+      weekday: String(hour.weekday),
+      starts: hhmm(hour.starts_at),
+      ends: hhmm(hour.ends_at),
+    });
+    setOpen(true);
+  };
 
   if (!businessId) return <NoBusiness />;
 
@@ -96,33 +140,35 @@ function FuncionamentoPage() {
     <div>
       <PageHeader
         title="Funcionamento"
-        subtitle="Horários fixos que aparecem para o cliente agendar."
+        subtitle="Dias e horários que controlam diretamente as datas disponíveis no Painel 1."
         action={
-          <Dialog open={open} onOpenChange={setOpen}>
+          <Dialog
+            open={open}
+            onOpenChange={(value) => {
+              setOpen(value);
+              if (!value) {
+                setEditingDay(null);
+                setForm(initialForm);
+              }
+            }}
+          >
             <DialogTrigger asChild>
-              <Button>
+              <Button onClick={() => { setEditingDay(null); setForm(initialForm); }}>
                 <Plus className="size-4" /> Cadastrar
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Horário de funcionamento</DialogTitle>
+                <DialogTitle>{editingDay === null ? "Cadastrar funcionamento" : "Editar funcionamento"}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label>Dia</Label>
-                  <Select
-                    value={form.weekday}
-                    onValueChange={(weekday) => setForm({ ...form, weekday })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
+                  <Select value={form.weekday} onValueChange={(weekday) => setForm({ ...form, weekday })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      {WEEKDAYS.map((d) => (
-                        <SelectItem key={d.value} value={String(d.value)}>
-                          {d.label}
-                        </SelectItem>
+                      {WEEKDAYS.map((day) => (
+                        <SelectItem key={day.value} value={String(day.value)}>{day.label}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -130,27 +176,17 @@ function FuncionamentoPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="hstart">Começo</Label>
-                    <Input
-                      id="hstart"
-                      type="time"
-                      value={form.starts}
-                      onChange={(e) => setForm({ ...form, starts: e.target.value })}
-                    />
+                    <Input id="hstart" type="time" value={form.starts} onChange={(e) => setForm({ ...form, starts: e.target.value })} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="hend">Fim</Label>
-                    <Input
-                      id="hend"
-                      type="time"
-                      value={form.ends}
-                      onChange={(e) => setForm({ ...form, ends: e.target.value })}
-                    />
+                    <Input id="hend" type="time" value={form.ends} onChange={(e) => setForm({ ...form, ends: e.target.value })} />
                   </div>
                 </div>
               </div>
               <DialogFooter>
-                <Button onClick={() => save.mutate()} disabled={save.isPending}>
-                  Salvar
+                <Button onClick={() => save.mutate()} disabled={save.isPending || !form.starts || !form.ends || form.starts >= form.ends}>
+                  {save.isPending ? "Salvando..." : editingDay === null ? "Cadastrar" : "Salvar alteração"}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -164,28 +200,19 @@ function FuncionamentoPage() {
         <div className="surface overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-muted/40 text-left text-xs uppercase text-muted-foreground">
-              <tr>
-                <th className="px-4 py-3">Dia</th>
-                <th className="px-4 py-3">Começo</th>
-                <th className="px-4 py-3">Fim</th>
-                <th className="px-4 py-3" />
-              </tr>
+              <tr><th className="px-4 py-3">Dia</th><th className="px-4 py-3">Começo</th><th className="px-4 py-3">Fim</th><th className="px-4 py-3" /></tr>
             </thead>
             <tbody>
-              {hours.map((h) => (
-                <tr key={h.id} className="border-t border-border/60">
-                  <td className="px-4 py-3 font-medium">{weekdayLabel(h.weekday)}</td>
-                  <td className="px-4 py-3">{hhmm(h.starts_at)}</td>
-                  <td className="px-4 py-3">{hhmm(h.ends_at)}</td>
+              {hours.map((hour) => (
+                <tr key={hour.id} className="border-t border-border/60">
+                  <td className="px-4 py-3 font-medium">{weekdayLabel(hour.weekday)}</td>
+                  <td className="px-4 py-3">{hhmm(hour.starts_at)}</td>
+                  <td className="px-4 py-3">{hhmm(hour.ends_at)}</td>
                   <td className="px-4 py-3 text-right">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => remove.mutate(h.id)}
-                      aria-label={`Remover ${weekdayLabel(h.weekday)}`}
-                    >
-                      <Trash2 className="size-4 text-destructive" />
-                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => edit(hour)} aria-label={`Editar ${weekdayLabel(hour.weekday)}`}><Pencil className="size-4" /></Button>
+                    <Button variant="ghost" size="icon" onClick={() => {
+                      if (window.confirm(`Remover o funcionamento de ${weekdayLabel(hour.weekday)}?`)) remove.mutate(hour.id);
+                    }} aria-label={`Remover ${weekdayLabel(hour.weekday)}`}><Trash2 className="size-4 text-destructive" /></Button>
                   </td>
                 </tr>
               ))}
