@@ -264,7 +264,7 @@ function PublicBooking() {
     cancellationPreferences.cancellations_enabled ?? cancellationPreferences.cancellations ?? true;
   const cancellationNoticeMinutes = Math.max(
     0,
-    Math.min(960, Number(cancellationPreferences.cancellation_notice_minutes ?? 0) || 0),
+    Math.min(1440, Number(cancellationPreferences.cancellation_notice_minutes ?? 0) || 0),
   );
 
   return (
