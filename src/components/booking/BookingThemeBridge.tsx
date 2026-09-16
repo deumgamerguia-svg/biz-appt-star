@@ -20,6 +20,10 @@ type Appearance = {
   agenda_border?: string;
 };
 
+type Preferences = {
+  greeting?: string;
+};
+
 const colorPattern = /^#[0-9a-fA-F]{6}$/;
 const safeColor = (value: unknown, fallback: string) =>
   typeof value === "string" && colorPattern.test(value) ? value : fallback;
@@ -33,6 +37,7 @@ export function BookingThemeBridge() {
     if (!slug) return;
 
     let cancelled = false;
+    let greetingElement: HTMLParagraphElement | null = null;
     const root = document.documentElement;
     const body = document.body;
     const style = document.createElement("style");
@@ -55,12 +60,13 @@ export function BookingThemeBridge() {
 
     void (async () => {
       const { data } = await (supabase.from("businesses") as any)
-        .select("booking_appearance")
+        .select("booking_appearance, booking_preferences")
         .eq("slug", slug)
         .maybeSingle();
       if (cancelled) return;
 
       const appearance = (data?.booking_appearance ?? {}) as Appearance;
+      const preferences = (data?.booking_preferences ?? {}) as Preferences;
       const pageText = safeColor(appearance.page_text, "#f3f4f6");
       const serviceBackground = safeColor(appearance.service_background, "#0b0d0f");
       const serviceText = safeColor(appearance.service_text, pageText);
@@ -86,6 +92,22 @@ export function BookingThemeBridge() {
       root.style.setProperty("--muted-foreground", agendaText);
       root.style.setProperty("--popover", modalBackground);
       root.style.setProperty("--popover-foreground", modalText);
+
+      const greeting = preferences.greeting?.trim();
+      const main = document.querySelector("main");
+      const logoArea = main?.firstElementChild;
+      if (greeting && main && logoArea) {
+        greetingElement = document.createElement("p");
+        greetingElement.dataset.bookingGreeting = "true";
+        greetingElement.textContent = greeting;
+        greetingElement.style.textAlign = "center";
+        greetingElement.style.margin = "-0.25rem auto 1.5rem";
+        greetingElement.style.fontSize = "0.95rem";
+        greetingElement.style.fontWeight = "600";
+        greetingElement.style.color = pageText;
+        greetingElement.style.opacity = "0.9";
+        logoArea.insertAdjacentElement("afterend", greetingElement);
+      }
 
       style.textContent = `
         body[data-booking-theme="true"] main button.rounded-lg.border:hover {
@@ -113,6 +135,7 @@ export function BookingThemeBridge() {
 
     return () => {
       cancelled = true;
+      greetingElement?.remove();
       style.remove();
       delete body.dataset.bookingTheme;
       for (const [name, value] of previous) {
