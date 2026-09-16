@@ -459,3 +459,8 @@ main, [data-slot="card"] { animation: page-fade-in 280ms ease-out both; }
   width: 1rem;
   height: 1rem;
 }
+
+/* Sidebar — aproveitamento vertical: aproxima discretamente todo o conteúdo do topo. */
+.owner-panel aside {
+  padding-top: 0.4rem;
+}
