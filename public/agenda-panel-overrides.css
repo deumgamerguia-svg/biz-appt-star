@@ -83,3 +83,9 @@
 .owner-panel aside nav a[href="/painel/as-pay"] .owner-nav-hint {
   color: #a86d00;
 }
+
+/* AS Pay selecionado — mantém o indicador lateral no mesmo amarelo do ícone. */
+.owner-panel aside nav a[href="/painel/as-pay"].owner-nav-active::before {
+  background: #f4c400;
+  box-shadow: none;
+}
