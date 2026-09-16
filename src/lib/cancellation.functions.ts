@@ -18,9 +18,7 @@ function cancellationLabel(minutes: number) {
 }
 
 export const cancelCustomerBooking = createServerFn({ method: "POST" })
-  .inputValidator((d: unknown) =>
-    z.object({ chargeId: z.string().uuid() }).parse(d),
-  )
+  .inputValidator((d: unknown) => z.object({ chargeId: z.string().uuid() }).parse(d))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -41,12 +39,15 @@ export const cancelCustomerBooking = createServerFn({ method: "POST" })
     if (!appointment) throw new Error("Agendamento não encontrado.");
     if (appointment.status === "cancelado") return { ok: true };
 
+    // select("*") mantém compatibilidade com bancos antigos: se
+    // booking_preferences ainda não existir, o cancelamento usa os padrões.
     const { data: business } = await (supabaseAdmin.from("businesses") as any)
-      .select("booking_preferences")
+      .select("*")
       .eq("id", appointment.business_id)
       .maybeSingle();
 
-    const prefs = (business?.booking_preferences ?? {}) as CancellationPreferences;
+    const prefs = ((business as { booking_preferences?: unknown } | null)?.booking_preferences ??
+      {}) as CancellationPreferences;
     const enabled = prefs.cancellations_enabled ?? prefs.cancellations ?? true;
     const rawNotice = Number(prefs.cancellation_notice_minutes ?? 0);
     const noticeMinutes = Number.isFinite(rawNotice)
