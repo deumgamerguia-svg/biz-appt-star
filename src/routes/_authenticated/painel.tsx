@@ -332,25 +332,91 @@ function PainelLayout() {
           />
         </Link>
 
-        <div className="border-b border-[#25282c] px-1 py-4">
-          <div className="flex items-center gap-3">
-            <span className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-[#1677ff]/25 bg-[#1677ff]/[0.09] font-display text-base font-bold text-[#5da8ff] shadow-[0_0_24px_rgba(22,119,255,0.08)]">
-              {(business?.name ?? user?.email ?? "A").charAt(0).toUpperCase()}
-            </span>
-            <span className="min-w-0">
-              <span className="block truncate text-[0.85rem] font-medium text-[#e5e7eb]">
-                {business?.name ?? "Acesso do estabelecimento"}
+        <div className="relative shrink-0 border-b border-[#25282c] px-1 py-3">
+          <div className="flex items-center rounded-xl px-1 py-1 transition-colors hover:bg-white/[0.025]">
+            <button
+              type="button"
+              aria-expanded={accountOpen}
+              aria-label="Abrir dados da conta"
+              onClick={() => setAccountOpen((value) => !value)}
+              className="group flex min-w-0 flex-1 items-center gap-2.5 rounded-lg px-1.5 py-1.5 text-left outline-none transition-colors focus-visible:ring-1 focus-visible:ring-[#1677ff]/70"
+            >
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-[11px] bg-[#f2f3f5] text-[11px] font-semibold text-[#111318] shadow-[inset_0_0_0_1px_rgba(0,0,0,0.06)] transition-transform duration-150 group-hover:scale-[1.02]">
+                {accountInitial}
               </span>
-              <span className="mt-px block truncate text-[0.72rem] text-[#626a75]">
-                {user?.email}
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-[11px] font-semibold leading-[14px] tracking-[-0.01em] text-[#f0f1f3]">
+                  {accountName}
+                </span>
+                <span className="mt-[3px] flex min-w-0 items-center gap-1.5">
+                  <span className="truncate text-[9.5px] leading-3 text-[#626872]">Usuário</span>
+                  <span className="shrink-0 rounded-full border border-emerald-400/25 bg-emerald-400/[0.09] px-1.5 py-[2px] text-[8.5px] font-semibold leading-none text-emerald-300">
+                    {accountPlanLabel}
+                  </span>
+                </span>
               </span>
-            </span>
+            </button>
+
+            <button
+              type="button"
+              aria-label="Sair da conta"
+              title="Sair da conta"
+              className="flex size-8 shrink-0 items-center justify-center rounded-lg text-[#666d76] transition-colors hover:bg-white/[0.04] hover:text-[#d7dbe1] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1677ff]/70"
+              onClick={async () => {
+                await signOut();
+                void navigate({ to: "/auth" });
+              }}
+            >
+              <LogOut className="size-[15px]" strokeWidth={1.7} />
+            </button>
           </div>
 
-          {business && (
-            <div className="mt-3 rounded-xl border border-[#25282c] bg-[#0b0d0f]/80 px-3 py-2.5 text-[0.75rem] text-[#626a75]">
-              <span className="block font-medium text-[#aeb4bd]">Estabelecimento configurado</span>
-              <span className="mt-0.5 block truncate">{business.slug}</span>
+          {accountOpen && (
+            <div className="absolute left-0 right-0 top-[calc(100%+0.6rem)] z-30 rounded-2xl border border-[#272a2f] bg-[#090a0c]/98 p-3.5 shadow-[0_18px_55px_rgba(0,0,0,0.55)] backdrop-blur-xl animate-in fade-in slide-in-from-top-2 duration-150">
+              <div className="flex items-center gap-3 border-b border-[#22252a] pb-3">
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-[#f2f3f5] text-[12px] font-semibold text-[#111318] shadow-[inset_0_0_0_1px_rgba(0,0,0,0.06)]">
+                  {accountInitial}
+                </span>
+                <div className="min-w-0">
+                  <p className="truncate text-[12px] font-semibold leading-4 text-[#f0f1f3]">
+                    {accountName}
+                  </p>
+                  <p className="mt-0.5 text-[10px] leading-4 text-[#676d76]">Dados da conta</p>
+                </div>
+              </div>
+
+              <div className="mt-3 space-y-2.5 text-[11px]">
+                <div className="flex items-start justify-between gap-3">
+                  <span className="text-[#646b75]">Estabelecimento</span>
+                  <span className="max-w-[58%] truncate text-right font-medium text-[#cfd3d9]">
+                    {business?.name ?? "Não configurado"}
+                  </span>
+                </div>
+                <div className="flex items-start justify-between gap-3">
+                  <span className="text-[#646b75]">Telefone</span>
+                  <span className="text-right font-medium text-[#cfd3d9]">{accountPhone}</span>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-[#646b75]">Plano</span>
+                  <span className="rounded-full border border-emerald-400/25 bg-emerald-400/[0.09] px-2 py-0.5 text-[9px] font-semibold text-emerald-300">
+                    {accountPlanLabel}
+                  </span>
+                </div>
+                <div className="flex items-start justify-between gap-3">
+                  <span className="text-[#646b75]">Acesso</span>
+                  <span className={`text-right font-medium ${business?.status === "suspenso" ? "text-red-400" : "text-[#cfd3d9]"}`}>
+                    {business?.status === "suspenso" ? "Suspenso" : "Ativo"}
+                  </span>
+                </div>
+              </div>
+
+              <Link
+                to="/painel/assinatura"
+                onClick={beginNavigation}
+                className="mt-3 flex w-full items-center justify-center rounded-xl border border-[#262a30] bg-[#111317] px-3 py-2 text-[11px] font-medium text-[#cfd3d9] transition-colors hover:border-[#1677ff]/30 hover:bg-[#1677ff]/[0.06] hover:text-white"
+              >
+                Ver dados da assinatura
+              </Link>
             </div>
           )}
         </div>
@@ -433,95 +499,6 @@ function PainelLayout() {
             </section>
           ))}
         </nav>
-
-        <div className="relative shrink-0 border-t border-[#25282c] pt-3">
-          {accountOpen && (
-            <div className="absolute bottom-[calc(100%+0.6rem)] left-0 right-0 z-20 rounded-2xl border border-[#272a2f] bg-[#090a0c]/98 p-3.5 shadow-[0_18px_55px_rgba(0,0,0,0.55)] backdrop-blur-xl animate-in fade-in slide-in-from-bottom-2 duration-150">
-              <div className="flex items-center gap-3 border-b border-[#22252a] pb-3">
-                <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-[#f2f3f5] text-[12px] font-semibold text-[#111318] shadow-[inset_0_0_0_1px_rgba(0,0,0,0.06)]">
-                  {accountInitial}
-                </span>
-                <div className="min-w-0">
-                  <p className="truncate text-[12px] font-semibold leading-4 text-[#f0f1f3]">
-                    {accountName}
-                  </p>
-                  <p className="mt-0.5 text-[10px] leading-4 text-[#676d76]">Dados da conta</p>
-                </div>
-              </div>
-
-              <div className="mt-3 space-y-2.5 text-[11px]">
-                <div className="flex items-start justify-between gap-3">
-                  <span className="text-[#646b75]">Estabelecimento</span>
-                  <span className="max-w-[58%] truncate text-right font-medium text-[#cfd3d9]">
-                    {business?.name ?? "Não configurado"}
-                  </span>
-                </div>
-                <div className="flex items-start justify-between gap-3">
-                  <span className="text-[#646b75]">Telefone</span>
-                  <span className="text-right font-medium text-[#cfd3d9]">{accountPhone}</span>
-                </div>
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-[#646b75]">Plano</span>
-                  <span className="rounded-full border border-emerald-400/25 bg-emerald-400/[0.09] px-2 py-0.5 text-[9px] font-semibold text-emerald-300">
-                    {accountPlanLabel}
-                  </span>
-                </div>
-                <div className="flex items-start justify-between gap-3">
-                  <span className="text-[#646b75]">Acesso</span>
-                  <span className={`text-right font-medium ${business?.status === "suspenso" ? "text-red-400" : "text-[#cfd3d9]"}`}>
-                    {business?.status === "suspenso" ? "Suspenso" : "Ativo"}
-                  </span>
-                </div>
-              </div>
-
-              <Link
-                to="/painel/assinatura"
-                onClick={beginNavigation}
-                className="mt-3 flex w-full items-center justify-center rounded-xl border border-[#262a30] bg-[#111317] px-3 py-2 text-[11px] font-medium text-[#cfd3d9] transition-colors hover:border-[#1677ff]/30 hover:bg-[#1677ff]/[0.06] hover:text-white"
-              >
-                Ver dados da assinatura
-              </Link>
-            </div>
-          )}
-
-          <div className="flex items-center rounded-xl px-1 py-1 transition-colors hover:bg-white/[0.025]">
-            <button
-              type="button"
-              aria-expanded={accountOpen}
-              aria-label="Abrir dados da conta"
-              onClick={() => setAccountOpen((value) => !value)}
-              className="group flex min-w-0 flex-1 items-center gap-2.5 rounded-lg px-1.5 py-1.5 text-left outline-none transition-colors focus-visible:ring-1 focus-visible:ring-[#1677ff]/70"
-            >
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-[11px] bg-[#f2f3f5] text-[11px] font-semibold text-[#111318] shadow-[inset_0_0_0_1px_rgba(0,0,0,0.06)] transition-transform duration-150 group-hover:scale-[1.02]">
-                {accountInitial}
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-[11px] font-semibold leading-[14px] tracking-[-0.01em] text-[#f0f1f3]">
-                  {accountName}
-                </span>
-                <span className="mt-[3px] flex min-w-0 items-center gap-1.5">
-                  <span className="truncate text-[9.5px] leading-3 text-[#626872]">Usuário</span>
-                  <span className="shrink-0 rounded-full border border-emerald-400/25 bg-emerald-400/[0.09] px-1.5 py-[2px] text-[8.5px] font-semibold leading-none text-emerald-300">
-                    {accountPlanLabel}
-                  </span>
-                </span>
-              </span>
-            </button>
-
-            <button
-              type="button"
-              aria-label="Sair da conta"
-              title="Sair da conta"
-              className="flex size-8 shrink-0 items-center justify-center rounded-lg text-[#666d76] transition-colors hover:bg-white/[0.04] hover:text-[#d7dbe1] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1677ff]/70"
-              onClick={async () => {
-                await signOut();
-                void navigate({ to: "/auth" });
-              }}
-            >
-              <LogOut className="size-[15px]" strokeWidth={1.7} />
-            </button>
-          </div>
-        </div>
       </aside>
 
       <div className="relative z-10 min-w-0 flex-1">
