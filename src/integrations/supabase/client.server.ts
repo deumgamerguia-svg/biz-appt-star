@@ -35,10 +35,10 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
 }
 
 function createSupabaseAdminClient() {
-  // A aplicação web é construída com VITE_SUPABASE_URL. O servidor precisa usar
-  // exatamente o mesmo projeto; um SUPABASE_URL genérico de outro ambiente não
-  // pode fazer o Painel 1 procurar negócios em outro banco.
-  const SUPABASE_URL = process.env['VITE_SUPABASE_URL'] || CONNECTED_PROJECT_URL;
+  // Este repositório está ligado a um único projeto Supabase. Não permita que
+  // variáveis VITE/SUPABASE de outro ambiente redirecionem os server functions
+  // do Painel 1 para um banco diferente do usado pelo Painel 2.
+  const SUPABASE_URL = CONNECTED_PROJECT_URL;
 
   // Aceita a chave secreta nova ou o JWT service-role legado.
   const SUPABASE_SERVER_KEY =
