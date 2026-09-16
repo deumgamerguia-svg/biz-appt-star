@@ -38,6 +38,11 @@
   font-size: 0.9rem;
 }
 
+/* Painel 2 — remove somente a opção Produtos da navegação lateral. */
+.owner-panel aside nav a[href="/painel/produtos"] {
+  display: none;
+}
+
 @media (max-width: 639px) {
   .owner-panel main .owner-route-content > div:has(input[type="date"]) > div:has(> input[type="date"]) {
     grid-template-columns: 54px minmax(0, 1fr) 54px;
