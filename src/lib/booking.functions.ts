@@ -184,20 +184,26 @@ export const getOpenDays = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ slug: z.string().min(1) }).parse(d))
   .handler(async ({ data }) => {
     const db = await admin();
-    const { data: business } = await db
-      .from("businesses")
-      .select("id, status")
+    const { data: business } = await (db.from("businesses") as any)
+      .select("id, status, booking_preferences")
       .eq("slug", data.slug)
       .maybeSingle();
     if (!business || business.status === "suspenso")
       return { days: [] as { date: string; weekday: number }[] };
+
+    const rawDays = Number(business.booking_preferences?.list_dates_days);
+    const daysAhead = Number.isFinite(rawDays)
+      ? Math.max(7, Math.min(365, Math.floor(rawDays)))
+      : 15;
+
     const { data: hours } = await db
       .from("business_hours")
       .select("weekday")
       .eq("business_id", business.id);
     const open = new Set((hours ?? []).map((h) => h.weekday));
     const days: { date: string; weekday: number }[] = [];
-    for (let i = 0; i < 21 && days.length < 12; i++) {
+
+    for (let i = 1; i <= daysAhead; i++) {
       const d = new Date(Date.now() + i * 86400000);
       const date = d.toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" });
       const weekday = new Date(`${date}T12:00:00-03:00`).getDay();
@@ -328,7 +334,7 @@ export const generateDepositPix = createServerFn({ method: "POST" })
       .eq("id", charge.id);
     return {
       qrCode: pix.qrCode,
-      qrCodeBase64: pix.qrCodeBase64,
+      qrCodeBase64: pix.qr_code_base64,
       ticketUrl: pix.ticketUrl,
       expiresAt: charge.expires_at,
     };
