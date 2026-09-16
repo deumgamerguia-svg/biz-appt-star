@@ -28,6 +28,7 @@ import {
   getDepositStatus,
   getMyBookings,
 } from "@/lib/booking.functions";
+import { cancelCustomerBooking } from "@/lib/cancellation.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -66,6 +67,12 @@ type Service = {
 };
 
 type Professional = { id: string; name: string; role: string | null };
+
+type CancellationPreferences = {
+  cancellations_enabled?: boolean;
+  cancellation_notice_minutes?: number;
+  cancellations?: boolean;
+};
 
 const DAY_LABEL = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
 
@@ -128,13 +135,27 @@ function PublicBooking() {
   const { data: business, isLoading } = useQuery({
     queryKey: ["public-business", slug],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("businesses")
-        .select("id, name, category, phone, address, logo_url, status, brand_primary, brand_background")
+      const { data, error } = await (supabase.from("businesses") as any)
+        .select(
+          "id, name, category, phone, address, logo_url, status, brand_primary, brand_background, booking_preferences",
+        )
         .eq("slug", slug)
         .maybeSingle();
       if (error) throw error;
-      return data;
+      return data as
+        | {
+            id: string;
+            name: string;
+            category: string | null;
+            phone: string | null;
+            address: string | null;
+            logo_url: string | null;
+            status: string;
+            brand_primary: string | null;
+            brand_background: string | null;
+            booking_preferences?: CancellationPreferences | null;
+          }
+        | null;
     },
   });
 
@@ -238,6 +259,14 @@ function PublicBooking() {
     setFormError(null);
   };
 
+  const cancellationPreferences = business?.booking_preferences ?? {};
+  const cancellationEnabled =
+    cancellationPreferences.cancellations_enabled ?? cancellationPreferences.cancellations ?? true;
+  const cancellationNoticeMinutes = Math.max(
+    0,
+    Math.min(960, Number(cancellationPreferences.cancellation_notice_minutes ?? 0) || 0),
+  );
+
   return (
     <div
       className="flex min-h-screen flex-col bg-background pb-28"
@@ -310,11 +339,12 @@ function PublicBooking() {
             bookings={bookings.data?.bookings ?? []}
             onOpen={setActiveCharge}
             onRefresh={() => void bookings.refetch()}
+            cancellationEnabled={cancellationEnabled}
+            cancellationNoticeMinutes={cancellationNoticeMinutes}
           />
         )}
       </main>
 
-      {/* Modal de agendamento */}
       <Dialog open={!!service} onOpenChange={(o) => !o && closeModal()}>
         <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto bg-card">
           {service && (
@@ -522,6 +552,13 @@ type Booking = {
 };
 
 function statusInfo(b: Booking) {
+  if (b.appointmentStatus === "cancelado")
+    return {
+      tag: "#Agendamento Cancelado",
+      tone: "border-destructive/60",
+      steps: 3,
+      last: "Agendamento Cancelado",
+    };
   if (b.chargeStatus === "pago")
     return { tag: "#Agendamento Confirmado", tone: "border-primary/60", steps: 3, last: "Confirmado" };
   if (b.chargeStatus === "pendente")
@@ -534,13 +571,30 @@ function HistoryList({
   bookings,
   onOpen,
   onRefresh,
+  cancellationEnabled,
+  cancellationNoticeMinutes,
 }: {
   slug: string;
   bookings: Booking[];
   onOpen: (id: string) => void;
   onRefresh: () => void;
+  cancellationEnabled: boolean;
+  cancellationNoticeMinutes: number;
 }) {
   void slug;
+  const cancelConfirmedFn = useServerFn(cancelCustomerBooking);
+  const [pendingCancel, setPendingCancel] = useState<Booking | null>(null);
+
+  const cancelConfirmed = useMutation({
+    mutationFn: (chargeId: string) => cancelConfirmedFn({ data: { chargeId } }),
+    onSuccess: () => {
+      toast.success("Agendamento cancelado.");
+      setPendingCancel(null);
+      onRefresh();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   if (!bookings.length)
     return (
       <p className="py-10 text-center text-sm text-muted-foreground">
@@ -557,6 +611,17 @@ function HistoryList({
       {bookings.map((b) => {
         const info = statusInfo(b);
         const starts = b.startsAt ? new Date(b.startsAt) : null;
+        const cancellationDeadline = starts
+          ? starts.getTime() - cancellationNoticeMinutes * 60_000
+          : 0;
+        const canCancel =
+          cancellationEnabled &&
+          b.chargeStatus === "pago" &&
+          b.appointmentStatus !== "cancelado" &&
+          !!starts &&
+          starts.getTime() > Date.now() &&
+          Date.now() <= cancellationDeadline;
+
         return (
           <div key={b.chargeId} className={`rounded-xl border ${info.tone} bg-card p-4`}>
             <p className="text-xs font-semibold italic text-muted-foreground">{info.tag}</p>
@@ -588,14 +653,18 @@ function HistoryList({
               {info.steps === 3 && (
                 <Step
                   icon={
-                    b.chargeStatus === "pago" ? <Check className="size-4" /> : <X className="size-4" />
+                    b.appointmentStatus === "cancelado" || b.chargeStatus !== "pago" ? (
+                      <X className="size-4" />
+                    ) : (
+                      <Check className="size-4" />
+                    )
                   }
                   label={info.last}
                 />
               )}
             </div>
 
-            {b.chargeStatus === "pendente" && (
+            {b.chargeStatus === "pendente" && b.appointmentStatus !== "cancelado" && (
               <Button
                 className="mt-4 w-full"
                 onClick={() => {
@@ -606,9 +675,40 @@ function HistoryList({
                 Pagar sinal de {formatPrice(b.amountCents)}
               </Button>
             )}
+
+            {canCancel && (
+              <Button
+                variant="outline"
+                className="mt-3 w-full"
+                onClick={() => setPendingCancel(b)}
+              >
+                Cancelar agendamento
+              </Button>
+            )}
           </div>
         );
       })}
+
+      <Dialog open={!!pendingCancel} onOpenChange={(open) => !open && setPendingCancel(null)}>
+        <DialogContent className="max-w-sm text-center">
+          <h3 className="text-lg font-semibold">Cancelar agendamento?</h3>
+          <p className="text-sm text-muted-foreground">
+            Confirme se deseja cancelar este horário. Esta ação libera o horário novamente na agenda.
+          </p>
+          <div className="flex justify-center gap-3">
+            <Button variant="secondary" onClick={() => setPendingCancel(null)}>
+              Voltar
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={cancelConfirmed.isPending}
+              onClick={() => pendingCancel && cancelConfirmed.mutate(pendingCancel.chargeId)}
+            >
+              {cancelConfirmed.isPending ? "Cancelando..." : "Confirmar cancelamento"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
