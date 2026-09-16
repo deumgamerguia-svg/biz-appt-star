@@ -11,6 +11,7 @@ const slugSchema = z.object({
 type Ctx = {
   businessId: string;
   service: { id: string; name: string; duration_minutes: number; deposit_cents: number };
+  minimumNoticeHours: number;
 };
 
 async function admin() {
@@ -34,14 +35,17 @@ function hhmm(total: number) {
 
 async function loadContext(slug: string, serviceId: string): Promise<Ctx> {
   const db = await admin();
-  const { data: business } = await db
-    .from("businesses")
-    .select("id, status")
+  const { data: business } = await (db.from("businesses") as any)
+    .select("id, status, booking_preferences")
     .eq("slug", slug)
     .maybeSingle();
   if (!business) throw new Error("Negócio não encontrado.");
   if (business.status === "suspenso")
     throw new Error("Os agendamentos deste estabelecimento estão temporariamente indisponíveis.");
+  const rawNotice = Number(business.booking_preferences?.minimum_notice_hours);
+  const minimumNoticeHours = Number.isFinite(rawNotice)
+    ? Math.max(0, Math.min(720, rawNotice))
+    : 2;
   const { data: service } = await db
     .from("services")
     .select("id, name, duration_minutes, deposit_cents")
@@ -50,7 +54,7 @@ async function loadContext(slug: string, serviceId: string): Promise<Ctx> {
     .eq("active", true)
     .maybeSingle();
   if (!service) throw new Error("Serviço não encontrado.");
-  return { businessId: business.id, service };
+  return { businessId: business.id, service, minimumNoticeHours };
 }
 
 async function validateProfessional(businessId: string, serviceId: string, professionalId?: string | null) {
@@ -67,7 +71,7 @@ export const getAvailability = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => slugSchema.parse(d))
   .handler(async ({ data }) => {
     const db = await admin();
-    const { businessId, service } = await loadContext(data.slug, data.serviceId);
+    const { businessId, service, minimumNoticeHours } = await loadContext(data.slug, data.serviceId);
     const weekday = new Date(`${data.date}T12:00:00-03:00`).getDay();
     const professional = await validateProfessional(businessId, service.id, data.professionalId);
     if (professional && !professional.working_days.includes(weekday)) return { slots: [] as string[], depositCents: service.deposit_cents };
@@ -129,29 +133,17 @@ export const getAvailability = createServerFn({ method: "POST" })
       busy.push([off(s), off(e)]);
     }
 
-    const nowMin =
-      data.date ===
-      new Date().toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" })
-        ? (() => {
-            const t = new Date().toLocaleTimeString("pt-BR", {
-              timeZone: "America/Sao_Paulo",
-              hour: "2-digit",
-              minute: "2-digit",
-              hour12: false,
-            });
-            return minutesOf(t);
-          })()
-        : -1;
-
+    const earliestAllowedMs = Date.now() + minimumNoticeHours * 60 * 60 * 1000;
     const slots: string[] = [];
     for (const h of hours) {
       const from = minutesOf(h.starts_at.slice(0, 5));
       const to = minutesOf(h.ends_at.slice(0, 5));
       for (let t = from; t + service.duration_minutes <= to; t += 30) {
         const end = t + service.duration_minutes;
-        if (t <= nowMin) continue;
+        const slot = hhmm(t);
+        if (new Date(toIso(data.date, slot)).getTime() < earliestAllowedMs) continue;
         if (busy.some(([bs, be]) => t < be && end > bs)) continue;
-        slots.push(hhmm(t));
+        slots.push(slot);
       }
     }
     return { slots, depositCents: service.deposit_cents };
@@ -196,12 +188,17 @@ export const reserveBooking = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const db = await admin();
-    const { businessId, service } = await loadContext(data.slug, data.serviceId);
+    const { businessId, service, minimumNoticeHours } = await loadContext(data.slug, data.serviceId);
     await validateProfessional(businessId, service.id, data.professionalId);
     if (!service.deposit_cents || service.deposit_cents <= 0)
       throw new Error("Este serviço ainda não tem valor de sinal configurado.");
 
     const startsAt = toIso(data.date, data.time);
+    const earliestAllowedMs = Date.now() + minimumNoticeHours * 60 * 60 * 1000;
+    if (new Date(startsAt).getTime() < earliestAllowedMs) {
+      const label = minimumNoticeHours === 1 ? "1 hora" : `${minimumNoticeHours} horas`;
+      throw new Error(`Este horário exige antecedência mínima de ${label}. Escolha outro horário.`);
+    }
     const endsAt = new Date(
       new Date(startsAt).getTime() + service.duration_minutes * 60_000,
     ).toISOString();
