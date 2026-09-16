@@ -3,6 +3,26 @@
   display: none;
 }
 
+.owner-panel main .owner-route-content > div:has(input[type="date"]) > div:has(> input[type="date"]) {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) 52px;
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
+  gap: 8px;
+}
+
+.owner-panel main .owner-route-content > div:has(input[type="date"]) > div:has(> input[type="date"]) > button {
+  width: 52px;
+  height: 52px;
+}
+
+.owner-panel main .owner-route-content > div:has(input[type="date"]) > div:has(> input[type="date"]) > input[type="date"] {
+  width: 100%;
+  height: 52px;
+  max-width: none;
+}
+
 .owner-panel main .owner-route-content > div:has(input[type="date"]) > button[type="button"] {
   display: block;
   width: 100%;
@@ -14,6 +34,23 @@
 }
 
 @media (max-width: 639px) {
+  .owner-panel main .owner-route-content > div:has(input[type="date"]) > div:has(> input[type="date"]) {
+    grid-template-columns: 54px minmax(0, 1fr) 54px;
+    width: 100%;
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .owner-panel main .owner-route-content > div:has(input[type="date"]) > div:has(> input[type="date"]) > button {
+    width: 54px;
+    height: 54px;
+  }
+
+  .owner-panel main .owner-route-content > div:has(input[type="date"]) > div:has(> input[type="date"]) > input[type="date"] {
+    height: 54px;
+  }
+
   .owner-panel main .owner-route-content > div:has(input[type="date"]) > button[type="button"] {
     width: 100%;
     max-width: none;
