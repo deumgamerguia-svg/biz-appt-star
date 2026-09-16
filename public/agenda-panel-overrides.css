@@ -3,6 +3,11 @@
   display: none;
 }
 
+/* Oculta temporariamente o cabeçalho visual da Agenda (avatar, título, contador e ações). */
+.owner-panel main .owner-route-content > div:has(input[type="date"]) > div.mt-8.flex.items-center.gap-3 {
+  display: none;
+}
+
 .owner-panel main .owner-route-content > div:has(input[type="date"]) > div:has(> input[type="date"]) {
   display: grid;
   grid-template-columns: 52px minmax(0, 1fr) 52px;
