@@ -89,3 +89,15 @@
   background: #f4c400;
   box-shadow: none;
 }
+
+/* Sidebar — largura mais compacta, alinhada à proporção da referência. */
+.owner-panel aside {
+  width: 15.25rem;
+}
+
+@media (min-width: 1024px) {
+  .owner-panel aside {
+    width: 15.25rem;
+    max-width: none;
+  }
+}
