@@ -92,12 +92,12 @@
 
 /* Sidebar — largura mais compacta, alinhada à proporção da referência. */
 .owner-panel aside {
-  width: 15.25rem;
+  width: 15.5rem;
 }
 
 @media (min-width: 1024px) {
   .owner-panel aside {
-    width: 15.25rem;
+    width: 15.5rem;
     max-width: none;
   }
 }
