@@ -4,43 +4,12 @@ import { toast } from "sonner";
 import { ImagePlus, Paintbrush, SlidersHorizontal, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { LOGO_BUCKET, getLogoUrl } from "@/lib/logo";
+import { loadPanel1Config, savePanel1Config } from "@/lib/panel1-config.client";
+import {
+  DEFAULT_PANEL1_APPEARANCE,
+  type Panel1Appearance as Appearance,
+} from "@/lib/panel1-config";
 import { Button } from "@/components/ui/button";
-
-type Appearance = {
-  page_text: string;
-  service_background: string;
-  service_text: string;
-  service_border: string;
-  service_hover_background: string;
-  service_hover_text: string;
-  service_hover_border: string;
-  modal_background: string;
-  modal_text: string;
-  modal_active_background: string;
-  modal_active_text: string;
-  modal_border: string;
-  agenda_background: string;
-  agenda_text: string;
-  agenda_border: string;
-};
-
-const DEFAULT_APPEARANCE: Appearance = {
-  page_text: "#f3f4f6",
-  service_background: "#0b0d0f",
-  service_text: "#f3f4f6",
-  service_border: "#2a2d32",
-  service_hover_background: "#101828",
-  service_hover_text: "#ffffff",
-  service_hover_border: "#1677ff",
-  modal_background: "#0b0d0f",
-  modal_text: "#f3f4f6",
-  modal_active_background: "#10294a",
-  modal_active_text: "#5da8ff",
-  modal_border: "#2a2d32",
-  agenda_background: "#0b0d0f",
-  agenda_text: "#f3f4f6",
-  agenda_border: "#2a2d32",
-};
 
 export function AppearanceSettings({ businessId }: { businessId: string }) {
   const queryClient = useQueryClient();
@@ -48,27 +17,26 @@ export function AppearanceSettings({ businessId }: { businessId: string }) {
   const [busy, setBusy] = useState(false);
   const [primary, setPrimary] = useState("#1677ff");
   const [background, setBackground] = useState("#050607");
-  const [appearance, setAppearance] = useState<Appearance>(DEFAULT_APPEARANCE);
+  const [appearance, setAppearance] = useState<Appearance>(DEFAULT_PANEL1_APPEARANCE);
 
   const { data } = useQuery({
     queryKey: ["panel1-appearance", businessId],
     queryFn: async () => {
-      const { data, error } = await (supabase.from("businesses") as any)
-        .select("logo_url, brand_primary, brand_background, booking_appearance")
-        .eq("id", businessId)
-        .maybeSingle();
+      const [{ data: business, error }, config] = await Promise.all([
+        (supabase.from("businesses") as any)
+          .select("logo_url, brand_primary, brand_background")
+          .eq("id", businessId)
+          .maybeSingle(),
+        loadPanel1Config(businessId),
+      ]);
       if (error) throw error;
-      const path = data?.logo_url ?? null;
+      const path = business?.logo_url ?? null;
       return {
-        ...data,
-        logoPath: path,
+        logoPath: path as string | null,
         logoUrl: await getLogoUrl(path),
-      } as {
-        logoPath: string | null;
-        logoUrl: string | null;
-        brand_primary?: string | null;
-        brand_background?: string | null;
-        booking_appearance?: Partial<Appearance>;
+        brand_primary: (business?.brand_primary ?? null) as string | null,
+        brand_background: (business?.brand_background ?? null) as string | null,
+        appearance: config.appearance,
       };
     },
   });
@@ -77,7 +45,7 @@ export function AppearanceSettings({ businessId }: { businessId: string }) {
     if (!data) return;
     setPrimary(data.brand_primary ?? "#1677ff");
     setBackground(data.brand_background ?? "#050607");
-    setAppearance({ ...DEFAULT_APPEARANCE, ...(data.booking_appearance ?? {}) });
+    setAppearance(data.appearance);
   }, [data]);
 
   const invalidate = () =>
@@ -89,10 +57,10 @@ export function AppearanceSettings({ businessId }: { businessId: string }) {
         .update({
           brand_primary: primary,
           brand_background: background,
-          booking_appearance: appearance,
         })
         .eq("id", businessId);
       if (error) throw error;
+      await savePanel1Config(businessId, { appearance });
     },
     onSuccess: () => {
       toast.success("Aparência do Painel 1 atualizada");
@@ -117,7 +85,7 @@ export function AppearanceSettings({ businessId }: { businessId: string }) {
       if (data?.logoPath) await supabase.storage.from(LOGO_BUCKET).remove([data.logoPath]);
     },
     onSuccess: () => {
-      toast.success("Logotipo atualizada");
+      toast.success("Logotipo atualizado");
       void invalidate();
     },
     onError: (e: Error) => toast.error(e.message),
@@ -134,7 +102,7 @@ export function AppearanceSettings({ businessId }: { businessId: string }) {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Logotipo removida");
+      toast.success("Logotipo removido");
       void invalidate();
     },
     onError: (e: Error) => toast.error(e.message),
@@ -151,7 +119,7 @@ export function AppearanceSettings({ businessId }: { businessId: string }) {
           <h2 className="text-xl font-semibold">Alterar cores</h2>
         </div>
         <p className="text-sm text-[#8b929d]">
-          Customize a página inicial que o cliente usa para marcar o horário.
+          Customize a página que o cliente usa para marcar o horário. Todas as alterações são aplicadas ao Painel 1.
         </p>
       </div>
 
@@ -269,7 +237,7 @@ export function AppearanceSettings({ businessId }: { businessId: string }) {
           onClick={() => {
             setPrimary("#1677ff");
             setBackground("#050607");
-            setAppearance(DEFAULT_APPEARANCE);
+            setAppearance({ ...DEFAULT_PANEL1_APPEARANCE });
           }}
         >
           Restaurar padrão
