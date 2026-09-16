@@ -1,5 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
+import type { Database } from "@/integrations/supabase/types";
 
 const slugSchema = z.object({
   slug: z.string().trim().min(1).max(120),
@@ -19,10 +21,49 @@ const reservationSchema = serviceProfessionalsSchema.extend({
 
 const LOGO_BUCKET = "business-logos";
 const SIGNED_URL_TTL_SECONDS = 60 * 60 * 6;
+const FALLBACK_SUPABASE_URL = "https://qagotnmdqjoodoudcikd.supabase.co";
+const FALLBACK_PUBLISHABLE_KEY = "sb_publishable_ahOK_X2idzT_9V00g-guZQ_FZ_eScZj";
 
 async function admin() {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   return supabaseAdmin;
+}
+
+function isOpaqueSupabaseKey(value: string) {
+  return value.startsWith("sb_publishable_") || value.startsWith("sb_secret_");
+}
+
+function createApiKeyFetch(apiKey: string): typeof fetch {
+  return (input, init) => {
+    const headers = new Headers(
+      typeof Request !== "undefined" && input instanceof Request ? input.headers : undefined,
+    );
+    if (init?.headers) {
+      new Headers(init.headers).forEach((value, key) => headers.set(key, value));
+    }
+    if (isOpaqueSupabaseKey(apiKey) && headers.get("Authorization") === `Bearer ${apiKey}`) {
+      headers.delete("Authorization");
+    }
+    headers.set("apikey", apiKey);
+    return fetch(input, { ...init, headers });
+  };
+}
+
+let publicClient: SupabaseClient<Database> | undefined;
+function publicDb() {
+  if (publicClient) return publicClient;
+
+  const envUrl = process.env["SUPABASE_URL"] || process.env["VITE_SUPABASE_URL"];
+  const envKey =
+    process.env["SUPABASE_PUBLISHABLE_KEY"] || process.env["VITE_SUPABASE_PUBLISHABLE_KEY"];
+  const url = envUrl && envKey ? envUrl : FALLBACK_SUPABASE_URL;
+  const key = envUrl && envKey ? envKey : FALLBACK_PUBLISHABLE_KEY;
+
+  publicClient = createClient<Database>(url, key, {
+    global: { fetch: createApiKeyFetch(key) },
+    auth: { persistSession: false, autoRefreshToken: false, storage: undefined },
+  });
+  return publicClient;
 }
 
 function toIso(date: string, time: string) {
@@ -35,7 +76,7 @@ function minutesOf(value: string) {
 }
 
 async function signedStorageUrl(
-  db: Awaited<ReturnType<typeof admin>>,
+  db: SupabaseClient<Database>,
   path: string | null | undefined,
 ) {
   if (!path) return null;
@@ -49,14 +90,14 @@ async function signedStorageUrl(
 /**
  * Dados necessários para montar o Painel 1.
  *
- * A leitura acontece no servidor com service role para que a página pública não
- * dependa de policies anon/RLS estarem sincronizadas no navegador. Só campos
- * próprios para exibição pública são devolvidos ao cliente.
+ * O catálogo público usa somente a publishable key e as policies públicas do
+ * banco. Assim uma configuração incorreta da chave privada nunca derruba a
+ * tela inicial de agendamento.
  */
 export const getPublicBookingPage = createServerFn({ method: "POST" })
   .inputValidator((value: unknown) => slugSchema.parse(value))
   .handler(async ({ data }) => {
-    const db = await admin();
+    const db = publicDb();
 
     const { data: business, error: businessError } = await (db.from("businesses") as any)
       .select(
@@ -66,7 +107,7 @@ export const getPublicBookingPage = createServerFn({ method: "POST" })
       .maybeSingle();
 
     if (businessError) {
-      throw new Error(`Não foi possível carregar o estabelecimento: ${businessError.message}`);
+      throw new Error("Não foi possível carregar o estabelecimento. Tente novamente.");
     }
 
     if (!business) {
@@ -87,7 +128,7 @@ export const getPublicBookingPage = createServerFn({ method: "POST" })
       .order("created_at", { ascending: true });
 
     if (servicesError) {
-      throw new Error(`Não foi possível carregar os serviços: ${servicesError.message}`);
+      throw new Error("Não foi possível carregar os serviços. Tente novamente.");
     }
 
     const activeServices = serviceRows ?? [];
@@ -133,7 +174,7 @@ export const getPublicBookingPage = createServerFn({ method: "POST" })
 export const getPublicServiceProfessionals = createServerFn({ method: "POST" })
   .inputValidator((value: unknown) => serviceProfessionalsSchema.parse(value))
   .handler(async ({ data }) => {
-    const db = await admin();
+    const db = publicDb();
 
     const { data: business } = await (db.from("businesses") as any)
       .select("id, status")
@@ -163,7 +204,7 @@ export const getPublicServiceProfessionals = createServerFn({ method: "POST" })
       .eq("service_id", data.serviceId);
 
     if (linksError) {
-      throw new Error(`Não foi possível carregar os vínculos do serviço: ${linksError.message}`);
+      throw new Error("Não foi possível carregar os profissionais deste serviço.");
     }
 
     if (!links?.length) {
@@ -182,7 +223,7 @@ export const getPublicServiceProfessionals = createServerFn({ method: "POST" })
       .order("name");
 
     if (professionalsError) {
-      throw new Error(`Não foi possível carregar os profissionais: ${professionalsError.message}`);
+      throw new Error("Não foi possível carregar os profissionais deste serviço.");
     }
 
     return {
@@ -293,9 +334,7 @@ export const reservePublicBooking = createServerFn({ method: "POST" })
       const appliesToProfessional =
         !block.professional_id || block.professional_id === data.professionalId;
       if (!appliesToProfessional) return false;
-      return (
-        startMinute < minutesOf(block.ends_at) && endMinute > minutesOf(block.starts_at)
-      );
+      return startMinute < minutesOf(block.ends_at) && endMinute > minutesOf(block.starts_at);
     });
     if (hasBlock) throw new Error("Este horário foi bloqueado. Escolha outro horário.");
 
