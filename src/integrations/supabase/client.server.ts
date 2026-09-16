@@ -2,14 +2,15 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
+const CONNECTED_PROJECT_URL = 'https://qagotnmdqjoodoudcikd.supabase.co';
+
 function isOpaqueSupabaseKey(value: string): boolean {
   return value.startsWith('sb_publishable_') || value.startsWith('sb_secret_');
 }
 
 /**
  * Supabase's new sb_secret_/sb_publishable_ keys are opaque API keys, not JWTs.
- * supabase-js may add `Authorization: Bearer <key>` automatically; that header
- * is valid for legacy JWT keys but makes opaque keys fail with "Invalid API key".
+ * They must be sent as apikey and must not be reused as a Bearer token.
  */
 function createSupabaseFetch(supabaseKey: string): typeof fetch {
   return (input, init) => {
@@ -34,16 +35,12 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
 }
 
 function createSupabaseAdminClient() {
-  // Prefer deployment/runtime variables so URL and secret always belong to the
-  // same connected Supabase project. Keep the repository URL only as a safe
-  // compatibility fallback for existing deployments.
-  const SUPABASE_URL =
-    process.env['SUPABASE_URL'] ||
-    process.env['VITE_SUPABASE_URL'] ||
-    'https://qagotnmdqjoodoudcikd.supabase.co';
+  // A aplicação web é construída com VITE_SUPABASE_URL. O servidor precisa usar
+  // exatamente o mesmo projeto; um SUPABASE_URL genérico de outro ambiente não
+  // pode fazer o Painel 1 procurar negócios em outro banco.
+  const SUPABASE_URL = process.env['VITE_SUPABASE_URL'] || CONNECTED_PROJECT_URL;
 
-  // Supabase supports both the current sb_secret_ key and the legacy
-  // service-role JWT. Different hosts expose one name or the other.
+  // Aceita a chave secreta nova ou o JWT service-role legado.
   const SUPABASE_SERVER_KEY =
     process.env['SUPABASE_SECRET_KEY'] || process.env['SUPABASE_SERVICE_ROLE_KEY'];
 
