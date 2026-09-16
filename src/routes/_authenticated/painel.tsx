@@ -334,8 +334,24 @@ function PainelLayout() {
                         </button>
                         {configOpen && (
                           <div className="ml-2 space-y-1 rounded-xl border border-[#1677ff]/10 bg-[#1677ff]/[0.045] p-1.5">
-                            <a href="/painel/configuracoes?secao=preferencias" onClick={beginNavigation} className="flex items-center gap-2 rounded-lg px-3 py-2 text-[0.82rem] font-medium text-[#c9ced6] transition-colors hover:bg-[#1677ff]/10 hover:text-white"><SlidersHorizontal className="size-4 text-[#5da8ff]" />Preferências</a>
-                            <a href="/painel/configuracoes?secao=aparencia" onClick={beginNavigation} className="flex items-center gap-2 rounded-lg px-3 py-2 text-[0.82rem] font-medium text-[#c9ced6] transition-colors hover:bg-[#1677ff]/10 hover:text-white"><Paintbrush className="size-4 text-[#5da8ff]" />Aparências</a>
+                            <Link
+                              to="/painel/configuracoes"
+                              search={{ secao: "preferencias" }}
+                              onClick={beginNavigation}
+                              className="flex items-center gap-2 rounded-lg px-3 py-2 text-[0.82rem] font-medium text-[#c9ced6] transition-colors hover:bg-[#1677ff]/10 hover:text-white"
+                            >
+                              <SlidersHorizontal className="size-4 text-[#5da8ff]" />
+                              Preferências
+                            </Link>
+                            <Link
+                              to="/painel/configuracoes"
+                              search={{ secao: "aparencia" }}
+                              onClick={beginNavigation}
+                              className="flex items-center gap-2 rounded-lg px-3 py-2 text-[0.82rem] font-medium text-[#c9ced6] transition-colors hover:bg-[#1677ff]/10 hover:text-white"
+                            >
+                              <Paintbrush className="size-4 text-[#5da8ff]" />
+                              Aparências
+                            </Link>
                           </div>
                         )}
                       </div>
