@@ -101,3 +101,8 @@
     max-width: none;
   }
 }
+
+/* Logo da sidebar — microajuste para centralizar melhor após a redução da largura. */
+.owner-panel aside > a[href="/painel"] > img {
+  transform: translateX(-3px);
+}
