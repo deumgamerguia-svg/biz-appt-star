@@ -1,4 +1,8 @@
 /* Ajustes visuais exclusivos da Agenda principal do Painel 2. */
+.owner-panel main:has(.owner-route-content > div:has(input[type="date"])) {
+  padding-top: 0;
+}
+
 .owner-panel main .owner-route-content > div:has(input[type="date"]) > div.mt-2.pl-12 {
   display: none;
 }
