@@ -69,3 +69,17 @@
     margin-right: 0;
   }
 }
+
+/* AS Pay — destaque exclusivo inspirado na referência enviada. */
+.owner-panel aside nav a[href="/painel/as-pay"] > svg {
+  color: #f4c400;
+  filter: none;
+}
+
+.owner-panel aside nav a[href="/painel/as-pay"] .owner-nav-label {
+  color: #f5f5f5;
+}
+
+.owner-panel aside nav a[href="/painel/as-pay"] .owner-nav-hint {
+  color: #a86d00;
+}
