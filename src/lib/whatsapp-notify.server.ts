@@ -1,5 +1,7 @@
 // Envio automático de WhatsApp: confirmação, lembrete principal e lembrete extra.
 import { sendTextMessage } from "./evolution.server";
+import { loadPanel1ConfigServer } from "./panel1-config.server";
+import { DEFAULT_EXTRA_REMINDER_TEMPLATE } from "./panel1-config";
 
 function formatDatePtBr(iso: string) {
   return new Date(iso).toLocaleDateString("pt-BR", {
@@ -23,8 +25,7 @@ export const DEFAULT_CONFIRMATION_MESSAGE =
 export const DEFAULT_REMINDER_MESSAGE =
   "Olá, {nome}! Lembrete: seu horário de {servico} em {negocio} é {data} às {hora}. Qualquer imprevisto, avisa a gente! 😊";
 
-export const DEFAULT_EXTRA_REMINDER_MESSAGE =
-  "{Saudacao} {Cliente}, só estou passando aqui para lembrar que você tem um horário agendado conosco hoje às {Horario} 😅 Espero por você, até breve! 👋";
+export const DEFAULT_EXTRA_REMINDER_MESSAGE = DEFAULT_EXTRA_REMINDER_TEMPLATE;
 
 function renderMessage(template: string, vars: Record<string, string>) {
   return template.replace(
@@ -42,10 +43,6 @@ type AppointmentRow = {
   service_id: string | null;
 };
 
-type BookingPreferences = {
-  extra_reminder_template?: string;
-};
-
 async function loadContext(appointmentId: string) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: appt } = await supabaseAdmin
@@ -55,12 +52,13 @@ async function loadContext(appointmentId: string) {
     .maybeSingle();
   if (!appt?.customer_phone) return null;
 
-  // Usa * para não quebrar bancos em que booking_preferences ainda não foi aplicada.
   const { data: business } = await (supabaseAdmin.from("businesses") as any)
     .select("*")
     .eq("id", appt.business_id)
     .maybeSingle();
   if (!business?.whatsapp_instance || business.whatsapp_status !== "conectado") return null;
+
+  const config = await loadPanel1ConfigServer(supabaseAdmin, appt.business_id);
 
   let serviceName = "serviço";
   if ((appt as AppointmentRow).service_id) {
@@ -87,7 +85,7 @@ async function loadContext(appointmentId: string) {
     Data: formatDatePtBr(row.starts_at),
     Saudacao: greeting,
   };
-  return { row, business, vars };
+  return { row, business, config, vars };
 }
 
 export async function sendBookingConfirmation(appointmentId: string) {
@@ -111,7 +109,7 @@ export async function sendBookingReminder(appointmentId: string) {
 export async function sendBookingExtraReminder(appointmentId: string) {
   const ctx = await loadContext(appointmentId);
   if (!ctx) throw new Error("Agendamento sem telefone ou WhatsApp desconectado.");
-  const preferences = (ctx.business.booking_preferences ?? {}) as BookingPreferences;
-  const template = preferences.extra_reminder_template?.trim() || DEFAULT_EXTRA_REMINDER_MESSAGE;
+  const template =
+    ctx.config.preferences.extra_reminder_template?.trim() || DEFAULT_EXTRA_REMINDER_MESSAGE;
   await sendTextMessage(ctx.row.customer_phone!, renderMessage(template, ctx.vars));
 }
