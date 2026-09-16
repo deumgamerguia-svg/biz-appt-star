@@ -1,0 +1,1 @@
+export { loadPanel1Config, savePanel1Config } from "./panel1-config.storage";
