@@ -6,9 +6,9 @@
 .owner-panel main .owner-route-content > div:has(input[type="date"]) > div:has(> input[type="date"]) {
   display: grid;
   grid-template-columns: 52px minmax(0, 1fr) 52px;
-  width: 100%;
+  width: calc(100% - 16px);
   max-width: none;
-  margin-inline: 0;
+  margin-inline: auto;
   gap: 8px;
 }
 
@@ -36,10 +36,10 @@
 @media (max-width: 639px) {
   .owner-panel main .owner-route-content > div:has(input[type="date"]) > div:has(> input[type="date"]) {
     grid-template-columns: 54px minmax(0, 1fr) 54px;
-    width: 100%;
+    width: calc(100% - 16px);
     max-width: none;
-    margin-left: 0;
-    margin-right: 0;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .owner-panel main .owner-route-content > div:has(input[type="date"]) > div:has(> input[type="date"]) > button {
