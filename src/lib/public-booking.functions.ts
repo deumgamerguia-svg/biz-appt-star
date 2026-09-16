@@ -25,6 +25,18 @@ const FALLBACK_SUPABASE_URL = "https://qagotnmdqjoodoudcikd.supabase.co";
 const FALLBACK_PUBLISHABLE_KEY = "sb_publishable_ahOK_X2idzT_9V00g-guZQ_FZ_eScZj";
 const DEFAULT_MINIMUM_NOTICE_HOURS = 2;
 
+type PublicBusiness = {
+  id: string;
+  name: string;
+  category: string | null;
+  phone: string | null;
+  address: string | null;
+  logo_url: string | null;
+  status: string;
+  brand_primary: string | null;
+  brand_background: string | null;
+};
+
 async function admin() {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   return supabaseAdmin;
@@ -67,6 +79,37 @@ function publicDb() {
   return publicClient;
 }
 
+async function loadBusinessBySlug(slug: string): Promise<{
+  db: SupabaseClient<Database>;
+  business: PublicBusiness | null;
+}> {
+  const select =
+    "id, name, category, phone, address, logo_url, status, brand_primary, brand_background";
+
+  // Primeiro tenta no servidor com a chave privilegiada. Isso evita que uma
+  // policy RLS ausente no banco faça um link existente parecer inexistente.
+  try {
+    const privileged = await admin();
+    const { data, error } = await (privileged.from("businesses") as any)
+      .select(select)
+      .eq("slug", slug)
+      .maybeSingle();
+    if (!error && data) {
+      return { db: privileged as SupabaseClient<Database>, business: data as PublicBusiness };
+    }
+  } catch {
+    // O fallback público abaixo mantém a página disponível em ambientes sem secret.
+  }
+
+  const fallback = publicDb();
+  const { data, error } = await (fallback.from("businesses") as any)
+    .select(select)
+    .eq("slug", slug)
+    .maybeSingle();
+  if (error) throw new Error("Não foi possível carregar o estabelecimento. Tente novamente.");
+  return { db: fallback, business: (data as PublicBusiness | null) ?? null };
+}
+
 function toIso(date: string, time: string) {
   return new Date(`${date}T${time}:00-03:00`).toISOString();
 }
@@ -88,28 +131,11 @@ async function signedStorageUrl(
   return data?.signedUrl ?? null;
 }
 
-/**
- * Catálogo público do Painel 1.
- *
- * Importante: esta consulta usa apenas colunas que existem no schema base do
- * projeto. As preferências avançadas do Painel 1 são opcionais e nunca podem
- * impedir estabelecimento/serviços de aparecerem para o cliente.
- */
+/** Catálogo público do Painel 1. */
 export const getPublicBookingPage = createServerFn({ method: "POST" })
   .inputValidator((value: unknown) => slugSchema.parse(value))
   .handler(async ({ data }) => {
-    const db = publicDb();
-
-    const { data: business, error: businessError } = await (db.from("businesses") as any)
-      .select(
-        "id, name, category, phone, address, logo_url, status, brand_primary, brand_background",
-      )
-      .eq("slug", data.slug)
-      .maybeSingle();
-
-    if (businessError) {
-      throw new Error("Não foi possível carregar o estabelecimento. Tente novamente.");
-    }
+    const { db, business } = await loadBusinessBySlug(data.slug);
 
     if (!business) {
       return {
@@ -155,14 +181,14 @@ export const getPublicBookingPage = createServerFn({ method: "POST" })
 
     return {
       business: {
-        id: business.id as string,
-        name: business.name as string,
-        category: (business.category ?? null) as string | null,
-        phone: (business.phone ?? null) as string | null,
-        address: (business.address ?? null) as string | null,
-        status: business.status as string,
-        brand_primary: (business.brand_primary ?? null) as string | null,
-        brand_background: (business.brand_background ?? null) as string | null,
+        id: business.id,
+        name: business.name,
+        category: business.category,
+        phone: business.phone,
+        address: business.address,
+        status: business.status,
+        brand_primary: business.brand_primary,
+        brand_background: business.brand_background,
         booking_preferences: null,
         logo_url: logoUrl,
       },
@@ -175,12 +201,7 @@ export const getPublicBookingPage = createServerFn({ method: "POST" })
 export const getPublicServiceProfessionals = createServerFn({ method: "POST" })
   .inputValidator((value: unknown) => serviceProfessionalsSchema.parse(value))
   .handler(async ({ data }) => {
-    const db = publicDb();
-
-    const { data: business } = await (db.from("businesses") as any)
-      .select("id, status")
-      .eq("slug", data.slug)
-      .maybeSingle();
+    const { db, business } = await loadBusinessBySlug(data.slug);
 
     if (!business || business.status === "suspenso") {
       return { professionals: [] as { id: string; name: string; role: string | null }[] };
