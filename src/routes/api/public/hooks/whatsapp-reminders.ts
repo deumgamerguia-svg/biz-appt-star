@@ -3,10 +3,7 @@ import {
   sendBookingExtraReminder,
   sendBookingReminder,
 } from "@/lib/whatsapp-notify.server";
-
-type BookingPreferences = {
-  extra_reminder_minutes?: number;
-};
+import { loadPanel1ConfigServer } from "@/lib/panel1-config.server";
 
 export const Route = createFileRoute("/api/public/hooks/whatsapp-reminders")({
   server: {
@@ -19,16 +16,13 @@ export const Route = createFileRoute("/api/public/hooks/whatsapp-reminders")({
           return Response.json({ error: "Não autorizado." }, { status: 401 });
         }
 
-        const { supabaseAdmin } = await import(
-          "@/integrations/supabase/client.server"
-        );
-
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const now = new Date();
-        const { data: businesses, error: bizErr } = await (supabaseAdmin.from(
-          "businesses",
-        ) as any)
-          .select("id, reminder_hours_before, booking_preferences")
-          .eq("reminder_enabled", true)
+
+        // Não depende de booking_preferences no Postgres. As preferências avançadas
+        // vêm do mesmo arquivo usado pelo Painel 2 e pelo Painel 1.
+        const { data: businesses, error: bizErr } = await (supabaseAdmin.from("businesses") as any)
+          .select("*")
           .eq("whatsapp_status", "conectado")
           .not("whatsapp_instance", "is", null)
           .eq("status", "ativo");
@@ -40,6 +34,7 @@ export const Route = createFileRoute("/api/public/hooks/whatsapp-reminders")({
         let sent = 0;
         let failed = 0;
         let extraSent = 0;
+        let enabledBusinesses = 0;
 
         const register = async (
           businessId: string,
@@ -66,10 +61,12 @@ export const Route = createFileRoute("/api/public/hooks/whatsapp-reminders")({
         };
 
         for (const biz of businesses ?? []) {
-          const mainMinutes = Math.max(1, Number(biz.reminder_hours_before ?? 24)) * 60;
-          const preferences = (biz.booking_preferences ?? {}) as BookingPreferences;
-          const rawExtra = Number(preferences.extra_reminder_minutes ?? 0);
-          const extraMinutes = Number.isFinite(rawExtra) ? Math.max(0, rawExtra) : 0;
+          const config = await loadPanel1ConfigServer(supabaseAdmin, biz.id);
+          if (!config.preferences.notify_clients) continue;
+          enabledBusinesses++;
+
+          const mainMinutes = Math.max(1, config.preferences.reminder_hours_before) * 60;
+          const extraMinutes = Math.max(0, config.preferences.extra_reminder_minutes);
           const maxWindowMinutes = Math.max(mainMinutes, extraMinutes);
           const windowEnd = new Date(now.getTime() + maxWindowMinutes * 60_000);
 
@@ -83,7 +80,7 @@ export const Route = createFileRoute("/api/public/hooks/whatsapp-reminders")({
 
           if (!appts?.length) continue;
 
-          const ids = appts.map((a) => a.id);
+          const ids = appts.map((appointment) => appointment.id);
           const { data: logs } = await supabaseAdmin
             .from("reminder_logs")
             .select("appointment_id, channel, status")
@@ -97,9 +94,7 @@ export const Route = createFileRoute("/api/public/hooks/whatsapp-reminders")({
           );
           const extraAlreadySent = new Set(
             (logs ?? [])
-              .filter(
-                (log) => log.channel === "whatsapp_extra" && log.status === "enviado",
-              )
+              .filter((log) => log.channel === "whatsapp_extra" && log.status === "enviado")
               .map((log) => log.appointment_id),
           );
 
@@ -140,7 +135,7 @@ export const Route = createFileRoute("/api/public/hooks/whatsapp-reminders")({
           sent,
           extraSent,
           failed,
-          businesses: businesses?.length ?? 0,
+          businesses: enabledBusinesses,
           ranAt: now.toISOString(),
         });
       },
