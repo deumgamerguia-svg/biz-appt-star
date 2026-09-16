@@ -1,0 +1,4 @@
+-- Configurações editáveis do Painel 1 (agendamento público).
+ALTER TABLE public.businesses
+  ADD COLUMN IF NOT EXISTS booking_preferences jsonb NOT NULL DEFAULT '{"minimum_notice_hours":2,"numbered_command":false,"listing_time_minutes":60,"notify_clients":true,"timezone":"America/Sao_Paulo","list_dates":true,"social_links":true,"cancellations":true,"marketing":false,"reschedule":true,"greeting":"Agende seu horário"}'::jsonb,
+  ADD COLUMN IF NOT EXISTS booking_appearance jsonb NOT NULL DEFAULT '{"page_text":"#f3f4f6","service_background":"#0b0d0f","service_text":"#f3f4f6","service_border":"#2a2d32","service_hover_background":"#101828","service_hover_text":"#ffffff","service_hover_border":"#1677ff","modal_background":"#0b0d0f","modal_text":"#f3f4f6","modal_active_background":"#10294a","modal_active_text":"#5da8ff","modal_border":"#2a2d32","agenda_background":"#0b0d0f","agenda_text":"#f3f4f6","agenda_border":"#2a2d32"}'::jsonb;
