@@ -24,6 +24,7 @@
     "exactOptionalPropertyTypes": true,
     "noUncheckedSideEffectImports": true,
     "paths": {
+      "@/lib/booking.functions": ["./src/lib/booking.facade.ts"],
       "@/*": ["./src/*"]
     }
   }
