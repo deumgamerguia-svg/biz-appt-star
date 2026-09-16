@@ -149,6 +149,7 @@ const CANCELLATION_OPTIONS: Array<readonly [number, string]> = [
   [720, "12 Horas"],
   [840, "14 Horas"],
   [960, "16 Horas"],
+  [1440, "24 Horas"],
 ];
 
 const RESCHEDULE_OPTIONS: Array<readonly [number, string]> = [
@@ -269,7 +270,7 @@ function PreferencesSettings({ businessId }: { businessId: string }) {
         ),
         cancellation_notice_minutes: Math.max(
           0,
-          Math.min(960, Math.floor(Number(prefs.cancellation_notice_minutes) || 0)),
+          Math.min(1440, Math.floor(Number(prefs.cancellation_notice_minutes) || 0)),
         ),
         reschedule_notice_minutes: Math.max(
           0,
