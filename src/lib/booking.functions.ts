@@ -12,7 +12,13 @@ type Ctx = {
   businessId: string;
   service: { id: string; name: string; duration_minutes: number; deposit_cents: number };
   minimumNoticeHours: number;
+  listingTimeMinutes: number;
 };
+
+const ALLOWED_LISTING_MINUTES = new Set([
+  10, 15, 20, 30, 40, 45, 50, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 360,
+  390,
+]);
 
 async function admin() {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -42,10 +48,15 @@ async function loadContext(slug: string, serviceId: string): Promise<Ctx> {
   if (!business) throw new Error("Negócio não encontrado.");
   if (business.status === "suspenso")
     throw new Error("Os agendamentos deste estabelecimento estão temporariamente indisponíveis.");
+
   const rawNotice = Number(business.booking_preferences?.minimum_notice_hours);
   const minimumNoticeHours = Number.isFinite(rawNotice)
     ? Math.max(0, Math.min(720, rawNotice))
     : 2;
+
+  const rawListing = Number(business.booking_preferences?.listing_time_minutes);
+  const listingTimeMinutes = ALLOWED_LISTING_MINUTES.has(rawListing) ? rawListing : 30;
+
   const { data: service } = await db
     .from("services")
     .select("id, name, duration_minutes, deposit_cents")
@@ -54,15 +65,29 @@ async function loadContext(slug: string, serviceId: string): Promise<Ctx> {
     .eq("active", true)
     .maybeSingle();
   if (!service) throw new Error("Serviço não encontrado.");
-  return { businessId: business.id, service, minimumNoticeHours };
+  return { businessId: business.id, service, minimumNoticeHours, listingTimeMinutes };
 }
 
-async function validateProfessional(businessId: string, serviceId: string, professionalId?: string | null) {
+async function validateProfessional(
+  businessId: string,
+  serviceId: string,
+  professionalId?: string | null,
+) {
   const db = await admin();
-  const { data: links } = await db.from("service_professionals").select("professional_id").eq("business_id", businessId).eq("service_id", serviceId);
+  const { data: links } = await db
+    .from("service_professionals")
+    .select("professional_id")
+    .eq("business_id", businessId)
+    .eq("service_id", serviceId);
   if (!links?.length) return null;
-  if (!professionalId || !links.some((link) => link.professional_id === professionalId)) throw new Error("Selecione um profissional disponível.");
-  const { data: professional } = await db.from("professionals").select("id, name, active, working_days").eq("id", professionalId).eq("business_id", businessId).maybeSingle();
+  if (!professionalId || !links.some((link) => link.professional_id === professionalId))
+    throw new Error("Selecione um profissional disponível.");
+  const { data: professional } = await db
+    .from("professionals")
+    .select("id, name, active, working_days")
+    .eq("id", professionalId)
+    .eq("business_id", businessId)
+    .maybeSingle();
   if (!professional?.active) throw new Error("Esse profissional não está disponível.");
   return professional;
 }
@@ -71,10 +96,14 @@ export const getAvailability = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => slugSchema.parse(d))
   .handler(async ({ data }) => {
     const db = await admin();
-    const { businessId, service, minimumNoticeHours } = await loadContext(data.slug, data.serviceId);
+    const { businessId, service, minimumNoticeHours, listingTimeMinutes } = await loadContext(
+      data.slug,
+      data.serviceId,
+    );
     const weekday = new Date(`${data.date}T12:00:00-03:00`).getDay();
     const professional = await validateProfessional(businessId, service.id, data.professionalId);
-    if (professional && !professional.working_days.includes(weekday)) return { slots: [] as string[], depositCents: service.deposit_cents };
+    if (professional && !professional.working_days.includes(weekday))
+      return { slots: [] as string[], depositCents: service.deposit_cents };
 
     const { data: hours } = await db
       .from("business_hours")
@@ -112,12 +141,14 @@ export const getAvailability = createServerFn({ method: "POST" })
       const e = new Date(a.ends_at);
       const off = (d: Date) =>
         Number(
-          d.toLocaleTimeString("pt-BR", {
-            timeZone: "America/Sao_Paulo",
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: false,
-          }).slice(0, 2),
+          d
+            .toLocaleTimeString("pt-BR", {
+              timeZone: "America/Sao_Paulo",
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: false,
+            })
+            .slice(0, 2),
         ) *
           60 +
         Number(
@@ -138,7 +169,7 @@ export const getAvailability = createServerFn({ method: "POST" })
     for (const h of hours) {
       const from = minutesOf(h.starts_at.slice(0, 5));
       const to = minutesOf(h.ends_at.slice(0, 5));
-      for (let t = from; t + service.duration_minutes <= to; t += 30) {
+      for (let t = from; t + service.duration_minutes <= to; t += listingTimeMinutes) {
         const end = t + service.duration_minutes;
         const slot = hhmm(t);
         if (new Date(toIso(data.date, slot)).getTime() < earliestAllowedMs) continue;
@@ -371,7 +402,6 @@ export const getMyBookings = createServerFn({ method: "POST" })
     return { bookings };
   });
 
-
 export const getDepositStatus = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ chargeId: z.string().uuid() }).parse(d))
   .handler(async ({ data }) => {
@@ -408,9 +438,7 @@ export const getDepositStatus = createServerFn({ method: "POST" })
             .from("appointments")
             .update({ status: "agendado", deposit_paid_at: paidAt })
             .eq("id", charge.appointment_id);
-          const { sendBookingConfirmation } = await import(
-            "./whatsapp-notify.server"
-          );
+          const { sendBookingConfirmation } = await import("./whatsapp-notify.server");
           await sendBookingConfirmation(charge.appointment_id);
         }
         return { status: "pago" as const };
