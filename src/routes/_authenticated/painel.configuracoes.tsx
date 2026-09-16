@@ -35,7 +35,7 @@ type Preferences = {
   extra_reminder_minutes: number;
   extra_reminder_template: string;
   timezone: string;
-  list_dates: boolean;
+  list_dates_days: number;
   cancellations: boolean;
   reschedule: boolean;
   greeting: string;
@@ -52,7 +52,7 @@ const DEFAULT_PREFERENCES: Preferences = {
   extra_reminder_minutes: 0,
   extra_reminder_template: DEFAULT_EXTRA_TEMPLATE,
   timezone: "America/Sao_Paulo",
-  list_dates: true,
+  list_dates_days: 15,
   cancellations: true,
   reschedule: true,
   greeting: "Agende seu horário",
@@ -203,11 +203,18 @@ function PreferencesSettings({ businessId }: { businessId: string }) {
 
   const save = useMutation({
     mutationFn: async () => {
+      const normalizedPrefs = {
+        ...prefs,
+        list_dates_days: Math.max(
+          7,
+          Math.min(365, Math.floor(Number(prefs.list_dates_days) || 15)),
+        ),
+      };
       const { error } = await (supabase.from("businesses") as any)
         .update({
-          booking_preferences: prefs,
-          reminder_enabled: prefs.notify_clients,
-          reminder_hours_before: prefs.reminder_hours_before,
+          booking_preferences: normalizedPrefs,
+          reminder_enabled: normalizedPrefs.notify_clients,
+          reminder_hours_before: normalizedPrefs.reminder_hours_before,
         })
         .eq("id", businessId);
       if (error) throw error;
@@ -415,12 +422,31 @@ function PreferencesSettings({ businessId }: { businessId: string }) {
             )}
 
             {selected === "dates" && (
-              <ToggleSetting
-                title="Listar datas"
-                description="Controla a exibição das datas disponíveis no fluxo de agendamento."
-                checked={prefs.list_dates}
-                onChange={(list_dates) => setPrefs({ ...prefs, list_dates })}
-              />
+              <SettingBlock
+                title="Listar Datas"
+                description="Informe a quantidade de datas disponíveis para agendamento. (mínimo 7)"
+              >
+                <Input
+                  type="number"
+                  min={7}
+                  max={365}
+                  step={1}
+                  value={prefs.list_dates_days}
+                  onChange={(e) =>
+                    setPrefs({ ...prefs, list_dates_days: Number(e.target.value) })
+                  }
+                  onBlur={() =>
+                    setPrefs((current) => ({
+                      ...current,
+                      list_dates_days: Math.max(
+                        7,
+                        Math.min(365, Math.floor(Number(current.list_dates_days) || 15)),
+                      ),
+                    }))
+                  }
+                  className="h-12 rounded-xl border-[#2a2d32] bg-[#17191d] px-4 text-sm text-[#f4f5f7]"
+                />
+              </SettingBlock>
             )}
             {selected === "cancel" && (
               <ToggleSetting
