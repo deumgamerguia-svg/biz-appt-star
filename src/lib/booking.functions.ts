@@ -15,10 +15,9 @@ type Ctx = {
   listingTimeMinutes: number;
 };
 
-const ALLOWED_LISTING_MINUTES = new Set([
-  10, 15, 20, 30, 40, 45, 50, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 360,
-  390,
-]);
+const DEFAULT_MINIMUM_NOTICE_HOURS = 2;
+const DEFAULT_LISTING_TIME_MINUTES = 30;
+const DEFAULT_OPEN_DAYS_AHEAD = 15;
 
 async function admin() {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -26,7 +25,6 @@ async function admin() {
 }
 
 function toIso(date: string, time: string) {
-  // Horários do negócio são interpretados no fuso de São Paulo (UTC-3).
   return new Date(`${date}T${time}:00-03:00`).toISOString();
 }
 
@@ -41,21 +39,14 @@ function hhmm(total: number) {
 
 async function loadContext(slug: string, serviceId: string): Promise<Ctx> {
   const db = await admin();
-  const { data: business } = await (db.from("businesses") as any)
-    .select("id, status, booking_preferences")
+  const { data: business, error: businessError } = await (db.from("businesses") as any)
+    .select("id, status")
     .eq("slug", slug)
     .maybeSingle();
+  if (businessError) throw new Error("Não foi possível carregar o estabelecimento.");
   if (!business) throw new Error("Negócio não encontrado.");
   if (business.status === "suspenso")
     throw new Error("Os agendamentos deste estabelecimento estão temporariamente indisponíveis.");
-
-  const rawNotice = Number(business.booking_preferences?.minimum_notice_hours);
-  const minimumNoticeHours = Number.isFinite(rawNotice)
-    ? Math.max(0, Math.min(720, rawNotice))
-    : 2;
-
-  const rawListing = Number(business.booking_preferences?.listing_time_minutes);
-  const listingTimeMinutes = ALLOWED_LISTING_MINUTES.has(rawListing) ? rawListing : 30;
 
   const { data: service } = await db
     .from("services")
@@ -65,7 +56,13 @@ async function loadContext(slug: string, serviceId: string): Promise<Ctx> {
     .eq("active", true)
     .maybeSingle();
   if (!service) throw new Error("Serviço não encontrado.");
-  return { businessId: business.id, service, minimumNoticeHours, listingTimeMinutes };
+
+  return {
+    businessId: business.id,
+    service,
+    minimumNoticeHours: DEFAULT_MINIMUM_NOTICE_HOURS,
+    listingTimeMinutes: DEFAULT_LISTING_TIME_MINUTES,
+  };
 }
 
 async function validateProfessional(
@@ -184,17 +181,12 @@ export const getOpenDays = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ slug: z.string().min(1) }).parse(d))
   .handler(async ({ data }) => {
     const db = await admin();
-    const { data: business } = await (db.from("businesses") as any)
-      .select("id, status, booking_preferences")
+    const { data: business, error: businessError } = await (db.from("businesses") as any)
+      .select("id, status")
       .eq("slug", data.slug)
       .maybeSingle();
-    if (!business || business.status === "suspenso")
+    if (businessError || !business || business.status === "suspenso")
       return { days: [] as { date: string; weekday: number }[] };
-
-    const rawDays = Number(business.booking_preferences?.list_dates_days);
-    const daysAhead = Number.isFinite(rawDays)
-      ? Math.max(7, Math.min(365, Math.floor(rawDays)))
-      : 15;
 
     const { data: hours } = await db
       .from("business_hours")
@@ -203,7 +195,7 @@ export const getOpenDays = createServerFn({ method: "POST" })
     const open = new Set((hours ?? []).map((h) => h.weekday));
     const days: { date: string; weekday: number }[] = [];
 
-    for (let i = 1; i <= daysAhead; i++) {
+    for (let i = 1; i <= DEFAULT_OPEN_DAYS_AHEAD; i++) {
       const d = new Date(Date.now() + i * 86400000);
       const date = d.toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" });
       const weekday = new Date(`${date}T12:00:00-03:00`).getDay();
