@@ -334,7 +334,7 @@ export const generateDepositPix = createServerFn({ method: "POST" })
       .eq("id", charge.id);
     return {
       qrCode: pix.qrCode,
-      qrCodeBase64: pix.qr_code_base64,
+      qrCodeBase64: pix.qrCodeBase64,
       ticketUrl: pix.ticketUrl,
       expiresAt: charge.expires_at,
     };
