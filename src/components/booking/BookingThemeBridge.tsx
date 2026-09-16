@@ -1,35 +1,12 @@
 import { useEffect } from "react";
 import { useRouterState } from "@tanstack/react-router";
-import { supabase } from "@/integrations/supabase/client";
-
-type Appearance = {
-  page_text?: string;
-  service_background?: string;
-  service_text?: string;
-  service_border?: string;
-  service_hover_background?: string;
-  service_hover_text?: string;
-  service_hover_border?: string;
-  modal_background?: string;
-  modal_text?: string;
-  modal_active_background?: string;
-  modal_active_text?: string;
-  modal_border?: string;
-  agenda_background?: string;
-  agenda_text?: string;
-  agenda_border?: string;
-};
-
-type Preferences = {
-  greeting?: string;
-};
-
-const colorPattern = /^#[0-9a-fA-F]{6}$/;
-const safeColor = (value: unknown, fallback: string) =>
-  typeof value === "string" && colorPattern.test(value) ? value : fallback;
+import { useServerFn } from "@tanstack/react-start";
+import { getPublicBookingPage } from "@/lib/public-booking.functions";
+import { DEFAULT_PANEL1_APPEARANCE } from "@/lib/panel1-config";
 
 export function BookingThemeBridge() {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const pageFn = useServerFn(getPublicBookingPage);
 
   useEffect(() => {
     if (!pathname.startsWith("/agendar/")) return;
@@ -59,80 +36,87 @@ export function BookingThemeBridge() {
     const previous = new Map(variableNames.map((name) => [name, root.style.getPropertyValue(name)]));
 
     void (async () => {
-      // select("*") evita erro quando as colunas opcionais de customização ainda
-      // não existem em bancos antigos. Nesse caso, usamos os padrões abaixo.
-      const { data } = await (supabase.from("businesses") as any)
-        .select("*")
-        .eq("slug", slug)
-        .maybeSingle();
-      if (cancelled) return;
+      try {
+        const page = await pageFn({ data: { slug } });
+        if (cancelled || !page.business) return;
 
-      const appearance = (data?.booking_appearance ?? {}) as Appearance;
-      const preferences = (data?.booking_preferences ?? {}) as Preferences;
-      const pageText = safeColor(appearance.page_text, "#f3f4f6");
-      const serviceBackground = safeColor(appearance.service_background, "#0b0d0f");
-      const serviceText = safeColor(appearance.service_text, pageText);
-      const serviceBorder = safeColor(appearance.service_border, "#2a2d32");
-      const serviceHoverBackground = safeColor(appearance.service_hover_background, "#101828");
-      const serviceHoverText = safeColor(appearance.service_hover_text, "#ffffff");
-      const serviceHoverBorder = safeColor(appearance.service_hover_border, "#1677ff");
-      const modalBackground = safeColor(appearance.modal_background, "#0b0d0f");
-      const modalText = safeColor(appearance.modal_text, pageText);
-      const modalActiveBackground = safeColor(appearance.modal_active_background, "#10294a");
-      const modalActiveText = safeColor(appearance.modal_active_text, "#5da8ff");
-      const modalBorder = safeColor(appearance.modal_border, "#2a2d32");
-      const agendaBackground = safeColor(appearance.agenda_background, "#0b0d0f");
-      const agendaText = safeColor(appearance.agenda_text, pageText);
-      const agendaBorder = safeColor(appearance.agenda_border, serviceBorder);
+        const appearance = page.business.booking_appearance ?? DEFAULT_PANEL1_APPEARANCE;
+        const preferences = page.business.booking_preferences;
+        const pageText = appearance.page_text;
+        const serviceBackground = appearance.service_background;
+        const serviceText = appearance.service_text;
+        const serviceBorder = appearance.service_border;
+        const serviceHoverBackground = appearance.service_hover_background;
+        const serviceHoverText = appearance.service_hover_text;
+        const serviceHoverBorder = appearance.service_hover_border;
+        const modalBackground = appearance.modal_background;
+        const modalText = appearance.modal_text;
+        const modalActiveBackground = appearance.modal_active_background;
+        const modalActiveText = appearance.modal_active_text;
+        const modalBorder = appearance.modal_border;
+        const agendaBackground = appearance.agenda_background;
+        const agendaText = appearance.agenda_text;
+        const agendaBorder = appearance.agenda_border;
 
-      root.style.setProperty("--foreground", pageText);
-      root.style.setProperty("--card", serviceBackground);
-      root.style.setProperty("--card-foreground", serviceText);
-      root.style.setProperty("--border", serviceBorder);
-      root.style.setProperty("--input", serviceBorder);
-      root.style.setProperty("--muted", agendaBackground);
-      root.style.setProperty("--muted-foreground", agendaText);
-      root.style.setProperty("--popover", modalBackground);
-      root.style.setProperty("--popover-foreground", modalText);
+        root.style.setProperty("--foreground", pageText);
+        root.style.setProperty("--card", serviceBackground);
+        root.style.setProperty("--card-foreground", serviceText);
+        root.style.setProperty("--border", serviceBorder);
+        root.style.setProperty("--input", serviceBorder);
+        root.style.setProperty("--muted", agendaBackground);
+        root.style.setProperty("--muted-foreground", agendaText);
+        root.style.setProperty("--popover", modalBackground);
+        root.style.setProperty("--popover-foreground", modalText);
 
-      const greeting = preferences.greeting?.trim();
-      const main = document.querySelector("main");
-      const logoArea = main?.firstElementChild;
-      if (greeting && main && logoArea) {
-        greetingElement = document.createElement("p");
-        greetingElement.dataset.bookingGreeting = "true";
-        greetingElement.textContent = greeting;
-        greetingElement.style.textAlign = "center";
-        greetingElement.style.margin = "-0.25rem auto 1.5rem";
-        greetingElement.style.fontSize = "0.95rem";
-        greetingElement.style.fontWeight = "600";
-        greetingElement.style.color = pageText;
-        greetingElement.style.opacity = "0.9";
-        logoArea.insertAdjacentElement("afterend", greetingElement);
+        const greeting = preferences?.greeting?.trim();
+        if (greeting) {
+          const insertGreeting = () => {
+            if (cancelled || document.querySelector("[data-booking-greeting='true']")) return;
+            const main = document.querySelector("main");
+            const logoArea = main?.firstElementChild;
+            if (!main || !logoArea) return;
+            greetingElement = document.createElement("p");
+            greetingElement.dataset.bookingGreeting = "true";
+            greetingElement.textContent = greeting;
+            greetingElement.style.textAlign = "center";
+            greetingElement.style.margin = "0 auto 1.5rem";
+            greetingElement.style.fontSize = "0.95rem";
+            greetingElement.style.fontWeight = "600";
+            greetingElement.style.color = pageText;
+            greetingElement.style.opacity = "0.9";
+            logoArea.insertAdjacentElement("afterend", greetingElement);
+          };
+          insertGreeting();
+          window.setTimeout(insertGreeting, 250);
+          window.setTimeout(insertGreeting, 700);
+        }
+
+        style.textContent = `
+          body[data-booking-theme="true"] main button.rounded-lg.border:hover {
+            background:${serviceHoverBackground} !important;
+            color:${serviceHoverText} !important;
+            border-color:${serviceHoverBorder} !important;
+          }
+          body[data-booking-theme="true"] [role="dialog"] {
+            background:${modalBackground} !important;
+            color:${modalText} !important;
+            border-color:${modalBorder} !important;
+          }
+          body[data-booking-theme="true"] [role="dialog"] button.border {
+            background:${agendaBackground};
+            border-color:${agendaBorder};
+            color:${agendaText};
+          }
+          body[data-booking-theme="true"] [role="dialog"] button[class*="bg-primary"] {
+            background:${modalActiveBackground} !important;
+            color:${modalActiveText} !important;
+            border-color:${modalActiveText} !important;
+          }
+        `;
+      } catch {
+        // A página pública mostra o erro de carregamento. O bridge de tema nunca
+        // deve derrubar a navegação por causa de customização.
       }
-
-      style.textContent = `
-        body[data-booking-theme="true"] main button.rounded-lg.border:hover {
-          background:${serviceHoverBackground} !important;
-          color:${serviceHoverText} !important;
-          border-color:${serviceHoverBorder} !important;
-        }
-        body[data-booking-theme="true"] [role="dialog"] {
-          background:${modalBackground} !important;
-          color:${modalText} !important;
-          border-color:${modalBorder} !important;
-        }
-        body[data-booking-theme="true"] [role="dialog"] button.border {
-          background:${agendaBackground};
-          border-color:${agendaBorder};
-          color:${agendaText};
-        }
-        body[data-booking-theme="true"] [role="dialog"] button[class*="bg-primary"] {
-          background:${modalActiveBackground} !important;
-          color:${modalActiveText} !important;
-          border-color:${modalActiveText} !important;
-        }
-      `;
     })();
 
     return () => {
@@ -145,7 +129,7 @@ export function BookingThemeBridge() {
         else root.style.removeProperty(name);
       }
     };
-  }, [pathname]);
+  }, [pageFn, pathname]);
 
   return null;
 }
