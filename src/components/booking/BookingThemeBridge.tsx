@@ -59,8 +59,10 @@ export function BookingThemeBridge() {
     const previous = new Map(variableNames.map((name) => [name, root.style.getPropertyValue(name)]));
 
     void (async () => {
+      // select("*") evita erro quando as colunas opcionais de customização ainda
+      // não existem em bancos antigos. Nesse caso, usamos os padrões abaixo.
       const { data } = await (supabase.from("businesses") as any)
-        .select("booking_appearance, booking_preferences")
+        .select("*")
         .eq("slug", slug)
         .maybeSingle();
       if (cancelled) return;
