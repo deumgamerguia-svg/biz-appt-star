@@ -19,7 +19,6 @@ import {
   Settings2,
   Plus,
   MessageCircle,
-  UserCircle,
   Clock3,
   LoaderCircle,
   Package,
@@ -164,6 +163,17 @@ function panelDate(date: Date) {
   return `${WEEKDAYS[date.getDay()]}, ${date.getDate()} DE ${MONTHS[date.getMonth()]} DE ${date.getFullYear()}`;
 }
 
+function formatAccountPhone(phone?: string | null) {
+  const digits = (phone ?? "").replace(/\D/g, "");
+  if (digits.length === 11) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+  }
+  if (digits.length === 10) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+  }
+  return phone || "Não informado";
+}
+
 function WhatsappBadge() {
   const { businessId } = useBusiness();
   const { data } = useQuery({
@@ -202,6 +212,7 @@ function PainelLayout() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [transitioning, setTransitioning] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
   const [now, setNow] = useState(() => new Date());
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const [configOpen, setConfigOpen] = useState(() => pathname.startsWith("/painel/configuracoes"));
@@ -220,6 +231,23 @@ function PainelLayout() {
     },
   });
 
+  const { data: accountSubscription } = useQuery({
+    queryKey: ["sidebar-account-subscription", businessId],
+    enabled: !!businessId,
+    queryFn: async () => {
+      const currentMonth = new Date().toISOString().slice(0, 7);
+      const { data, error } = await supabase
+        .from("subscription_payments")
+        .select("status, reference_month, paid_at")
+        .eq("business_id", businessId!)
+        .order("reference_month", { ascending: false });
+      if (error) throw error;
+      return (
+        (data ?? []).find((payment) => payment.reference_month?.slice(0, 7) === currentMonth) ?? null
+      );
+    },
+  });
+
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 60000);
     return () => window.clearInterval(timer);
@@ -227,6 +255,7 @@ function PainelLayout() {
 
   useEffect(() => {
     if (pathname.startsWith("/painel/configuracoes")) setConfigOpen(true);
+    setAccountOpen(false);
   }, [pathname]);
 
   useEffect(() => {
@@ -235,12 +264,27 @@ function PainelLayout() {
     return () => window.clearTimeout(timer);
   }, [pathname, transitioning]);
 
+  useEffect(() => {
+    if (!accountOpen) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setAccountOpen(false);
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [accountOpen]);
+
   const beginNavigation = () => {
     setOpen(false);
+    setAccountOpen(false);
     setTransitioning(true);
   };
 
   const greetingName = greetingProfile?.full_name?.trim() || business?.name || "Usuário";
+  const accountName = greetingProfile?.full_name?.trim() || business?.name || "Usuário";
+  const accountInitial = accountName.charAt(0).toUpperCase() || "U";
+  const paidCurrentMonth = accountSubscription?.status === "pago";
+  const accountPlanLabel = paidCurrentMonth ? "Assinatura ativa" : "Teste Grátis";
+  const accountPhone = formatAccountPhone(business?.phone);
 
   return (
     <div className="owner-panel relative min-h-screen overflow-x-hidden bg-[#050607] text-[#f3f4f6] lg:flex">
@@ -390,28 +434,93 @@ function PainelLayout() {
           ))}
         </nav>
 
-        <div className="shrink-0 border-t border-[#25282c] pt-3">
-          <Link to="/painel/assinatura" className="mb-2 flex items-center gap-3 rounded-xl px-3 py-2">
-            <UserCircle className="size-5 shrink-0 text-[#1677ff]" />
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-[0.82rem] font-medium text-[#d7dbe1]">
-                Conta do estabelecimento
+        <div className="relative shrink-0 border-t border-[#25282c] pt-3">
+          {accountOpen && (
+            <div className="absolute bottom-[calc(100%+0.6rem)] left-0 right-0 z-20 rounded-2xl border border-[#272a2f] bg-[#090a0c]/98 p-3.5 shadow-[0_18px_55px_rgba(0,0,0,0.55)] backdrop-blur-xl animate-in fade-in slide-in-from-bottom-2 duration-150">
+              <div className="flex items-center gap-3 border-b border-[#22252a] pb-3">
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-[#f2f3f5] text-[12px] font-semibold text-[#111318] shadow-[inset_0_0_0_1px_rgba(0,0,0,0.06)]">
+                  {accountInitial}
+                </span>
+                <div className="min-w-0">
+                  <p className="truncate text-[12px] font-semibold leading-4 text-[#f0f1f3]">
+                    {accountName}
+                  </p>
+                  <p className="mt-0.5 text-[10px] leading-4 text-[#676d76]">Dados da conta</p>
+                </div>
+              </div>
+
+              <div className="mt-3 space-y-2.5 text-[11px]">
+                <div className="flex items-start justify-between gap-3">
+                  <span className="text-[#646b75]">Estabelecimento</span>
+                  <span className="max-w-[58%] truncate text-right font-medium text-[#cfd3d9]">
+                    {business?.name ?? "Não configurado"}
+                  </span>
+                </div>
+                <div className="flex items-start justify-between gap-3">
+                  <span className="text-[#646b75]">Telefone</span>
+                  <span className="text-right font-medium text-[#cfd3d9]">{accountPhone}</span>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-[#646b75]">Plano</span>
+                  <span className="rounded-full border border-emerald-400/25 bg-emerald-400/[0.09] px-2 py-0.5 text-[9px] font-semibold text-emerald-300">
+                    {accountPlanLabel}
+                  </span>
+                </div>
+                <div className="flex items-start justify-between gap-3">
+                  <span className="text-[#646b75]">Acesso</span>
+                  <span className={`text-right font-medium ${business?.status === "suspenso" ? "text-red-400" : "text-[#cfd3d9]"}`}>
+                    {business?.status === "suspenso" ? "Suspenso" : "Ativo"}
+                  </span>
+                </div>
+              </div>
+
+              <Link
+                to="/painel/assinatura"
+                onClick={beginNavigation}
+                className="mt-3 flex w-full items-center justify-center rounded-xl border border-[#262a30] bg-[#111317] px-3 py-2 text-[11px] font-medium text-[#cfd3d9] transition-colors hover:border-[#1677ff]/30 hover:bg-[#1677ff]/[0.06] hover:text-white"
+              >
+                Ver dados da assinatura
+              </Link>
+            </div>
+          )}
+
+          <div className="flex items-center rounded-xl px-1 py-1 transition-colors hover:bg-white/[0.025]">
+            <button
+              type="button"
+              aria-expanded={accountOpen}
+              aria-label="Abrir dados da conta"
+              onClick={() => setAccountOpen((value) => !value)}
+              className="group flex min-w-0 flex-1 items-center gap-2.5 rounded-lg px-1.5 py-1.5 text-left outline-none transition-colors focus-visible:ring-1 focus-visible:ring-[#1677ff]/70"
+            >
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-[11px] bg-[#f2f3f5] text-[11px] font-semibold text-[#111318] shadow-[inset_0_0_0_1px_rgba(0,0,0,0.06)] transition-transform duration-150 group-hover:scale-[1.02]">
+                {accountInitial}
               </span>
-              <span className="block text-[0.68rem] text-[#626a75]">
-                {business?.status === "suspenso" ? "Conta bloqueada" : "Conta ativa"}
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-[11px] font-semibold leading-[14px] tracking-[-0.01em] text-[#f0f1f3]">
+                  {accountName}
+                </span>
+                <span className="mt-[3px] flex min-w-0 items-center gap-1.5">
+                  <span className="truncate text-[9.5px] leading-3 text-[#626872]">Usuário</span>
+                  <span className="shrink-0 rounded-full border border-emerald-400/25 bg-emerald-400/[0.09] px-1.5 py-[2px] text-[8.5px] font-semibold leading-none text-emerald-300">
+                    {accountPlanLabel}
+                  </span>
+                </span>
               </span>
-            </span>
-          </Link>
-          <Button
-            variant="ghost"
-            className="mt-1 w-full justify-start rounded-xl text-[#7f8793] hover:bg-[#1677ff]/[0.055] hover:text-[#f3f4f6]"
-            onClick={async () => {
-              await signOut();
-              void navigate({ to: "/auth" });
-            }}
-          >
-            <LogOut className="size-4" /> Sair
-          </Button>
+            </button>
+
+            <button
+              type="button"
+              aria-label="Sair da conta"
+              title="Sair da conta"
+              className="flex size-8 shrink-0 items-center justify-center rounded-lg text-[#666d76] transition-colors hover:bg-white/[0.04] hover:text-[#d7dbe1] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1677ff]/70"
+              onClick={async () => {
+                await signOut();
+                void navigate({ to: "/auth" });
+              }}
+            >
+              <LogOut className="size-[15px]" strokeWidth={1.7} />
+            </button>
+          </div>
         </div>
       </aside>
 
