@@ -1,11 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-
-type CancellationPreferences = {
-  cancellations_enabled?: boolean;
-  cancellation_notice_minutes?: number;
-  cancellations?: boolean;
-};
+import { loadPanel1ConfigServer } from "@/lib/panel1-config.server";
 
 function cancellationLabel(minutes: number) {
   if (minutes <= 0) return "sem antecedência mínima";
@@ -39,20 +34,9 @@ export const cancelCustomerBooking = createServerFn({ method: "POST" })
     if (!appointment) throw new Error("Agendamento não encontrado.");
     if (appointment.status === "cancelado") return { ok: true };
 
-    // select("*") mantém compatibilidade com bancos antigos: se
-    // booking_preferences ainda não existir, o cancelamento usa os padrões.
-    const { data: business } = await (supabaseAdmin.from("businesses") as any)
-      .select("*")
-      .eq("id", appointment.business_id)
-      .maybeSingle();
-
-    const prefs = ((business as { booking_preferences?: unknown } | null)?.booking_preferences ??
-      {}) as CancellationPreferences;
-    const enabled = prefs.cancellations_enabled ?? prefs.cancellations ?? true;
-    const rawNotice = Number(prefs.cancellation_notice_minutes ?? 0);
-    const noticeMinutes = Number.isFinite(rawNotice)
-      ? Math.max(0, Math.min(1440, Math.floor(rawNotice)))
-      : 0;
+    const config = await loadPanel1ConfigServer(supabaseAdmin, appointment.business_id);
+    const enabled = config.preferences.cancellations_enabled;
+    const noticeMinutes = config.preferences.cancellation_notice_minutes;
 
     if (!enabled) {
       throw new Error("Este estabelecimento não permite cancelamento pelo cliente.");
