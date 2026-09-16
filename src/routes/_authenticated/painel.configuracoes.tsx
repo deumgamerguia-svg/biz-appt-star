@@ -5,6 +5,12 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useBusiness } from "@/lib/business";
+import { loadPanel1Config, savePanel1Config } from "@/lib/panel1-config.client";
+import {
+  DEFAULT_EXTRA_REMINDER_TEMPLATE,
+  DEFAULT_PANEL1_PREFERENCES,
+  type Panel1Preferences as Preferences,
+} from "@/lib/panel1-config";
 import { PageHeader, NoBusiness } from "@/components/painel/PageHeader";
 import { AppearanceSettings } from "@/components/painel/AppearanceSettings";
 import { Button } from "@/components/ui/button";
@@ -27,40 +33,8 @@ export const Route = createFileRoute("/_authenticated/painel/configuracoes")({
   component: ConfiguracoesPage,
 });
 
-type Preferences = {
-  minimum_notice_hours: number;
-  listing_time_minutes: number;
-  notify_clients: boolean;
-  reminder_hours_before: number;
-  extra_reminder_minutes: number;
-  extra_reminder_template: string;
-  timezone: string;
-  list_dates_days: number;
-  cancellations_enabled: boolean;
-  cancellation_notice_minutes: number;
-  reschedule_enabled: boolean;
-  reschedule_notice_minutes: number;
-  greeting: string;
-};
-
-const DEFAULT_EXTRA_TEMPLATE =
-  "{Saudacao} {Cliente}, só estou passando aqui para lembrar que você tem um horário agendado conosco hoje às {Horario} 😅 Espero por você, até breve! 👋";
-
-const DEFAULT_PREFERENCES: Preferences = {
-  minimum_notice_hours: 2,
-  listing_time_minutes: 30,
-  notify_clients: true,
-  reminder_hours_before: 10,
-  extra_reminder_minutes: 0,
-  extra_reminder_template: DEFAULT_EXTRA_TEMPLATE,
-  timezone: "America/Sao_Paulo",
-  list_dates_days: 15,
-  cancellations_enabled: true,
-  cancellation_notice_minutes: 0,
-  reschedule_enabled: false,
-  reschedule_notice_minutes: 0,
-  greeting: "Agende seu horário",
-};
+const DEFAULT_PREFERENCES: Preferences = { ...DEFAULT_PANEL1_PREFERENCES };
+const DEFAULT_EXTRA_TEMPLATE = DEFAULT_EXTRA_REMINDER_TEMPLATE;
 
 const preferenceItems = [
   ["available", "Horários Disponíveis"],
@@ -107,74 +81,23 @@ const MAIN_REMINDER_OPTIONS: Array<readonly [number, string]> = Array.from(
 
 const EXTRA_REMINDER_OPTIONS: Array<readonly [number, string]> = [
   [0, "Desabilitado"],
-  [10, "10 Minutos"],
-  [15, "15 Minutos"],
-  [30, "30 Minutos"],
-  [40, "40 Minutos"],
-  [45, "45 Minutos"],
-  [50, "50 Minutos"],
-  [60, "1 Hora"],
-  [90, "1 Hora e 30 Minutos"],
-  [120, "2 Horas"],
-  [180, "3 Horas"],
-  [240, "4 Horas"],
-  [300, "5 Horas"],
-  [360, "6 Horas"],
-  [420, "7 Horas"],
-  [480, "8 Horas"],
-  [540, "9 Horas"],
-  [600, "10 Horas"],
-  [660, "11 Horas"],
-  [720, "12 Horas"],
+  [10, "10 Minutos"], [15, "15 Minutos"], [30, "30 Minutos"], [40, "40 Minutos"],
+  [45, "45 Minutos"], [50, "50 Minutos"], [60, "1 Hora"], [90, "1 Hora e 30 Minutos"],
+  [120, "2 Horas"], [180, "3 Horas"], [240, "4 Horas"], [300, "5 Horas"],
+  [360, "6 Horas"], [420, "7 Horas"], [480, "8 Horas"], [540, "9 Horas"],
+  [600, "10 Horas"], [660, "11 Horas"], [720, "12 Horas"],
 ];
 
 const CANCELLATION_OPTIONS: Array<readonly [number, string]> = [
-  [0, "0 Minutos"],
-  [30, "30 Minutos"],
-  [40, "40 Minutos"],
-  [45, "45 Minutos"],
-  [50, "50 Minutos"],
-  [60, "1 Hora"],
-  [90, "1 Hora e 30 Minutos"],
-  [120, "2 Horas"],
-  [180, "3 Horas"],
-  [240, "4 Horas"],
-  [300, "5 Horas"],
-  [360, "6 Horas"],
-  [420, "7 Horas"],
-  [480, "8 Horas"],
-  [540, "9 Horas"],
-  [600, "10 Horas"],
-  [660, "11 Horas"],
-  [720, "12 Horas"],
-  [840, "14 Horas"],
-  [960, "16 Horas"],
+  [0, "0 Minutos"], [30, "30 Minutos"], [40, "40 Minutos"], [45, "45 Minutos"],
+  [50, "50 Minutos"], [60, "1 Hora"], [90, "1 Hora e 30 Minutos"], [120, "2 Horas"],
+  [180, "3 Horas"], [240, "4 Horas"], [300, "5 Horas"], [360, "6 Horas"],
+  [420, "7 Horas"], [480, "8 Horas"], [540, "9 Horas"], [600, "10 Horas"],
+  [660, "11 Horas"], [720, "12 Horas"], [840, "14 Horas"], [960, "16 Horas"],
   [1440, "24 Horas"],
 ];
 
-const RESCHEDULE_OPTIONS: Array<readonly [number, string]> = [
-  [0, "0 Minutos"],
-  [30, "30 Minutos"],
-  [40, "40 Minutos"],
-  [45, "45 Minutos"],
-  [50, "50 Minutos"],
-  [60, "1 Hora"],
-  [90, "1 Hora e 30 Minutos"],
-  [120, "2 Horas"],
-  [180, "3 Horas"],
-  [240, "4 Horas"],
-  [300, "5 Horas"],
-  [360, "6 Horas"],
-  [420, "7 Horas"],
-  [480, "8 Horas"],
-  [540, "9 Horas"],
-  [600, "10 Horas"],
-  [660, "11 Horas"],
-  [720, "12 Horas"],
-  [840, "14 Horas"],
-  [960, "16 Horas"],
-  [1440, "24 Horas"],
-];
+const RESCHEDULE_OPTIONS = CANCELLATION_OPTIONS;
 
 function ConfiguracoesPage() {
   const { businessId } = useBusiness();
@@ -189,7 +112,7 @@ function ConfiguracoesPage() {
         subtitle={
           secao === "aparencia"
             ? "Personalize o Painel 1 que o cliente acessa."
-            : "Defina as preferências do agendamento e do negócio."
+            : "Defina as preferências que controlam o agendamento do cliente."
         }
       />
       {secao === "aparencia" ? (
@@ -211,19 +134,21 @@ function PreferencesSettings({ businessId }: { businessId: string }) {
   const { data } = useQuery({
     queryKey: ["booking-preferences", businessId],
     queryFn: async () => {
-      const { data, error } = await (supabase.from("businesses") as any)
-        .select("booking_preferences, reminder_enabled, reminder_hours_before")
-        .eq("id", businessId)
-        .maybeSingle();
-      if (error) throw error;
-      return data as {
-        booking_preferences?: Partial<Preferences> & {
-          cancellations?: boolean;
-          reschedule?: boolean;
-        };
-        reminder_enabled?: boolean;
-        reminder_hours_before?: number;
-      } | null;
+      const [config, businessResult] = await Promise.all([
+        loadPanel1Config(businessId),
+        (supabase.from("businesses") as any).select("*").eq("id", businessId).maybeSingle(),
+      ]);
+      if (businessResult.error) throw businessResult.error;
+      const business = businessResult.data as Record<string, unknown> | null;
+      return {
+        preferences: config.preferences,
+        reminder_enabled:
+          typeof business?.reminder_enabled === "boolean" ? business.reminder_enabled : undefined,
+        reminder_hours_before:
+          typeof business?.reminder_hours_before === "number"
+            ? business.reminder_hours_before
+            : undefined,
+      };
     },
   });
 
@@ -243,16 +168,12 @@ function PreferencesSettings({ businessId }: { businessId: string }) {
 
   useEffect(() => {
     if (!data) return;
-    const stored = data.booking_preferences ?? {};
     setPrefs({
       ...DEFAULT_PREFERENCES,
-      ...stored,
-      notify_clients: data.reminder_enabled ?? stored.notify_clients ?? true,
-      reminder_hours_before: data.reminder_hours_before ?? stored.reminder_hours_before ?? 10,
-      cancellations_enabled: stored.cancellations_enabled ?? stored.cancellations ?? true,
-      cancellation_notice_minutes: Number(stored.cancellation_notice_minutes ?? 0),
-      reschedule_enabled: stored.reschedule_enabled ?? stored.reschedule ?? false,
-      reschedule_notice_minutes: Number(stored.reschedule_notice_minutes ?? 0),
+      ...data.preferences,
+      notify_clients: data.reminder_enabled ?? data.preferences.notify_clients,
+      reminder_hours_before:
+        data.reminder_hours_before ?? data.preferences.reminder_hours_before,
     });
   }, [data]);
 
@@ -262,12 +183,9 @@ function PreferencesSettings({ businessId }: { businessId: string }) {
 
   const save = useMutation({
     mutationFn: async () => {
-      const normalizedPrefs = {
+      const normalizedPrefs: Preferences = {
         ...prefs,
-        list_dates_days: Math.max(
-          7,
-          Math.min(365, Math.floor(Number(prefs.list_dates_days) || 15)),
-        ),
+        list_dates_days: Math.max(7, Math.min(365, Math.floor(Number(prefs.list_dates_days) || 15))),
         cancellation_notice_minutes: Math.max(
           0,
           Math.min(1440, Math.floor(Number(prefs.cancellation_notice_minutes) || 0)),
@@ -276,15 +194,27 @@ function PreferencesSettings({ businessId }: { businessId: string }) {
           0,
           Math.min(1440, Math.floor(Number(prefs.reschedule_notice_minutes) || 0)),
         ),
+        extra_reminder_template: prefs.extra_reminder_template || DEFAULT_EXTRA_TEMPLATE,
       };
-      const { error } = await (supabase.from("businesses") as any)
+
+      // Fonte de verdade das opções avançadas do Painel 1. Não depende de coluna
+      // nova no Postgres e funciona com bancos antigos e novos.
+      await savePanel1Config(businessId, { preferences: normalizedPrefs });
+
+      // Mantém compatibilidade com o módulo de lembretes quando essas colunas já
+      // existem. Se o banco for antigo, a configuração principal já foi salva.
+      const reminderUpdate = await (supabase.from("businesses") as any)
         .update({
-          booking_preferences: normalizedPrefs,
           reminder_enabled: normalizedPrefs.notify_clients,
           reminder_hours_before: normalizedPrefs.reminder_hours_before,
         })
         .eq("id", businessId);
-      if (error) throw error;
+      if (
+        reminderUpdate.error &&
+        !/column|schema cache|does not exist/i.test(reminderUpdate.error.message)
+      ) {
+        throw reminderUpdate.error;
+      }
 
       if (selected === "greeting" && user?.id && ownerName.trim()) {
         const { error: profileError } = await supabase
@@ -295,7 +225,7 @@ function PreferencesSettings({ businessId }: { businessId: string }) {
       }
     },
     onSuccess: () => {
-      toast.success("Preferência salva");
+      toast.success("Configuração do Painel 1 salva");
       void queryClient.invalidateQueries({ queryKey: ["booking-preferences", businessId] });
       void queryClient.invalidateQueries({ queryKey: ["reminder-config", businessId] });
       if (user?.id) {
@@ -321,25 +251,15 @@ function PreferencesSettings({ businessId }: { businessId: string }) {
           <p className="px-2 pb-3 text-sm font-semibold text-[#8b929d]">Agenda</p>
           <div className="space-y-1">
             {preferenceItems.slice(0, 5).map(([key, label]) => (
-              <PreferenceButton
-                key={key}
-                active={selected === key}
-                onClick={() => setSelected(key)}
-              >
+              <PreferenceButton key={key} active={selected === key} onClick={() => setSelected(key)}>
                 {label}
               </PreferenceButton>
             ))}
           </div>
-          <p className="mt-8 px-2 pb-3 text-sm font-semibold text-[#8b929d]">
-            Empresa e clientes
-          </p>
+          <p className="mt-8 px-2 pb-3 text-sm font-semibold text-[#8b929d]">Empresa e clientes</p>
           <div className="space-y-1">
             {preferenceItems.slice(5).map(([key, label]) => (
-              <PreferenceButton
-                key={key}
-                active={selected === key}
-                onClick={() => setSelected(key)}
-              >
+              <PreferenceButton key={key} active={selected === key} onClick={() => setSelected(key)}>
                 {label}
               </PreferenceButton>
             ))}
@@ -349,37 +269,23 @@ function PreferencesSettings({ businessId }: { businessId: string }) {
         <section className="p-5 sm:p-8 lg:p-10">
           <div className="mx-auto max-w-2xl">
             {selected === "available" && (
-              <SettingBlock
-                title="Horários Disponíveis"
-                description="Escolha quanto tempo antes os horários poderão ser mostrados."
-              >
+              <SettingBlock title="Horários Disponíveis" description="Escolha quanto tempo antes os horários poderão ser mostrados.">
                 <NativeSelect
                   value={prefs.minimum_notice_hours}
-                  onChange={(value) =>
-                    setPrefs({ ...prefs, minimum_notice_hours: Number(value) })
-                  }
+                  onChange={(value) => setPrefs({ ...prefs, minimum_notice_hours: Number(value) })}
                   options={[
-                    [0, "Sem antecedência"],
-                    [1, "1 Hora"],
-                    [2, "2 Horas"],
-                    [4, "4 Horas"],
-                    [12, "12 Horas"],
-                    [24, "24 Horas"],
+                    [0, "Sem antecedência"], [1, "1 Hora"], [2, "2 Horas"],
+                    [4, "4 Horas"], [12, "12 Horas"], [24, "24 Horas"],
                   ]}
                 />
               </SettingBlock>
             )}
 
             {selected === "listing" && (
-              <SettingBlock
-                title="Tempo de Listagem"
-                description="Defina o intervalo usado para organizar a exibição dos horários."
-              >
+              <SettingBlock title="Tempo de Listagem" description="Defina o intervalo usado para organizar a exibição dos horários.">
                 <NativeSelect
                   value={prefs.listing_time_minutes}
-                  onChange={(value) =>
-                    setPrefs({ ...prefs, listing_time_minutes: Number(value) })
-                  }
+                  onChange={(value) => setPrefs({ ...prefs, listing_time_minutes: Number(value) })}
                   options={LISTING_OPTIONS}
                 />
               </SettingBlock>
@@ -387,130 +293,68 @@ function PreferencesSettings({ businessId }: { businessId: string }) {
 
             {selected === "notify" && (
               <div>
-                <h2 className="text-2xl font-medium tracking-[-0.025em] text-[#f4f5f7]">
-                  Avisar Clientes
-                </h2>
-                <p className="mt-3 max-w-xl text-sm leading-6 text-[#8b929d]">
-                  Escolha quanto tempo de antecedência seu cliente recebe o lembrete.
-                </p>
-
+                <h2 className="text-2xl font-medium tracking-[-0.025em] text-[#f4f5f7]">Avisar Clientes</h2>
+                <p className="mt-3 max-w-xl text-sm leading-6 text-[#8b929d]">Escolha quanto tempo de antecedência seu cliente recebe o lembrete.</p>
                 <div className="mt-12 space-y-3">
                   <NativeSelect
                     value={prefs.reminder_hours_before}
-                    onChange={(value) =>
-                      setPrefs({
-                        ...prefs,
-                        notify_clients: true,
-                        reminder_hours_before: Number(value),
-                      })
-                    }
+                    onChange={(value) => setPrefs({ ...prefs, notify_clients: true, reminder_hours_before: Number(value) })}
                     options={MAIN_REMINDER_OPTIONS}
                   />
                   <div className="flex justify-end">
-                    <Button onClick={() => save.mutate()} disabled={save.isPending}>
-                      {save.isPending ? "Salvando..." : "Salvar"}
-                    </Button>
+                    <Button onClick={() => save.mutate()} disabled={save.isPending}>{save.isPending ? "Salvando..." : "Salvar"}</Button>
                   </div>
                 </div>
 
                 <div className="mt-6 rounded-xl border border-[#25282c] bg-[#111316] p-4 shadow-[0_10px_30px_rgba(0,0,0,0.18)] sm:p-5">
-                  <h3 className="text-2xl font-medium tracking-[-0.025em] text-[#f4f5f7]">
-                    Lembrete extra
-                  </h3>
-                  <p className="mt-3 text-sm leading-6 text-[#a0a6af]">
-                    Habilite e escolha com quanto tempo de antecedência seu cliente recebe o lembrete.
-                  </p>
-
+                  <h3 className="text-2xl font-medium tracking-[-0.025em] text-[#f4f5f7]">Lembrete extra</h3>
+                  <p className="mt-3 text-sm leading-6 text-[#a0a6af]">Habilite e escolha com quanto tempo de antecedência seu cliente recebe o lembrete.</p>
                   <div className="mt-5">
                     <NativeSelect
                       value={prefs.extra_reminder_minutes}
-                      onChange={(value) =>
-                        setPrefs({ ...prefs, extra_reminder_minutes: Number(value) })
-                      }
+                      onChange={(value) => setPrefs({ ...prefs, extra_reminder_minutes: Number(value) })}
                       options={EXTRA_REMINDER_OPTIONS}
                     />
                   </div>
-
                   <Textarea
                     className="mt-2 min-h-[270px] resize-y rounded-xl border-[#2a2d32] bg-[#17191d] px-4 py-4 text-sm leading-6 text-[#f4f5f7]"
                     value={prefs.extra_reminder_template}
-                    onChange={(e) =>
-                      setPrefs({
-                        ...prefs,
-                        extra_reminder_template: e.target.value.slice(0, 800),
-                      })
-                    }
+                    onChange={(e) => setPrefs({ ...prefs, extra_reminder_template: e.target.value.slice(0, 800) })}
                     maxLength={800}
                   />
-
                   <div className="mt-3 flex flex-wrap gap-2">
-                    {[
-                      ["Saudação", "{Saudacao}"],
-                      ["Horário", "{Horario}"],
-                      ["Cliente", "{Cliente}"],
-                      ["Data", "{Data}"],
-                    ].map(([label, token]) => (
-                      <button
-                        key={token}
-                        type="button"
-                        onClick={() => insertExtraToken(token)}
-                        className="rounded-lg border border-[#2a2d32] bg-[#202226] px-4 py-2 text-xs font-medium text-[#b8bec7] transition-colors hover:border-[#1677ff]/40 hover:text-white"
-                      >
+                    {[["Saudação", "{Saudacao}"], ["Horário", "{Horario}"], ["Cliente", "{Cliente}"], ["Data", "{Data}"]].map(([label, token]) => (
+                      <button key={token} type="button" onClick={() => insertExtraToken(token)} className="rounded-lg border border-[#2a2d32] bg-[#202226] px-4 py-2 text-xs font-medium text-[#b8bec7] transition-colors hover:border-[#1677ff]/40 hover:text-white">
                         {label}
                       </button>
                     ))}
                   </div>
-
                   <div className="mt-4 flex justify-end">
-                    <Button onClick={() => save.mutate()} disabled={save.isPending}>
-                      {save.isPending ? "Salvando..." : "Salvar"}
-                    </Button>
+                    <Button onClick={() => save.mutate()} disabled={save.isPending}>{save.isPending ? "Salvando..." : "Salvar"}</Button>
                   </div>
                 </div>
               </div>
             )}
 
             {selected === "timezone" && (
-              <SettingBlock
-                title="Fuso Horário"
-                description="Defina o fuso usado como referência para a agenda."
-              >
+              <SettingBlock title="Fuso Horário" description="Defina o fuso usado como referência para a agenda.">
                 <NativeSelect
                   value={prefs.timezone}
                   onChange={(timezone) => setPrefs({ ...prefs, timezone })}
                   options={[
-                    ["America/Sao_Paulo", "Brasília / São Paulo"],
-                    ["America/Manaus", "Manaus"],
-                    ["America/Recife", "Recife"],
-                    ["America/Cuiaba", "Cuiabá"],
+                    ["America/Sao_Paulo", "Brasília / São Paulo"], ["America/Manaus", "Manaus"],
+                    ["America/Recife", "Recife"], ["America/Cuiaba", "Cuiabá"],
                   ]}
                 />
               </SettingBlock>
             )}
 
             {selected === "dates" && (
-              <SettingBlock
-                title="Listar Datas"
-                description="Informe a quantidade de datas disponíveis para agendamento. (mínimo 7)"
-              >
+              <SettingBlock title="Listar Datas" description="Informe a quantidade de datas disponíveis para agendamento. (mínimo 7)">
                 <Input
-                  type="number"
-                  min={7}
-                  max={365}
-                  step={1}
-                  value={prefs.list_dates_days}
-                  onChange={(e) =>
-                    setPrefs({ ...prefs, list_dates_days: Number(e.target.value) })
-                  }
-                  onBlur={() =>
-                    setPrefs((current) => ({
-                      ...current,
-                      list_dates_days: Math.max(
-                        7,
-                        Math.min(365, Math.floor(Number(current.list_dates_days) || 15)),
-                      ),
-                    }))
-                  }
+                  type="number" min={7} max={365} step={1} value={prefs.list_dates_days}
+                  onChange={(e) => setPrefs({ ...prefs, list_dates_days: Number(e.target.value) })}
+                  onBlur={() => setPrefs((current) => ({ ...current, list_dates_days: Math.max(7, Math.min(365, Math.floor(Number(current.list_dates_days) || 15))) }))}
                   className="h-12 rounded-xl border-[#2a2d32] bg-[#17191d] px-4 text-sm text-[#f4f5f7]"
                 />
               </SettingBlock>
@@ -518,41 +362,16 @@ function PreferencesSettings({ businessId }: { businessId: string }) {
 
             {selected === "cancel" && (
               <div>
-                <h2 className="text-2xl font-medium tracking-[-0.025em] text-[#f4f5f7]">
-                  Cancelamento
-                </h2>
-                <p className="mt-3 max-w-xl text-sm leading-6 text-[#8b929d]">
-                  Permissão para o cliente cancelar o serviço.
-                </p>
-
+                <h2 className="text-2xl font-medium tracking-[-0.025em] text-[#f4f5f7]">Cancelamento</h2>
+                <p className="mt-3 max-w-xl text-sm leading-6 text-[#8b929d]">Controle se o cliente pode cancelar e a antecedência necessária.</p>
                 <div className="mt-12 grid gap-4 sm:grid-cols-2">
                   <label className="space-y-2">
-                    <span className="block text-sm font-semibold leading-5 text-[#f4f5f7]">
-                      Permitir cancelamento dos clientes
-                    </span>
-                    <NativeSelect
-                      value={prefs.cancellations_enabled ? "permitido" : "bloqueado"}
-                      onChange={(value) =>
-                        setPrefs({ ...prefs, cancellations_enabled: value === "permitido" })
-                      }
-                      options={[
-                        ["permitido", "Permitido"],
-                        ["bloqueado", "Não permitido"],
-                      ]}
-                    />
+                    <span className="block text-sm font-semibold leading-5 text-[#f4f5f7]">Permitir cancelamento dos clientes</span>
+                    <NativeSelect value={prefs.cancellations_enabled ? "permitido" : "bloqueado"} onChange={(value) => setPrefs({ ...prefs, cancellations_enabled: value === "permitido" })} options={[["permitido", "Permitido"], ["bloqueado", "Não permitido"]]} />
                   </label>
-
                   <label className="space-y-2">
-                    <span className="block text-sm font-semibold leading-5 text-[#f4f5f7]">
-                      Tempo antecedente para cancelamento
-                    </span>
-                    <NativeSelect
-                      value={prefs.cancellation_notice_minutes}
-                      onChange={(value) =>
-                        setPrefs({ ...prefs, cancellation_notice_minutes: Number(value) })
-                      }
-                      options={CANCELLATION_OPTIONS}
-                    />
+                    <span className="block text-sm font-semibold leading-5 text-[#f4f5f7]">Tempo antecedente para cancelamento</span>
+                    <NativeSelect value={prefs.cancellation_notice_minutes} onChange={(value) => setPrefs({ ...prefs, cancellation_notice_minutes: Number(value) })} options={CANCELLATION_OPTIONS} />
                   </label>
                 </div>
               </div>
@@ -560,72 +379,31 @@ function PreferencesSettings({ businessId }: { businessId: string }) {
 
             {selected === "reschedule" && (
               <div>
-                <h2 className="text-2xl font-medium tracking-[-0.025em] text-[#f4f5f7]">
-                  Remarcação
-                </h2>
-                <p className="mt-3 max-w-xl text-sm leading-6 text-[#8b929d]">
-                  Permissão para o cliente remarcar o agendamento.
-                </p>
-
+                <h2 className="text-2xl font-medium tracking-[-0.025em] text-[#f4f5f7]">Remarcação</h2>
+                <p className="mt-3 max-w-xl text-sm leading-6 text-[#8b929d]">Permissão para o cliente remarcar o agendamento.</p>
                 <div className="mt-12 grid gap-4 sm:grid-cols-2">
                   <label className="space-y-2">
-                    <span className="block text-sm font-semibold leading-5 text-[#f4f5f7]">
-                      Permitir remarcação dos clientes
-                    </span>
-                    <NativeSelect
-                      value={prefs.reschedule_enabled ? "permitido" : "bloqueado"}
-                      onChange={(value) =>
-                        setPrefs({ ...prefs, reschedule_enabled: value === "permitido" })
-                      }
-                      options={[
-                        ["bloqueado", "Não Permitido"],
-                        ["permitido", "Permitido"],
-                      ]}
-                    />
+                    <span className="block text-sm font-semibold leading-5 text-[#f4f5f7]">Permitir remarcação dos clientes</span>
+                    <NativeSelect value={prefs.reschedule_enabled ? "permitido" : "bloqueado"} onChange={(value) => setPrefs({ ...prefs, reschedule_enabled: value === "permitido" })} options={[["bloqueado", "Não Permitido"], ["permitido", "Permitido"]]} />
                   </label>
-
                   <label className="space-y-2">
-                    <span className="block text-sm font-semibold leading-5 text-[#f4f5f7]">
-                      Tempo antecedente para remarcar
-                    </span>
-                    <NativeSelect
-                      value={prefs.reschedule_notice_minutes}
-                      onChange={(value) =>
-                        setPrefs({ ...prefs, reschedule_notice_minutes: Number(value) })
-                      }
-                      options={RESCHEDULE_OPTIONS}
-                    />
+                    <span className="block text-sm font-semibold leading-5 text-[#f4f5f7]">Tempo antecedente para remarcar</span>
+                    <NativeSelect value={prefs.reschedule_notice_minutes} onChange={(value) => setPrefs({ ...prefs, reschedule_notice_minutes: Number(value) })} options={RESCHEDULE_OPTIONS} />
                   </label>
                 </div>
               </div>
             )}
 
             {selected === "greeting" && (
-              <SettingBlock
-                title="Saudação"
-                description="Edite a saudação pública do Painel 1 e o nome azul exibido no topo do Painel 2."
-              >
+              <SettingBlock title="Saudação" description="Edite a saudação pública do Painel 1 e o nome exibido no Painel 2.">
                 <div className="space-y-5">
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Saudação do Painel 1</label>
-                    <Input
-                      value={prefs.greeting}
-                      onChange={(e) =>
-                        setPrefs({ ...prefs, greeting: e.target.value.slice(0, 80) })
-                      }
-                      maxLength={80}
-                    />
+                    <Input value={prefs.greeting} onChange={(e) => setPrefs({ ...prefs, greeting: e.target.value.slice(0, 80) })} maxLength={80} />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">
-                      Nome da saudação do Painel 2
-                    </label>
-                    <Input
-                      value={ownerName}
-                      onChange={(e) => setOwnerName(e.target.value.slice(0, 40))}
-                      maxLength={40}
-                      placeholder="Ex.: Guilherme"
-                    />
+                    <label className="text-sm font-medium">Nome da saudação do Painel 2</label>
+                    <Input value={ownerName} onChange={(e) => setOwnerName(e.target.value.slice(0, 40))} maxLength={40} placeholder="Ex.: Guilherme" />
                   </div>
                 </div>
               </SettingBlock>
@@ -633,9 +411,7 @@ function PreferencesSettings({ businessId }: { businessId: string }) {
 
             {selected !== "notify" && (
               <div className="mt-7 flex justify-end">
-                <Button onClick={() => save.mutate()} disabled={save.isPending}>
-                  {save.isPending ? "Salvando..." : "Salvar"}
-                </Button>
+                <Button onClick={() => save.mutate()} disabled={save.isPending}>{save.isPending ? "Salvando..." : "Salvar"}</Button>
               </div>
             )}
           </div>
@@ -645,39 +421,15 @@ function PreferencesSettings({ businessId }: { businessId: string }) {
   );
 }
 
-function PreferenceButton({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
+function PreferenceButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`w-full rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${
-        active
-          ? "bg-[#1677ff]/15 font-semibold text-[#e9f2ff]"
-          : "text-[#d0d4da] hover:bg-white/[0.035]"
-      }`}
-    >
+    <button type="button" onClick={onClick} className={`w-full rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${active ? "bg-[#1677ff]/15 font-semibold text-[#e9f2ff]" : "text-[#d0d4da] hover:bg-white/[0.035]"}`}>
       {children}
     </button>
   );
 }
 
-function SettingBlock({
-  title,
-  description,
-  children,
-}: {
-  title: string;
-  description: string;
-  children: React.ReactNode;
-}) {
+function SettingBlock({ title, description, children }: { title: string; description: string; children: React.ReactNode }) {
   return (
     <div>
       <h2 className="text-2xl font-medium tracking-[-0.025em] text-[#f4f5f7]">{title}</h2>
@@ -687,47 +439,10 @@ function SettingBlock({
   );
 }
 
-function ToggleSetting({
-  title,
-  description,
-  checked,
-  onChange,
-}: {
-  title: string;
-  description: string;
-  checked: boolean;
-  onChange: (checked: boolean) => void;
-}) {
+function NativeSelect({ value, onChange, options }: { value: string | number; onChange: (value: string) => void; options: Array<readonly [string | number, string]> }) {
   return (
-    <SettingBlock title={title} description={description}>
-      <div className="flex items-center justify-between rounded-xl border border-[#2a2d32] bg-[#121417] px-4 py-4">
-        <span className="text-sm text-[#d9dde3]">{checked ? "Ativado" : "Desativado"}</span>
-        <Switch checked={checked} onCheckedChange={onChange} />
-      </div>
-    </SettingBlock>
-  );
-}
-
-function NativeSelect({
-  value,
-  onChange,
-  options,
-}: {
-  value: string | number;
-  onChange: (value: string) => void;
-  options: Array<readonly [string | number, string]>;
-}) {
-  return (
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="h-12 w-full rounded-xl border border-[#2a2d32] bg-[#17191d] px-4 text-sm text-[#f4f5f7] outline-none focus:border-[#1677ff]/60"
-    >
-      {options.map(([optionValue, label]) => (
-        <option key={String(optionValue)} value={optionValue}>
-          {label}
-        </option>
-      ))}
+    <select value={value} onChange={(e) => onChange(e.target.value)} className="h-12 w-full rounded-xl border border-[#2a2d32] bg-[#17191d] px-4 text-sm text-[#f4f5f7] outline-none focus:border-[#1677ff]/60">
+      {options.map(([optionValue, label]) => <option key={String(optionValue)} value={optionValue}>{label}</option>)}
     </select>
   );
 }
