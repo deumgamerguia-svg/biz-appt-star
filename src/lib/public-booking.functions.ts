@@ -23,6 +23,7 @@ const LOGO_BUCKET = "business-logos";
 const SIGNED_URL_TTL_SECONDS = 60 * 60 * 6;
 const FALLBACK_SUPABASE_URL = "https://qagotnmdqjoodoudcikd.supabase.co";
 const FALLBACK_PUBLISHABLE_KEY = "sb_publishable_ahOK_X2idzT_9V00g-guZQ_FZ_eScZj";
+const DEFAULT_MINIMUM_NOTICE_HOURS = 2;
 
 async function admin() {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -88,11 +89,11 @@ async function signedStorageUrl(
 }
 
 /**
- * Dados necessários para montar o Painel 1.
+ * Catálogo público do Painel 1.
  *
- * O catálogo público usa somente a publishable key e as policies públicas do
- * banco. Assim uma configuração incorreta da chave privada nunca derruba a
- * tela inicial de agendamento.
+ * Importante: esta consulta usa apenas colunas que existem no schema base do
+ * projeto. As preferências avançadas do Painel 1 são opcionais e nunca podem
+ * impedir estabelecimento/serviços de aparecerem para o cliente.
  */
 export const getPublicBookingPage = createServerFn({ method: "POST" })
   .inputValidator((value: unknown) => slugSchema.parse(value))
@@ -101,7 +102,7 @@ export const getPublicBookingPage = createServerFn({ method: "POST" })
 
     const { data: business, error: businessError } = await (db.from("businesses") as any)
       .select(
-        "id, name, category, phone, address, logo_url, status, brand_primary, brand_background, booking_preferences",
+        "id, name, category, phone, address, logo_url, status, brand_primary, brand_background",
       )
       .eq("slug", data.slug)
       .maybeSingle();
@@ -162,7 +163,7 @@ export const getPublicBookingPage = createServerFn({ method: "POST" })
         status: business.status as string,
         brand_primary: (business.brand_primary ?? null) as string | null,
         brand_background: (business.brand_background ?? null) as string | null,
-        booking_preferences: business.booking_preferences ?? null,
+        booking_preferences: null,
         logo_url: logoUrl,
       },
       services,
@@ -245,10 +246,11 @@ export const reservePublicBooking = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const db = await admin();
 
-    const { data: business } = await (db.from("businesses") as any)
-      .select("id, status, booking_preferences")
+    const { data: business, error: businessError } = await (db.from("businesses") as any)
+      .select("id, status")
       .eq("slug", data.slug)
       .maybeSingle();
+    if (businessError) throw new Error("Não foi possível validar o estabelecimento.");
     if (!business) throw new Error("Estabelecimento não encontrado.");
     if (business.status === "suspenso") {
       throw new Error("Os agendamentos deste estabelecimento estão temporariamente indisponíveis.");
@@ -311,14 +313,14 @@ export const reservePublicBooking = createServerFn({ method: "POST" })
     );
     if (!fitsWorkingHours) throw new Error("O horário escolhido está fora do expediente.");
 
-    const rawNotice = Number(business.booking_preferences?.minimum_notice_hours);
-    const minimumNoticeHours = Number.isFinite(rawNotice)
-      ? Math.max(0, Math.min(720, rawNotice))
-      : 2;
     const startsAt = toIso(data.date, data.time);
-    if (new Date(startsAt).getTime() < Date.now() + minimumNoticeHours * 60 * 60 * 1000) {
-      const label = minimumNoticeHours === 1 ? "1 hora" : `${minimumNoticeHours} horas`;
-      throw new Error(`Este horário exige antecedência mínima de ${label}. Escolha outro horário.`);
+    if (
+      new Date(startsAt).getTime() <
+      Date.now() + DEFAULT_MINIMUM_NOTICE_HOURS * 60 * 60 * 1000
+    ) {
+      throw new Error(
+        `Este horário exige antecedência mínima de ${DEFAULT_MINIMUM_NOTICE_HOURS} horas. Escolha outro horário.`,
+      );
     }
     const endsAt = new Date(
       new Date(startsAt).getTime() + service.duration_minutes * 60_000,
