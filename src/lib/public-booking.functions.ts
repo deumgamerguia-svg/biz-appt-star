@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
+import { loadPanel1ConfigServer } from "@/lib/panel1-config.server";
 
 const slugSchema = z.object({
   slug: z.string().trim().min(1).max(120),
@@ -23,7 +24,7 @@ const LOGO_BUCKET = "business-logos";
 const SIGNED_URL_TTL_SECONDS = 60 * 60 * 6;
 const FALLBACK_SUPABASE_URL = "https://qagotnmdqjoodoudcikd.supabase.co";
 const FALLBACK_PUBLISHABLE_KEY = "sb_publishable_ahOK_X2idzT_9V00g-guZQ_FZ_eScZj";
-const DEFAULT_MINIMUM_NOTICE_HOURS = 2;
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 type PublicBusiness = {
   id: string;
@@ -66,11 +67,11 @@ let publicClient: SupabaseClient<Database> | undefined;
 function publicDb() {
   if (publicClient) return publicClient;
 
-  const envUrl = process.env["SUPABASE_URL"] || process.env["VITE_SUPABASE_URL"];
-  const envKey =
-    process.env["SUPABASE_PUBLISHABLE_KEY"] || process.env["VITE_SUPABASE_PUBLISHABLE_KEY"];
-  const url = envUrl && envKey ? envUrl : FALLBACK_SUPABASE_URL;
-  const key = envUrl && envKey ? envKey : FALLBACK_PUBLISHABLE_KEY;
+  // A página pública deve consultar o mesmo projeto usado no build do frontend.
+  // Não damos preferência a SUPABASE_URL genérico porque hosts externos podem
+  // injetar essa variável apontando para outro projeto.
+  const url = process.env["VITE_SUPABASE_URL"] || FALLBACK_SUPABASE_URL;
+  const key = process.env["VITE_SUPABASE_PUBLISHABLE_KEY"] || FALLBACK_PUBLISHABLE_KEY;
 
   publicClient = createClient<Database>(url, key, {
     global: { fetch: createApiKeyFetch(key) },
@@ -79,35 +80,63 @@ function publicDb() {
   return publicClient;
 }
 
+async function findBusiness(
+  db: SupabaseClient<Database>,
+  slug: string,
+): Promise<{ data: PublicBusiness | null; error: { message: string } | null }> {
+  const select =
+    "id, name, category, phone, address, logo_url, status, brand_primary, brand_background";
+  const normalized = slug.trim();
+
+  if (UUID_PATTERN.test(normalized)) {
+    const byId = await (db.from("businesses") as any)
+      .select(select)
+      .eq("id", normalized)
+      .maybeSingle();
+    if (!byId.error && byId.data) {
+      return { data: byId.data as PublicBusiness, error: null };
+    }
+  }
+
+  const result = await (db.from("businesses") as any)
+    .select(select)
+    .eq("slug", normalized)
+    .maybeSingle();
+  return {
+    data: (result.data as PublicBusiness | null) ?? null,
+    error: result.error ? { message: result.error.message } : null,
+  };
+}
+
 async function loadBusinessBySlug(slug: string): Promise<{
   db: SupabaseClient<Database>;
   business: PublicBusiness | null;
 }> {
-  const select =
-    "id, name, category, phone, address, logo_url, status, brand_primary, brand_background";
+  let privilegedFailure: string | null = null;
 
-  // Primeiro tenta no servidor com a chave privilegiada. Isso evita que uma
-  // policy RLS ausente no banco faça um link existente parecer inexistente.
+  // Fonte principal: leitura server-side. Assim o Painel 1 não depende de RLS
+  // anon para localizar um estabelecimento que já existe no Painel 2.
   try {
-    const privileged = await admin();
-    const { data, error } = await (privileged.from("businesses") as any)
-      .select(select)
-      .eq("slug", slug)
-      .maybeSingle();
-    if (!error && data) {
-      return { db: privileged as SupabaseClient<Database>, business: data as PublicBusiness };
+    const privileged = (await admin()) as SupabaseClient<Database>;
+    const result = await findBusiness(privileged, slug);
+    if (!result.error && result.data) {
+      return { db: privileged, business: result.data };
     }
-  } catch {
-    // O fallback público abaixo mantém a página disponível em ambientes sem secret.
+    privilegedFailure = result.error?.message ?? null;
+  } catch (error) {
+    privilegedFailure = error instanceof Error ? error.message : "Falha no acesso do servidor";
   }
 
+  // Fallback sem segredo: funciona quando as policies públicas estiverem ativas.
   const fallback = publicDb();
-  const { data, error } = await (fallback.from("businesses") as any)
-    .select(select)
-    .eq("slug", slug)
-    .maybeSingle();
-  if (error) throw new Error("Não foi possível carregar o estabelecimento. Tente novamente.");
-  return { db: fallback, business: (data as PublicBusiness | null) ?? null };
+  const result = await findBusiness(fallback, slug);
+  if (result.error) {
+    throw new Error("Não foi possível carregar o estabelecimento. Tente novamente.");
+  }
+  if (!result.data && privilegedFailure) {
+    throw new Error("Não foi possível acessar os dados do agendamento. Tente novamente em instantes.");
+  }
+  return { db: fallback, business: result.data };
 }
 
 function toIso(date: string, time: string) {
@@ -160,6 +189,7 @@ export const getPublicBookingPage = createServerFn({ method: "POST" })
 
     const activeServices = serviceRows ?? [];
     const visibleServices = activeServices.filter((service) => service.show_service !== false);
+    const config = await loadPanel1ConfigServer(db, business.id);
 
     const [logoUrl, services] = await Promise.all([
       signedStorageUrl(db, business.logo_url),
@@ -189,7 +219,8 @@ export const getPublicBookingPage = createServerFn({ method: "POST" })
         status: business.status,
         brand_primary: business.brand_primary,
         brand_background: business.brand_background,
-        booking_preferences: null,
+        booking_preferences: config.preferences,
+        booking_appearance: config.appearance,
         logo_url: logoUrl,
       },
       services,
@@ -258,24 +289,22 @@ export const getPublicServiceProfessionals = createServerFn({ method: "POST" })
   });
 
 /**
- * Reserva definitiva do Painel 1. Revalida expediente, bloqueios, profissional e
- * conflitos no servidor para impedir que um horário inválido seja gravado por
- * estado antigo do navegador ou por duas pessoas ao mesmo tempo.
+ * Reserva definitiva do Painel 1. Revalida expediente, bloqueios, profissional,
+ * preferências e conflitos no servidor antes de gravar.
  */
 export const reservePublicBooking = createServerFn({ method: "POST" })
   .inputValidator((value: unknown) => reservationSchema.parse(value))
   .handler(async ({ data }) => {
-    const db = await admin();
-
-    const { data: business, error: businessError } = await (db.from("businesses") as any)
-      .select("id, status")
-      .eq("slug", data.slug)
-      .maybeSingle();
-    if (businessError) throw new Error("Não foi possível validar o estabelecimento.");
+    const db = (await admin()) as SupabaseClient<Database>;
+    const businessResult = await findBusiness(db, data.slug);
+    if (businessResult.error) throw new Error("Não foi possível validar o estabelecimento.");
+    const business = businessResult.data;
     if (!business) throw new Error("Estabelecimento não encontrado.");
     if (business.status === "suspenso") {
       throw new Error("Os agendamentos deste estabelecimento estão temporariamente indisponíveis.");
     }
+
+    const config = await loadPanel1ConfigServer(db, business.id);
 
     const { data: service } = await db
       .from("services")
@@ -335,13 +364,10 @@ export const reservePublicBooking = createServerFn({ method: "POST" })
     if (!fitsWorkingHours) throw new Error("O horário escolhido está fora do expediente.");
 
     const startsAt = toIso(data.date, data.time);
-    if (
-      new Date(startsAt).getTime() <
-      Date.now() + DEFAULT_MINIMUM_NOTICE_HOURS * 60 * 60 * 1000
-    ) {
-      throw new Error(
-        `Este horário exige antecedência mínima de ${DEFAULT_MINIMUM_NOTICE_HOURS} horas. Escolha outro horário.`,
-      );
+    const minimumNoticeHours = config.preferences.minimum_notice_hours;
+    if (new Date(startsAt).getTime() < Date.now() + minimumNoticeHours * 60 * 60 * 1000) {
+      const label = minimumNoticeHours === 1 ? "1 hora" : `${minimumNoticeHours} horas`;
+      throw new Error(`Este horário exige antecedência mínima de ${label}. Escolha outro horário.`);
     }
     const endsAt = new Date(
       new Date(startsAt).getTime() + service.duration_minutes * 60_000,
