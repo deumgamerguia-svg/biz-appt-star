@@ -55,10 +55,9 @@ async function loadContext(appointmentId: string) {
     .maybeSingle();
   if (!appt?.customer_phone) return null;
 
+  // Usa * para não quebrar bancos em que booking_preferences ainda não foi aplicada.
   const { data: business } = await (supabaseAdmin.from("businesses") as any)
-    .select(
-      "id, name, whatsapp_instance, whatsapp_status, confirmation_template, reminder_template, booking_preferences",
-    )
+    .select("*")
     .eq("id", appt.business_id)
     .maybeSingle();
   if (!business?.whatsapp_instance || business.whatsapp_status !== "conectado") return null;
