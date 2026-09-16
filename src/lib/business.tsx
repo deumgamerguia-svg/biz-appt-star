@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -34,20 +34,10 @@ const BusinessContext = createContext<BusinessState>({
   refresh: () => {},
 });
 
-const slugify = (value: string) =>
-  value
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "")
-    .slice(0, 36);
-
 export function BusinessProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [businessId, setBusinessIdState] = useState<string | null>(null);
-  const bootstrapRef = useRef<string | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ["businesses", user?.id],
@@ -64,37 +54,8 @@ export function BusinessProvider({ children }: { children: ReactNode }) {
 
   const businesses = useMemo(() => data ?? [], [data]);
 
-  useEffect(() => {
-    if (!user || isLoading || businesses.length > 0) return;
-    if (bootstrapRef.current === user.id) return;
-    bootstrapRef.current = user.id;
-
-    void (async () => {
-      const metadataName =
-        typeof user.user_metadata?.full_name === "string" ? user.user_metadata.full_name.trim() : "";
-      const metadataPhone =
-        typeof user.user_metadata?.phone === "string" ? user.user_metadata.phone.replace(/\D/g, "") : null;
-      const name = metadataName || "Meu estabelecimento";
-      const base = slugify(name) || "estabelecimento";
-      const slug = `${base}-${user.id.slice(0, 8)}`;
-
-      const { error } = await supabase.from("businesses").insert({
-        owner_id: user.id,
-        name,
-        slug,
-        category: "outro",
-        phone: metadataPhone,
-      });
-
-      if (error && !error.message.toLowerCase().includes("duplicate")) {
-        bootstrapRef.current = null;
-        return;
-      }
-
-      await queryClient.invalidateQueries({ queryKey: ["businesses", user.id] });
-    })();
-  }, [businesses.length, isLoading, queryClient, user]);
-
+  // O Painel 2 nunca cria negócio implicitamente. O vínculo nasce no Painel 3
+  // (Master) e esta camada apenas seleciona os negócios aos quais o usuário tem acesso.
   useEffect(() => {
     if (!businesses.length) {
       setBusinessIdState(null);
@@ -102,13 +63,14 @@ export function BusinessProvider({ children }: { children: ReactNode }) {
     }
     const stored = typeof window !== "undefined" ? window.localStorage.getItem(STORAGE_KEY) : null;
     setBusinessIdState((current) => {
-      if (current && businesses.some((b) => b.id === current)) return current;
-      if (stored && businesses.some((b) => b.id === stored)) return stored;
+      if (current && businesses.some((business) => business.id === current)) return current;
+      if (stored && businesses.some((business) => business.id === stored)) return stored;
       return businesses[0]!.id;
     });
   }, [businesses]);
 
   const setBusinessId = (id: string) => {
+    if (!businesses.some((business) => business.id === id)) return;
     window.localStorage.setItem(STORAGE_KEY, id);
     setBusinessIdState(id);
   };
@@ -116,9 +78,9 @@ export function BusinessProvider({ children }: { children: ReactNode }) {
   const value: BusinessState = {
     businesses,
     businessId,
-    business: businesses.find((b) => b.id === businessId) ?? null,
+    business: businesses.find((business) => business.id === businessId) ?? null,
     setBusinessId,
-    loading: isLoading || (!!user && !businesses.length),
+    loading: isLoading,
     refresh: () => {
       void queryClient.invalidateQueries({ queryKey: ["businesses"] });
     },
