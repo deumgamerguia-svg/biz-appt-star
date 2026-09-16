@@ -122,14 +122,31 @@ function BloqueiosPage() {
                 <DialogTitle>Novo bloqueio</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="brec"
-                    checked={form.recurring}
-                    onCheckedChange={(v) => setForm({ ...form, recurring: v === true })}
-                  />
-                  <Label htmlFor="brec">Repetir toda semana</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setForm({ ...form, recurring: true })}
+                    className={`inline-flex min-h-10 items-center justify-center rounded-md border px-3 text-sm font-semibold transition-colors ${
+                      form.recurring
+                        ? "border-[#8f9eea] bg-[#8f9eea] text-white"
+                        : "border-[#00c8e8] bg-transparent text-[#00c8e8] hover:bg-[#00c8e8]/10"
+                    }`}
+                  >
+                    <Plus className="mr-1 size-4" /> Bloqueio de semana
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setForm({ ...form, recurring: false })}
+                    className={`inline-flex min-h-10 items-center justify-center rounded-md border px-3 text-sm font-semibold transition-colors ${
+                      !form.recurring
+                        ? "border-[#8f9eea] bg-[#8f9eea] text-white"
+                        : "border-[#00c8e8] bg-transparent text-[#00c8e8] hover:bg-[#00c8e8]/10"
+                    }`}
+                  >
+                    <Plus className="mr-1 size-4" /> Bloqueio de dia
+                  </button>
                 </div>
+
                 {form.recurring ? (
                   <div className="space-y-2">
                     <Label>Dia da semana</Label>
@@ -151,7 +168,7 @@ function BloqueiosPage() {
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    <Label htmlFor="bdate">Data</Label>
+                    <Label htmlFor="bdate">Data específica</Label>
                     <Input
                       id="bdate"
                       type="date"
