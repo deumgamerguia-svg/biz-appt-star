@@ -38,7 +38,8 @@ type Preferences = {
   list_dates_days: number;
   cancellations_enabled: boolean;
   cancellation_notice_minutes: number;
-  reschedule: boolean;
+  reschedule_enabled: boolean;
+  reschedule_notice_minutes: number;
   greeting: string;
 };
 
@@ -56,7 +57,8 @@ const DEFAULT_PREFERENCES: Preferences = {
   list_dates_days: 15,
   cancellations_enabled: true,
   cancellation_notice_minutes: 0,
-  reschedule: true,
+  reschedule_enabled: false,
+  reschedule_notice_minutes: 0,
   greeting: "Agende seu horário",
 };
 
@@ -149,6 +151,30 @@ const CANCELLATION_OPTIONS: Array<readonly [number, string]> = [
   [960, "16 Horas"],
 ];
 
+const RESCHEDULE_OPTIONS: Array<readonly [number, string]> = [
+  [0, "0 Minutos"],
+  [30, "30 Minutos"],
+  [40, "40 Minutos"],
+  [45, "45 Minutos"],
+  [50, "50 Minutos"],
+  [60, "1 Hora"],
+  [90, "1 Hora e 30 Minutos"],
+  [120, "2 Horas"],
+  [180, "3 Horas"],
+  [240, "4 Horas"],
+  [300, "5 Horas"],
+  [360, "6 Horas"],
+  [420, "7 Horas"],
+  [480, "8 Horas"],
+  [540, "9 Horas"],
+  [600, "10 Horas"],
+  [660, "11 Horas"],
+  [720, "12 Horas"],
+  [840, "14 Horas"],
+  [960, "16 Horas"],
+  [1440, "24 Horas"],
+];
+
 function ConfiguracoesPage() {
   const { businessId } = useBusiness();
   const { secao } = Route.useSearch();
@@ -190,7 +216,10 @@ function PreferencesSettings({ businessId }: { businessId: string }) {
         .maybeSingle();
       if (error) throw error;
       return data as {
-        booking_preferences?: Partial<Preferences> & { cancellations?: boolean };
+        booking_preferences?: Partial<Preferences> & {
+          cancellations?: boolean;
+          reschedule?: boolean;
+        };
         reminder_enabled?: boolean;
         reminder_hours_before?: number;
       } | null;
@@ -221,6 +250,8 @@ function PreferencesSettings({ businessId }: { businessId: string }) {
       reminder_hours_before: data.reminder_hours_before ?? stored.reminder_hours_before ?? 10,
       cancellations_enabled: stored.cancellations_enabled ?? stored.cancellations ?? true,
       cancellation_notice_minutes: Number(stored.cancellation_notice_minutes ?? 0),
+      reschedule_enabled: stored.reschedule_enabled ?? stored.reschedule ?? false,
+      reschedule_notice_minutes: Number(stored.reschedule_notice_minutes ?? 0),
     });
   }, [data]);
 
@@ -239,6 +270,10 @@ function PreferencesSettings({ businessId }: { businessId: string }) {
         cancellation_notice_minutes: Math.max(
           0,
           Math.min(960, Math.floor(Number(prefs.cancellation_notice_minutes) || 0)),
+        ),
+        reschedule_notice_minutes: Math.max(
+          0,
+          Math.min(1440, Math.floor(Number(prefs.reschedule_notice_minutes) || 0)),
         ),
       };
       const { error } = await (supabase.from("businesses") as any)
@@ -523,13 +558,47 @@ function PreferencesSettings({ businessId }: { businessId: string }) {
             )}
 
             {selected === "reschedule" && (
-              <ToggleSetting
-                title="Remarcar"
-                description="Permite recursos de remarcação para os clientes."
-                checked={prefs.reschedule}
-                onChange={(reschedule) => setPrefs({ ...prefs, reschedule })}
-              />
+              <div>
+                <h2 className="text-2xl font-medium tracking-[-0.025em] text-[#f4f5f7]">
+                  Remarcação
+                </h2>
+                <p className="mt-3 max-w-xl text-sm leading-6 text-[#8b929d]">
+                  Permissão para o cliente remarcar o agendamento.
+                </p>
+
+                <div className="mt-12 grid gap-4 sm:grid-cols-2">
+                  <label className="space-y-2">
+                    <span className="block text-sm font-semibold leading-5 text-[#f4f5f7]">
+                      Permitir remarcação dos clientes
+                    </span>
+                    <NativeSelect
+                      value={prefs.reschedule_enabled ? "permitido" : "bloqueado"}
+                      onChange={(value) =>
+                        setPrefs({ ...prefs, reschedule_enabled: value === "permitido" })
+                      }
+                      options={[
+                        ["bloqueado", "Não Permitido"],
+                        ["permitido", "Permitido"],
+                      ]}
+                    />
+                  </label>
+
+                  <label className="space-y-2">
+                    <span className="block text-sm font-semibold leading-5 text-[#f4f5f7]">
+                      Tempo antecedente para remarcar
+                    </span>
+                    <NativeSelect
+                      value={prefs.reschedule_notice_minutes}
+                      onChange={(value) =>
+                        setPrefs({ ...prefs, reschedule_notice_minutes: Number(value) })
+                      }
+                      options={RESCHEDULE_OPTIONS}
+                    />
+                  </label>
+                </div>
+              </div>
             )}
+
             {selected === "greeting" && (
               <SettingBlock
                 title="Saudação"
