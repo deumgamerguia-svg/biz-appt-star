@@ -70,6 +70,8 @@ export function BookingThemeBridge() {
       const serviceHoverBorder = safeColor(appearance.service_hover_border, "#1677ff");
       const modalBackground = safeColor(appearance.modal_background, "#0b0d0f");
       const modalText = safeColor(appearance.modal_text, pageText);
+      const modalActiveBackground = safeColor(appearance.modal_active_background, "#10294a");
+      const modalActiveText = safeColor(appearance.modal_active_text, "#5da8ff");
       const modalBorder = safeColor(appearance.modal_border, "#2a2d32");
       const agendaBackground = safeColor(appearance.agenda_background, "#0b0d0f");
       const agendaText = safeColor(appearance.agenda_text, pageText);
@@ -97,8 +99,14 @@ export function BookingThemeBridge() {
           border-color:${modalBorder} !important;
         }
         body[data-booking-theme="true"] [role="dialog"] button.border {
+          background:${agendaBackground};
           border-color:${agendaBorder};
           color:${agendaText};
+        }
+        body[data-booking-theme="true"] [role="dialog"] button[class*="bg-primary"] {
+          background:${modalActiveBackground} !important;
+          color:${modalActiveText} !important;
+          border-color:${modalActiveText} !important;
         }
       `;
     })();
