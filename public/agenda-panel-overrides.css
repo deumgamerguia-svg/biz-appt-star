@@ -106,3 +106,17 @@
 .owner-panel aside > a[href="/painel"] > img {
   transform: translateX(-3px);
 }
+
+/* Sidebar — oculta somente a barra visual de rolagem, mantendo o scroll funcional. */
+.owner-panel aside,
+.owner-panel aside nav {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.owner-panel aside::-webkit-scrollbar,
+.owner-panel aside nav::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
