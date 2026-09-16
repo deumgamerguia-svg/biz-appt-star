@@ -9,7 +9,6 @@ import {
   STATUSES,
   statusLabel,
   toDateInput,
-  localToIso,
   addMinutesIso,
   formatPrice,
 } from "@/lib/format";
@@ -37,9 +36,15 @@ export const Route = createFileRoute("/_authenticated/painel/")({
   head: () => ({
     meta: [
       { title: "Agenda do dia — Agenda Agora" },
-      { name: "description", content: "Veja e gerencie os agendamentos do dia do seu negócio." },
+      {
+        name: "description",
+        content: "Veja e gerencie os agendamentos do dia do seu negócio.",
+      },
       { property: "og:title", content: "Agenda do dia — Agenda Agora" },
-      { property: "og:description", content: "Veja e gerencie os agendamentos do dia." },
+      {
+        property: "og:description",
+        content: "Veja e gerencie os agendamentos do dia.",
+      },
     ],
   }),
   component: AgendaPage,
@@ -52,7 +57,18 @@ type ScheduleBlock = {
   starts_at: string;
   ends_at: string;
   reason: string | null;
+  recurring: boolean;
+  block_date: string | null;
 };
+
+type ServiceLink = {
+  service_id: string;
+  professional_id: string;
+};
+
+const SLOT_MINUTES = 30;
+const DAY_BLOCK_REASON = "Dia bloqueado pela agenda";
+const QUICK_BLOCK_REASON = "Bloqueio rápido pela agenda";
 
 function minutesOf(time: string) {
   const [hour, minute] = time.slice(0, 5).split(":").map(Number);
@@ -69,20 +85,28 @@ function buildSlots(hours: ScheduleHour[]) {
   for (const hour of hours) {
     const start = minutesOf(hour.starts_at);
     const end = minutesOf(hour.ends_at);
-    for (let cursor = start; cursor < end; cursor += 60) slots.add(timeOf(cursor));
+    for (let cursor = start; cursor < end; cursor += SLOT_MINUTES) {
+      slots.add(timeOf(cursor));
+    }
   }
   return [...slots].sort((a, b) => minutesOf(a) - minutesOf(b));
 }
 
-function slotOf(iso: string) {
-  const value = new Date(iso).toLocaleTimeString("pt-BR", {
+function timeFromIso(iso: string) {
+  return new Date(iso).toLocaleTimeString("pt-BR", {
     timeZone: "America/Sao_Paulo",
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
   });
-  const [hour] = value.split(":");
-  return `${hour}:00`;
+}
+
+function toAgendaIso(date: string, time: string) {
+  return new Date(`${date}T${time}:00-03:00`).toISOString();
+}
+
+function overlaps(start: number, end: number, otherStart: number, otherEnd: number) {
+  return start < otherEnd && end > otherStart;
 }
 
 const emptyForm = {
@@ -100,6 +124,7 @@ function AgendaPage() {
   const [day, setDay] = useState(() => toDateInput(new Date()));
   const [open, setOpen] = useState(false);
   const [detail, setDetail] = useState<string | null>(null);
+  const [showCancelled, setShowCancelled] = useState(true);
   const [form, setForm] = useState(emptyForm);
   const weekdayNumber = new Date(`${day}T12:00:00-03:00`).getDay();
 
@@ -124,12 +149,25 @@ function AgendaPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("professionals")
-        .select("*")
+        .select("id, name, working_days")
         .eq("business_id", businessId!)
         .eq("active", true)
         .order("name");
       if (error) throw error;
       return data;
+    },
+  });
+
+  const { data: serviceLinks } = useQuery({
+    queryKey: ["service-links", businessId],
+    enabled: !!businessId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("service_professionals")
+        .select("service_id, professional_id")
+        .eq("business_id", businessId!);
+      if (error) throw error;
+      return data as ServiceLink[];
     },
   });
 
@@ -154,13 +192,13 @@ function AgendaPage() {
     queryFn: async () => {
       const recurringQuery = supabase
         .from("time_blocks")
-        .select("id, professional_id, starts_at, ends_at, reason")
+        .select("id, professional_id, starts_at, ends_at, reason, recurring, block_date")
         .eq("business_id", businessId!)
         .eq("recurring", true)
         .eq("weekday", weekdayNumber);
       const specificQuery = supabase
         .from("time_blocks")
-        .select("id, professional_id, starts_at, ends_at, reason")
+        .select("id, professional_id, starts_at, ends_at, reason, recurring, block_date")
         .eq("business_id", businessId!)
         .eq("recurring", false)
         .eq("block_date", day);
@@ -194,57 +232,214 @@ function AgendaPage() {
     queryClient.invalidateQueries({ queryKey: ["appointments", businessId, day] });
 
   const invalidateBlocks = () =>
-    queryClient.invalidateQueries({ queryKey: ["time_blocks", businessId, day, weekdayNumber] });
+    queryClient.invalidateQueries({
+      queryKey: ["time_blocks", businessId, day, weekdayNumber],
+    });
+
+  const validateAppointment = () => {
+    const customerName = form.customer_name.trim();
+    if (!customerName) throw new Error("Informe o nome do cliente.");
+    if (!form.service_id) throw new Error("Selecione um serviço.");
+
+    const service = services?.find((item) => item.id === form.service_id);
+    if (!service) throw new Error("O serviço selecionado não está mais disponível.");
+
+    const linkedProfessionals = (serviceLinks ?? []).filter(
+      (link) => link.service_id === service.id,
+    );
+    if (linkedProfessionals.length) {
+      if (!form.professional_id) {
+        throw new Error("Selecione um profissional habilitado para este serviço.");
+      }
+      if (!linkedProfessionals.some((link) => link.professional_id === form.professional_id)) {
+        throw new Error("Este profissional não está vinculado ao serviço selecionado.");
+      }
+    }
+
+    if (form.professional_id) {
+      const professional = professionals?.find((item) => item.id === form.professional_id);
+      if (!professional) throw new Error("O profissional selecionado não está mais disponível.");
+      if (!(professional.working_days ?? []).includes(weekdayNumber)) {
+        throw new Error("Este profissional não atende no dia selecionado.");
+      }
+    }
+
+    const startMinute = minutesOf(form.time);
+    const endMinute = startMinute + service.duration_minutes;
+    const isInsideBusinessHours = (businessHours ?? []).some(
+      (hour) =>
+        startMinute >= minutesOf(hour.starts_at) && endMinute <= minutesOf(hour.ends_at),
+    );
+    if (!isInsideBusinessHours) {
+      throw new Error("O horário e a duração do serviço precisam caber dentro do expediente.");
+    }
+
+    const conflictingBlock = (timeBlocks ?? []).find((block) => {
+      const appliesToProfessional =
+        !block.professional_id || block.professional_id === form.professional_id;
+      return (
+        appliesToProfessional &&
+        overlaps(
+          startMinute,
+          endMinute,
+          minutesOf(block.starts_at),
+          minutesOf(block.ends_at),
+        )
+      );
+    });
+    if (conflictingBlock) {
+      throw new Error("Esse período está bloqueado. Desbloqueie o horário ou escolha outro.");
+    }
+
+    const conflictingAppointment = (appointments ?? []).find((appointment) => {
+      if (appointment.status === "cancelado" || appointment.status === "aguardando_sinal") {
+        return false;
+      }
+      if (
+        form.professional_id &&
+        appointment.professional_id &&
+        appointment.professional_id !== form.professional_id
+      ) {
+        return false;
+      }
+      const appointmentStart = minutesOf(timeFromIso(appointment.starts_at));
+      const appointmentEnd = minutesOf(timeFromIso(appointment.ends_at));
+      return overlaps(startMinute, endMinute, appointmentStart, appointmentEnd);
+    });
+    if (conflictingAppointment) {
+      throw new Error("Já existe um agendamento ocupando esse período.");
+    }
+
+    const startsAt = toAgendaIso(day, form.time);
+    return {
+      service,
+      startsAt,
+      endsAt: addMinutesIso(startsAt, service.duration_minutes),
+      customerName,
+    };
+  };
 
   const create = useMutation({
     mutationFn: async () => {
-      const service = services?.find((s) => s.id === form.service_id);
-      const startsAt = localToIso(day, form.time);
+      const { startsAt, endsAt, customerName } = validateAppointment();
       const { error } = await supabase.from("appointments").insert({
         business_id: businessId!,
-        service_id: form.service_id || null,
+        service_id: form.service_id,
         professional_id: form.professional_id || null,
-        customer_name: form.customer_name,
-        customer_phone: form.customer_phone || null,
+        customer_name: customerName,
+        customer_phone: form.customer_phone.trim() || null,
         starts_at: startsAt,
-        ends_at: addMinutesIso(startsAt, service?.duration_minutes ?? 30),
-        notes: form.notes || null,
+        ends_at: endsAt,
+        notes: form.notes.trim() || null,
+        status: "agendado",
       });
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Agendamento criado!");
+      toast.success("Agendamento criado e salvo na agenda.");
       setOpen(false);
       setForm(emptyForm);
       void invalidateAppointments();
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (error: Error) => toast.error(error.message),
   });
 
   const blockSlot = useMutation({
     mutationFn: async (time: string) => {
+      const startMinute = minutesOf(time);
+      const endMinute = startMinute + SLOT_MINUTES;
+      const hasAppointment = (appointments ?? []).some((appointment) => {
+        if (appointment.status === "cancelado" || appointment.status === "aguardando_sinal") {
+          return false;
+        }
+        return overlaps(
+          startMinute,
+          endMinute,
+          minutesOf(timeFromIso(appointment.starts_at)),
+          minutesOf(timeFromIso(appointment.ends_at)),
+        );
+      });
+      if (hasAppointment) {
+        throw new Error("Não é possível bloquear um período que já possui agendamento.");
+      }
+
+      const alreadyBlocked = (timeBlocks ?? []).some(
+        (block) =>
+          !block.professional_id &&
+          overlaps(
+            startMinute,
+            endMinute,
+            minutesOf(block.starts_at),
+            minutesOf(block.ends_at),
+          ),
+      );
+      if (alreadyBlocked) throw new Error("Este período já está bloqueado.");
+
       const { error } = await supabase.from("time_blocks").insert({
         business_id: businessId!,
         recurring: false,
         block_date: day,
         weekday: null,
         starts_at: time,
-        ends_at: timeOf(minutesOf(time) + 60),
-        reason: "Bloqueio rápido pela agenda",
+        ends_at: timeOf(endMinute),
+        reason: QUICK_BLOCK_REASON,
       });
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Horário bloqueado.");
+      toast.success("Horário bloqueado e salvo.");
       void invalidateBlocks();
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (error: Error) => toast.error(error.message),
   });
 
-  const blockDay = useMutation({
+  const unblockSlot = useMutation({
+    mutationFn: async (block: ScheduleBlock) => {
+      if (block.recurring) {
+        throw new Error("Bloqueios recorrentes devem ser alterados na tela Bloqueios.");
+      }
+      const { error } = await supabase
+        .from("time_blocks")
+        .delete()
+        .eq("id", block.id)
+        .eq("business_id", businessId!);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Horário desbloqueado.");
+      void invalidateBlocks();
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  const dayBlocks = (timeBlocks ?? []).filter(
+    (block) =>
+      !block.recurring &&
+      !block.professional_id &&
+      block.block_date === day &&
+      block.reason === DAY_BLOCK_REASON,
+  );
+  const dayBlocked = dayBlocks.length > 0;
+
+  const toggleDayBlock = useMutation({
     mutationFn: async () => {
+      if (dayBlocks.length) {
+        const { error } = await supabase
+          .from("time_blocks")
+          .delete()
+          .eq("business_id", businessId!)
+          .in(
+            "id",
+            dayBlocks.map((block) => block.id),
+          );
+        if (error) throw error;
+        return "unblocked" as const;
+      }
+
       const hours = businessHours ?? [];
-      if (!hours.length) throw new Error("Configure primeiro os horários de funcionamento deste dia.");
+      if (!hours.length) {
+        throw new Error("Configure primeiro os horários de funcionamento deste dia.");
+      }
       const rows = hours.map((hour) => ({
         business_id: businessId!,
         recurring: false,
@@ -252,36 +447,55 @@ function AgendaPage() {
         weekday: null,
         starts_at: hour.starts_at,
         ends_at: hour.ends_at,
-        reason: "Dia bloqueado pela agenda",
+        reason: DAY_BLOCK_REASON,
       }));
       const { error } = await supabase.from("time_blocks").insert(rows);
       if (error) throw error;
+      return "blocked" as const;
     },
-    onSuccess: () => {
-      toast.success("Dia bloqueado para novos agendamentos.");
+    onSuccess: (action) => {
+      toast.success(
+        action === "blocked"
+          ? "Dia bloqueado para novos agendamentos."
+          : "Dia desbloqueado para novos agendamentos.",
+      );
       void invalidateBlocks();
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (error: Error) => toast.error(error.message),
   });
 
   const setStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const { error } = await supabase.from("appointments").update({ status }).eq("id", id);
+      const { error } = await supabase
+        .from("appointments")
+        .update({ status })
+        .eq("id", id)
+        .eq("business_id", businessId!);
       if (error) throw error;
+      return status;
     },
-    onSuccess: () => void invalidateAppointments(),
+    onSuccess: (status) => {
+      toast.success(`Situação alterada para ${statusLabel(status)}.`);
+      void invalidateAppointments();
+    },
+    onError: (error: Error) => toast.error(error.message),
   });
 
   const remove = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("appointments").delete().eq("id", id);
+      const { error } = await supabase
+        .from("appointments")
+        .delete()
+        .eq("id", id)
+        .eq("business_id", businessId!);
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Agendamento removido.");
+      toast.success("Agendamento removido da agenda.");
       setDetail(null);
       void invalidateAppointments();
     },
+    onError: (error: Error) => toast.error(error.message),
   });
 
   if (!businessId) return <NoBusiness />;
@@ -292,10 +506,21 @@ function AgendaPage() {
     setDay(toDateInput(next));
   };
 
-  const slots = buildSlots(businessHours ?? []);
-  const bySlot = new Map<string, (typeof appointments extends (infer T)[] | undefined ? T : never)[]>();
-  for (const appointment of appointments ?? []) {
-    const key = slotOf(appointment.starts_at);
+  const baseSlots = buildSlots(businessHours ?? []);
+  const timelineSlots = [
+    ...new Set([
+      ...baseSlots,
+      ...(appointments ?? []).map((appointment) => timeFromIso(appointment.starts_at)),
+    ]),
+  ].sort((a, b) => minutesOf(a) - minutesOf(b));
+
+  type Appointment = NonNullable<typeof appointments>[number];
+  const visibleAppointments = (appointments ?? []).filter(
+    (appointment) => showCancelled || appointment.status !== "cancelado",
+  );
+  const bySlot = new Map<string, Appointment[]>();
+  for (const appointment of visibleAppointments) {
+    const key = timeFromIso(appointment.starts_at);
     bySlot.set(key, [...(bySlot.get(key) ?? []), appointment]);
   }
 
@@ -313,6 +538,7 @@ function AgendaPage() {
     weekday: "long",
     timeZone: "America/Sao_Paulo",
   });
+
   const total = (appointments ?? []).reduce(
     (sum, appointment) =>
       appointment.status !== "cancelado" && appointment.status !== "bloqueado"
@@ -320,24 +546,84 @@ function AgendaPage() {
         : sum,
     0,
   );
-  const selected = (appointments ?? []).find((appointment) => appointment.id === detail) ?? null;
-  const freeSlots = slots.filter((slot) => {
-    const hasBusyAppointment = (bySlot.get(slot) ?? []).some((appointment) => appointment.status !== "cancelado");
-    return !hasBusyAppointment && !blockForSlot(slot);
+
+  const selected =
+    (appointments ?? []).find((appointment) => appointment.id === detail) ?? null;
+
+  const freeSlots = baseSlots.filter((slot) => {
+    const startMinute = minutesOf(slot);
+    const endMinute = startMinute + SLOT_MINUTES;
+    const hasBusyAppointment = (appointments ?? []).some((appointment) => {
+      if (appointment.status === "cancelado" || appointment.status === "aguardando_sinal") {
+        return false;
+      }
+      return overlaps(
+        startMinute,
+        endMinute,
+        minutesOf(timeFromIso(appointment.starts_at)),
+        minutesOf(timeFromIso(appointment.ends_at)),
+      );
+    });
+    const hasBlock = (timeBlocks ?? []).some(
+      (block) =>
+        !block.professional_id &&
+        overlaps(
+          startMinute,
+          endMinute,
+          minutesOf(block.starts_at),
+          minutesOf(block.ends_at),
+        ),
+    );
+    return !hasBusyAppointment && !hasBlock;
   });
+
   const scheduleLabel = (businessHours ?? [])
     .map((hour) => `${hour.starts_at.slice(0, 5)}–${hour.ends_at.slice(0, 5)}`)
     .join(" · ");
+
+  const linkedForSelectedService = (serviceLinks ?? []).filter(
+    (link) => link.service_id === form.service_id,
+  );
+  const linkedIds = new Set(linkedForSelectedService.map((link) => link.professional_id));
+  const eligibleProfessionals = (professionals ?? []).filter((professional) => {
+    const worksToday = (professional.working_days ?? []).includes(weekdayNumber);
+    const linked = !linkedForSelectedService.length || linkedIds.has(professional.id);
+    return worksToday && linked;
+  });
 
   const openNewAt = (time: string) => {
     setForm({ ...emptyForm, time });
     setOpen(true);
   };
 
+  const handleServiceChange = (serviceId: string) => {
+    const links = (serviceLinks ?? []).filter((link) => link.service_id === serviceId);
+    setForm((current) => ({
+      ...current,
+      service_id: serviceId,
+      professional_id:
+        current.professional_id &&
+        (!links.length || links.some((link) => link.professional_id === current.professional_id))
+          ? current.professional_id
+          : "",
+    }));
+  };
+
+  const handleDelete = () => {
+    if (!selected) return;
+    if (!window.confirm(`Excluir o agendamento de ${selected.customer_name}?`)) return;
+    remove.mutate(selected.id);
+  };
+
   return (
     <div>
       <div className="flex items-center gap-2">
-        <Button variant="outline" size="icon" onClick={() => shiftDay(-1)} aria-label="Dia anterior">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => shiftDay(-1)}
+          aria-label="Dia anterior"
+        >
           <ChevronLeft className="size-4" />
         </Button>
         <Input
@@ -347,7 +633,12 @@ function AgendaPage() {
           onChange={(event) => setDay(event.target.value)}
           aria-label="Data da agenda"
         />
-        <Button variant="outline" size="icon" onClick={() => shiftDay(1)} aria-label="Próximo dia">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => shiftDay(1)}
+          aria-label="Próximo dia"
+        >
           <ChevronRight className="size-4" />
         </Button>
       </div>
@@ -361,8 +652,9 @@ function AgendaPage() {
 
       <button
         type="button"
-        onClick={() => openNewAt(freeSlots[0] ?? slots[0] ?? "09:00")}
-        className="mt-2 ml-12 w-44 rounded-md bg-warning/70 px-4 py-2.5 text-[0.82rem] font-medium text-warning-foreground transition-opacity hover:opacity-90"
+        onClick={() => openNewAt(freeSlots[0] ?? baseSlots[0] ?? "09:00")}
+        disabled={!baseSlots.length}
+        className="mt-2 ml-12 w-44 rounded-md bg-warning/70 px-4 py-2.5 text-[0.82rem] font-medium text-warning-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
       >
         Encaixe
       </button>
@@ -374,20 +666,31 @@ function AgendaPage() {
         <div>
           <h1 className="text-[1.2rem] font-medium">Agenda</h1>
           <p className="text-xs text-muted-foreground">
-            {freeSlots.length} horário(s) livre(s) neste dia
+            {freeSlots.length} horário(s) base livre(s) neste dia
           </p>
         </div>
         <div className="ml-auto flex gap-2">
-          <Button variant="secondary" size="icon" aria-label="Visualizar">
-            <Eye className="size-4" />
-          </Button>
           <Button
             variant="secondary"
             size="icon"
-            aria-label="Bloquear dia"
-            title="Bloquear todos os horários deste dia"
-            onClick={() => blockDay.mutate()}
-            disabled={blockDay.isPending || !slots.length}
+            aria-label={showCancelled ? "Ocultar cancelados" : "Mostrar cancelados"}
+            title={showCancelled ? "Ocultar agendamentos cancelados" : "Mostrar agendamentos cancelados"}
+            aria-pressed={showCancelled}
+            onClick={() => setShowCancelled((value) => !value)}
+          >
+            <Eye className="size-4" />
+          </Button>
+          <Button
+            variant={dayBlocked ? "destructive" : "secondary"}
+            size="icon"
+            aria-label={dayBlocked ? "Desbloquear dia" : "Bloquear dia"}
+            title={
+              dayBlocked
+                ? "Desbloquear os horários bloqueados por esta ação"
+                : "Bloquear todos os horários deste dia"
+            }
+            onClick={() => toggleDayBlock.mutate()}
+            disabled={toggleDayBlock.isPending || !baseSlots.length}
           >
             <CalendarX2 className="size-4" />
           </Button>
@@ -396,18 +699,20 @@ function AgendaPage() {
 
       <div className="mt-3 overflow-hidden rounded-md border border-border">
         <div className="h-8 bg-secondary" />
-        {!slots.length ? (
+        {!timelineSlots.length ? (
           <div className="px-6 py-10 text-center">
             <p className="text-sm font-medium">Nenhum horário disponível neste dia</p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Configure os dias fixos e horários de trabalho na opção Funcionamento da barra lateral.
+              Configure os dias fixos e horários de trabalho na opção Funcionamento da barra
+              lateral.
             </p>
           </div>
         ) : (
           <ul>
-            {slots.map((slot) => {
+            {timelineSlots.map((slot) => {
               const items = bySlot.get(slot) ?? [];
               const block = blockForSlot(slot);
+
               if (!items.length && block) {
                 return (
                   <li key={slot}>
@@ -415,9 +720,26 @@ function AgendaPage() {
                       <span className="w-14 font-bold">{slot}</span>
                       <span className="flex-1 text-center text-sm font-medium">
                         Horário bloqueado
-                        {block.reason ? <span className="ml-2 text-xs opacity-75">{block.reason}</span> : null}
+                        {block.reason ? (
+                          <span className="ml-2 text-xs opacity-75">{block.reason}</span>
+                        ) : null}
                       </span>
-                      <span className="w-16" />
+                      <span className="w-24 text-right">
+                        {block.recurring ? (
+                          <span className="text-[10px] font-semibold uppercase opacity-70">
+                            Recorrente
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => unblockSlot.mutate(block)}
+                            disabled={unblockSlot.isPending}
+                            className="rounded-md bg-background/30 px-2 py-1 text-[11px] font-semibold transition-opacity hover:opacity-80 disabled:opacity-50"
+                          >
+                            Desbloquear
+                          </button>
+                        )}
+                      </span>
                     </div>
                   </li>
                 );
@@ -435,13 +757,14 @@ function AgendaPage() {
                       <span className="flex-1 text-center text-xs font-medium uppercase tracking-wide opacity-70">
                         Disponível
                       </span>
-                      <span className="w-16" />
+                      <span className="w-24" />
                     </button>
                     <button
                       type="button"
                       onClick={() => blockSlot.mutate(slot)}
+                      disabled={blockSlot.isPending}
                       aria-label={`Bloquear ${slot}`}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md bg-slot-blocked px-2 py-1 text-[11px] font-semibold text-slot-blocked-foreground opacity-0 transition-opacity group-hover:opacity-100"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md bg-slot-blocked px-2 py-1 text-[11px] font-semibold text-slot-blocked-foreground opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100 disabled:opacity-50"
                     >
                       Bloquear
                     </button>
@@ -462,6 +785,7 @@ function AgendaPage() {
                       : "bg-slot-booked text-slot-booked-foreground";
                 const price =
                   (appointment.services as { price_cents: number } | null)?.price_cents ?? 0;
+
                 return (
                   <li key={appointment.id}>
                     <button
@@ -469,13 +793,20 @@ function AgendaPage() {
                       onClick={() => setDetail(appointment.id)}
                       className={`flex w-full items-center gap-4 border-b border-background px-4 py-2.5 text-left transition-opacity hover:opacity-90 ${tone}`}
                     >
-                      <span className="w-14 font-bold">{slot}</span>
+                      <span className="w-14 font-bold">{timeFromIso(appointment.starts_at)}</span>
                       <span className="flex-1 text-center text-sm">
                         <span className="block font-medium">
                           {blocked ? "Horário bloqueado" : appointment.customer_name}
                         </span>
                         {!blocked && appointment.customer_phone && (
-                          <span className="block text-xs opacity-80">{appointment.customer_phone}</span>
+                          <span className="block text-xs opacity-80">
+                            {appointment.customer_phone}
+                          </span>
+                        )}
+                        {!blocked && appointment.professionals && (
+                          <span className="block text-[11px] opacity-70">
+                            {(appointment.professionals as { name: string }).name}
+                          </span>
                         )}
                       </span>
                       {!blocked && (
@@ -497,7 +828,8 @@ function AgendaPage() {
       </div>
 
       <p className="mt-4 text-right text-sm text-muted-foreground">
-        {(appointments ?? []).length} agendamento(s) · {freeSlots.length} livre(s) · {formatPrice(total)}
+        {(appointments ?? []).length} agendamento(s) · {freeSlots.length} livre(s) ·{" "}
+        {formatPrice(total)}
       </p>
 
       <Dialog open={open} onOpenChange={setOpen}>
@@ -524,12 +856,10 @@ function AgendaPage() {
                 />
               </div>
             </div>
+
             <div className="space-y-2">
               <Label>Serviço</Label>
-              <Select
-                value={form.service_id}
-                onValueChange={(value) => setForm({ ...form, service_id: value })}
-              >
+              <Select value={form.service_id} onValueChange={handleServiceChange}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione um serviço" />
                 </SelectTrigger>
@@ -542,25 +872,38 @@ function AgendaPage() {
                 </SelectContent>
               </Select>
             </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Profissional</Label>
                 <Select
-                  value={form.professional_id}
+                  value={form.professional_id || undefined}
                   onValueChange={(value) => setForm({ ...form, professional_id: value })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Qualquer um" />
+                    <SelectValue
+                      placeholder={
+                        form.service_id && linkedForSelectedService.length
+                          ? "Selecione o profissional"
+                          : "Opcional"
+                      }
+                    />
                   </SelectTrigger>
                   <SelectContent>
-                    {(professionals ?? []).map((professional) => (
+                    {eligibleProfessionals.map((professional) => (
                       <SelectItem key={professional.id} value={professional.id}>
                         {professional.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                {form.service_id && !eligibleProfessionals.length ? (
+                  <p className="text-[11px] text-destructive">
+                    Nenhum profissional habilitado atende neste dia.
+                  </p>
+                ) : null}
               </div>
+
               <div className="space-y-2">
                 <Label htmlFor="atime">Horário</Label>
                 <Input
@@ -571,6 +914,7 @@ function AgendaPage() {
                 />
               </div>
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="anotes">Observações</Label>
               <Textarea
@@ -580,12 +924,13 @@ function AgendaPage() {
               />
             </div>
           </div>
+
           <DialogFooter>
             <Button
               onClick={() => create.mutate()}
-              disabled={!form.customer_name.trim() || create.isPending}
+              disabled={!form.customer_name.trim() || !form.service_id || create.isPending}
             >
-              Agendar
+              {create.isPending ? "Salvando..." : "Agendar"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -600,15 +945,24 @@ function AgendaPage() {
             <div className="space-y-4 text-sm">
               <p className="text-muted-foreground">
                 {(selected.services as { name: string } | null)?.name ?? "Sem serviço"} ·{" "}
-                {slotOf(selected.starts_at)}
+                {timeFromIso(selected.starts_at)}–{timeFromIso(selected.ends_at)}
                 {selected.customer_phone ? ` · ${selected.customer_phone}` : ""}
               </p>
+              {selected.professionals ? (
+                <p className="text-muted-foreground">
+                  Profissional: {(selected.professionals as { name: string }).name}
+                </p>
+              ) : null}
               {selected.notes && <p className="text-muted-foreground">{selected.notes}</p>}
+
               <div className="space-y-2">
                 <Label>Situação</Label>
                 <Select
                   value={selected.status}
-                  onValueChange={(status) => setStatus.mutate({ id: selected.id, status })}
+                  onValueChange={(status) =>
+                    setStatus.mutate({ id: selected.id, status })
+                  }
+                  disabled={setStatus.isPending}
                 >
                   <SelectTrigger>
                     <SelectValue>{statusLabel(selected.status)}</SelectValue>
@@ -624,13 +978,11 @@ function AgendaPage() {
               </div>
             </div>
           )}
+
           <DialogFooter>
-            <Button
-              variant="destructive"
-              onClick={() => selected && remove.mutate(selected.id)}
-              disabled={remove.isPending}
-            >
-              <Trash2 className="size-4" /> Excluir
+            <Button variant="destructive" onClick={handleDelete} disabled={remove.isPending}>
+              <Trash2 className="size-4" />
+              {remove.isPending ? "Excluindo..." : "Excluir"}
             </Button>
           </DialogFooter>
         </DialogContent>
