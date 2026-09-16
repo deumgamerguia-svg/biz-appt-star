@@ -50,7 +50,7 @@ export const cancelCustomerBooking = createServerFn({ method: "POST" })
     const enabled = prefs.cancellations_enabled ?? prefs.cancellations ?? true;
     const rawNotice = Number(prefs.cancellation_notice_minutes ?? 0);
     const noticeMinutes = Number.isFinite(rawNotice)
-      ? Math.max(0, Math.min(960, Math.floor(rawNotice)))
+      ? Math.max(0, Math.min(1440, Math.floor(rawNotice)))
       : 0;
 
     if (!enabled) {
