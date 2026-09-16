@@ -93,14 +93,11 @@ const DEFAULT_APPEARANCE: Appearance = {
 
 const preferenceItems = [
   ["available", "Horários Disponíveis"],
-  ["command", "Comanda Enumerada"],
   ["listing", "Tempo de Listagem"],
   ["notify", "Avisar Clientes"],
   ["timezone", "Fuso Horário"],
   ["dates", "Listar datas"],
-  ["social", "Links Sociais"],
   ["cancel", "Cancelamentos"],
-  ["marketing", "Marketing"],
   ["reschedule", "Remarcar"],
   ["greeting", "Saudação"],
 ] as const;
@@ -193,13 +190,13 @@ function PreferencesSettings({ businessId }: { businessId: string }) {
         <aside className="border-b border-[#25282c] p-4 lg:border-b-0 lg:border-r">
           <p className="px-2 pb-3 text-sm font-semibold text-[#8b929d]">Agenda</p>
           <div className="space-y-1">
-            {preferenceItems.slice(0, 6).map(([key, label]) => (
+            {preferenceItems.slice(0, 5).map(([key, label]) => (
               <PreferenceButton key={key} active={selected === key} onClick={() => setSelected(key)}>{label}</PreferenceButton>
             ))}
           </div>
           <p className="mt-8 px-2 pb-3 text-sm font-semibold text-[#8b929d]">Empresa e clientes</p>
           <div className="space-y-1">
-            {preferenceItems.slice(6).map(([key, label]) => (
+            {preferenceItems.slice(5).map(([key, label]) => (
               <PreferenceButton key={key} active={selected === key} onClick={() => setSelected(key)}>{label}</PreferenceButton>
             ))}
           </div>
@@ -208,14 +205,11 @@ function PreferencesSettings({ businessId }: { businessId: string }) {
         <section className="p-5 sm:p-8 lg:p-10">
           <div className="mx-auto max-w-2xl">
             {selected === "available" && <SettingBlock title="Horários Disponíveis" description="Escolha quanto tempo antes os horários poderão ser mostrados."><NativeSelect value={prefs.minimum_notice_hours} onChange={(value) => setPrefs({ ...prefs, minimum_notice_hours: Number(value) })} options={[[0,"Sem antecedência"],[1,"1 Hora"],[2,"2 Horas"],[4,"4 Horas"],[12,"12 Horas"],[24,"24 Horas"]]} /></SettingBlock>}
-            {selected === "command" && <ToggleSetting title="Comanda Enumerada" description="Ative para manter uma numeração sequencial de atendimento." checked={prefs.numbered_command} onChange={(numbered_command) => setPrefs({ ...prefs, numbered_command })} />}
             {selected === "listing" && <SettingBlock title="Tempo de Listagem" description="Defina o intervalo usado para organizar a exibição dos horários."><NativeSelect value={prefs.listing_time_minutes} onChange={(value) => setPrefs({ ...prefs, listing_time_minutes: Number(value) })} options={[[15,"15 minutos"],[30,"30 minutos"],[60,"1 hora"],[120,"2 horas"]]} /></SettingBlock>}
             {selected === "notify" && <ToggleSetting title="Avisar Clientes" description="Permite notificações relacionadas ao agendamento quando as integrações estiverem conectadas." checked={prefs.notify_clients} onChange={(notify_clients) => setPrefs({ ...prefs, notify_clients })} />}
             {selected === "timezone" && <SettingBlock title="Fuso Horário" description="Defina o fuso usado como referência para a agenda."><NativeSelect value={prefs.timezone} onChange={(timezone) => setPrefs({ ...prefs, timezone })} options={[["America/Sao_Paulo","Brasília / São Paulo"],["America/Manaus","Manaus"],["America/Recife","Recife"],["America/Cuiaba","Cuiabá"]]} /></SettingBlock>}
             {selected === "dates" && <ToggleSetting title="Listar datas" description="Controla a exibição das datas disponíveis no fluxo de agendamento." checked={prefs.list_dates} onChange={(list_dates) => setPrefs({ ...prefs, list_dates })} />}
-            {selected === "social" && <ToggleSetting title="Links Sociais" description="Permite exibir atalhos sociais no Painel 1 quando estiverem configurados." checked={prefs.social_links} onChange={(social_links) => setPrefs({ ...prefs, social_links })} />}
             {selected === "cancel" && <ToggleSetting title="Cancelamentos" description="Permite usar recursos de cancelamento no fluxo do cliente." checked={prefs.cancellations} onChange={(cancellations) => setPrefs({ ...prefs, cancellations })} />}
-            {selected === "marketing" && <ToggleSetting title="Marketing" description="Ative recursos de comunicação e campanhas para clientes." checked={prefs.marketing} onChange={(marketing) => setPrefs({ ...prefs, marketing })} />}
             {selected === "reschedule" && <ToggleSetting title="Remarcar" description="Permite recursos de remarcação para os clientes." checked={prefs.reschedule} onChange={(reschedule) => setPrefs({ ...prefs, reschedule })} />}
             {selected === "greeting" && (
               <SettingBlock title="Saudação" description="Edite a saudação pública do Painel 1 e o nome azul exibido no topo do Painel 2.">
