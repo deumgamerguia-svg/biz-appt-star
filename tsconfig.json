@@ -24,6 +24,7 @@
     "exactOptionalPropertyTypes": true,
     "noUncheckedSideEffectImports": true,
     "paths": {
+      "@/lib/panel1-config.client": ["./src/lib/panel1-config.storage.ts"],
       "@/lib/booking.functions": ["./src/lib/booking.facade.ts"],
       "@/*": ["./src/*"]
     }
