@@ -30,12 +30,11 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
 }
 
 function createSupabaseClient() {
-  // O navegador, os server functions e o middleware precisam conversar com o
-  // mesmo projeto. Valores VITE do build têm prioridade e o fallback é o projeto
-  // conectado a este repositório, nunca uma variável genérica de outro ambiente.
-  const SUPABASE_URL = import.meta.env['VITE_SUPABASE_URL'] || CONNECTED_PROJECT_URL;
-  const SUPABASE_PUBLISHABLE_KEY =
-    import.meta.env['VITE_SUPABASE_PUBLISHABLE_KEY'] || CONNECTED_PUBLISHABLE_KEY;
+  // O frontend deste repositório deve usar sempre o projeto conectado abaixo.
+  // Isso evita que variáveis de preview/deploy apontem o Painel 1 para outro
+  // banco enquanto o Painel 2 continua gravando neste projeto.
+  const SUPABASE_URL = CONNECTED_PROJECT_URL;
+  const SUPABASE_PUBLISHABLE_KEY = CONNECTED_PUBLISHABLE_KEY;
 
   return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     global: {
