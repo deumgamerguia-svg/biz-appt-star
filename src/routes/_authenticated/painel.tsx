@@ -23,6 +23,9 @@ import {
   Clock3,
   LoaderCircle,
   Package,
+  ChevronDown,
+  SlidersHorizontal,
+  Paintbrush,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -201,6 +204,7 @@ function PainelLayout() {
   const [transitioning, setTransitioning] = useState(false);
   const [now, setNow] = useState(() => new Date());
   const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const [configOpen, setConfigOpen] = useState(() => pathname.startsWith("/painel/configuracoes"));
 
   const { data: greetingProfile } = useQuery({
     queryKey: ["owner-greeting-name", user?.id],
@@ -220,6 +224,10 @@ function PainelLayout() {
     const timer = window.setInterval(() => setNow(new Date()), 60000);
     return () => window.clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    if (pathname.startsWith("/painel/configuracoes")) setConfigOpen(true);
+  }, [pathname]);
 
   useEffect(() => {
     if (!transitioning) return;
@@ -310,32 +318,57 @@ function PainelLayout() {
                 {group.title}
               </p>
               <div className="space-y-1">
-                {group.items.map((item) => (
-                  <Link
-                    key={item.to}
-                    to={item.to}
-                    activeOptions={{ exact: "exact" in item ? item.exact : false }}
-                    onClick={beginNavigation}
-                    className="owner-nav-item group relative flex items-center gap-3 rounded-xl border border-transparent px-3 py-2.5 text-[#7f8793] transition-all duration-200 hover:border-[#1677ff]/10 hover:bg-[#1677ff]/[0.055] hover:text-[#e5e7eb]"
-                    activeProps={{
-                      className:
-                        "owner-nav-item owner-nav-active group relative flex items-center gap-3 rounded-xl border border-[#1677ff]/15 bg-[#1677ff]/[0.09] px-3 py-2.5 text-[#f3f4f6] shadow-[0_8px_24px_rgba(0,0,0,0.12)]",
-                    }}
-                  >
-                    <item.icon
-                      className="size-5 shrink-0 transition-colors group-hover:text-[#5da8ff]"
-                      strokeWidth={1.8}
-                    />
-                    <span className="min-w-0 leading-[1.25]">
-                      <span className="owner-nav-label block text-[0.86rem] font-medium">
-                        {item.label}
+                {group.items.map((item) => {
+                  if (item.to === "/painel/configuracoes") {
+                    const active = pathname.startsWith("/painel/configuracoes");
+                    return (
+                      <div key={item.to} className="space-y-1">
+                        <button
+                          type="button"
+                          onClick={() => setConfigOpen((value) => !value)}
+                          className={`owner-nav-item group relative flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-all duration-200 ${active ? "owner-nav-active border-[#1677ff]/15 bg-[#1677ff]/[0.09] text-[#f3f4f6]" : "border-transparent text-[#7f8793] hover:border-[#1677ff]/10 hover:bg-[#1677ff]/[0.055] hover:text-[#e5e7eb]"}`}
+                        >
+                          <Settings2 className="size-5 shrink-0 transition-colors group-hover:text-[#5da8ff]" strokeWidth={1.8} />
+                          <span className="min-w-0 flex-1 leading-[1.25]"><span className="owner-nav-label block text-[0.86rem] font-medium">Configurações</span><span className="owner-nav-hint block truncate text-[0.7rem] font-normal text-[#555d68]">Preferências do negócio</span></span>
+                          <ChevronDown className={`size-4 shrink-0 transition-transform duration-200 ${configOpen ? "rotate-180" : ""}`} />
+                        </button>
+                        {configOpen && (
+                          <div className="ml-2 space-y-1 rounded-xl border border-[#1677ff]/10 bg-[#1677ff]/[0.045] p-1.5">
+                            <a href="/painel/configuracoes?secao=preferencias" onClick={beginNavigation} className="flex items-center gap-2 rounded-lg px-3 py-2 text-[0.82rem] font-medium text-[#c9ced6] transition-colors hover:bg-[#1677ff]/10 hover:text-white"><SlidersHorizontal className="size-4 text-[#5da8ff]" />Preferências</a>
+                            <a href="/painel/configuracoes?secao=aparencia" onClick={beginNavigation} className="flex items-center gap-2 rounded-lg px-3 py-2 text-[0.82rem] font-medium text-[#c9ced6] transition-colors hover:bg-[#1677ff]/10 hover:text-white"><Paintbrush className="size-4 text-[#5da8ff]" />Aparências</a>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <Link
+                      key={item.to}
+                      to={item.to}
+                      activeOptions={{ exact: "exact" in item ? item.exact : false }}
+                      onClick={beginNavigation}
+                      className="owner-nav-item group relative flex items-center gap-3 rounded-xl border border-transparent px-3 py-2.5 text-[#7f8793] transition-all duration-200 hover:border-[#1677ff]/10 hover:bg-[#1677ff]/[0.055] hover:text-[#e5e7eb]"
+                      activeProps={{
+                        className:
+                          "owner-nav-item owner-nav-active group relative flex items-center gap-3 rounded-xl border border-[#1677ff]/15 bg-[#1677ff]/[0.09] px-3 py-2.5 text-[#f3f4f6] shadow-[0_8px_24px_rgba(0,0,0,0.12)]",
+                      }}
+                    >
+                      <item.icon
+                        className="size-5 shrink-0 transition-colors group-hover:text-[#5da8ff]"
+                        strokeWidth={1.8}
+                      />
+                      <span className="min-w-0 leading-[1.25]">
+                        <span className="owner-nav-label block text-[0.86rem] font-medium">
+                          {item.label}
+                        </span>
+                        <span className="owner-nav-hint block truncate text-[0.7rem] font-normal text-[#555d68]">
+                          {item.hint}
+                        </span>
                       </span>
-                      <span className="owner-nav-hint block truncate text-[0.7rem] font-normal text-[#555d68]">
-                        {item.hint}
-                      </span>
-                    </span>
-                  </Link>
-                ))}
+                    </Link>
+                  );
+                })}
               </div>
             </section>
           ))}
