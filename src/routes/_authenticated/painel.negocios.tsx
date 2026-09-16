@@ -21,6 +21,16 @@ export const Route = createFileRoute("/_authenticated/painel/negocios")({
   component: NegociosPage,
 });
 
+const sanitizeSlug = (value: string) =>
+  value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/(^-|-$)/g, "")
+    .slice(0, 60);
+
 function NegociosPage() {
   const { businesses, refresh } = useBusiness();
 
@@ -28,24 +38,19 @@ function NegociosPage() {
     <div>
       <PageHeader
         title="Negócio"
-        subtitle="Configure as informações do estabelecimento que aparecem no Painel 1 do cliente."
+        subtitle="Controle as informações e o link que aparecem no Painel 1 do cliente."
         action={
           <div className="flex flex-wrap gap-2">
-            <Button variant="outline" asChild>
-              <Link to="/painel/servicos">Serviços</Link>
-            </Button>
-            <Button variant="outline" asChild>
-              <Link to="/painel/funcionamento">Funcionamento</Link>
-            </Button>
-            <Button variant="outline" asChild>
-              <Link to="/painel/configuracoes">Visual do Painel 1</Link>
-            </Button>
+            <Button variant="outline" asChild><Link to="/painel/servicos">Serviços</Link></Button>
+            <Button variant="outline" asChild><Link to="/painel/profissionais">Profissionais</Link></Button>
+            <Button variant="outline" asChild><Link to="/painel/funcionamento">Funcionamento</Link></Button>
+            <Button variant="outline" asChild><Link to="/painel/configuracoes" search={{ secao: "aparencia" }}>Visual do Painel 1</Link></Button>
           </div>
         }
       />
 
       {businesses.length === 0 ? (
-        <EmptyList text="Seu acesso ainda não foi vinculado a um estabelecimento pelo painel Master." />
+        <EmptyList text="Seu acesso ainda não foi vinculado a um estabelecimento pelo Painel 3 / Master." />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
           {businesses.map((business) => (
@@ -60,6 +65,7 @@ function NegociosPage() {
 function BusinessSettingsCard({ business, onSaved }: { business: Business; onSaved: () => void }) {
   const [form, setForm] = useState({
     name: business.name,
+    slug: business.slug,
     category: business.category,
     phone: business.phone ?? "",
     address: business.address ?? "",
@@ -68,18 +74,22 @@ function BusinessSettingsCard({ business, onSaved }: { business: Business; onSav
   useEffect(() => {
     setForm({
       name: business.name,
+      slug: business.slug,
       category: business.category,
       phone: business.phone ?? "",
       address: business.address ?? "",
     });
-  }, [business.id, business.name, business.category, business.phone, business.address]);
+  }, [business.id, business.name, business.slug, business.category, business.phone, business.address]);
 
   const save = useMutation({
     mutationFn: async () => {
+      const slug = sanitizeSlug(form.slug);
+      if (slug.length < 3) throw new Error("O link público precisa ter pelo menos 3 caracteres.");
       const { error } = await supabase
         .from("businesses")
         .update({
           name: form.name.trim(),
+          slug,
           category: form.category.trim() || "outro",
           phone: form.phone.trim() || null,
           address: form.address.trim() || null,
@@ -91,7 +101,13 @@ function BusinessSettingsCard({ business, onSaved }: { business: Business; onSav
       toast.success("Informações do Painel 1 atualizadas.");
       onSaved();
     },
-    onError: (error: Error) => toast.error(error.message),
+    onError: (error: Error) => {
+      if (/duplicate|unique/i.test(error.message)) {
+        toast.error("Esse link público já está sendo usado por outro estabelecimento.");
+      } else {
+        toast.error(error.message);
+      }
+    },
   });
 
   const copyPublicLink = async () => {
@@ -119,44 +135,42 @@ function BusinessSettingsCard({ business, onSaved }: { business: Business; onSav
       <div className="mt-5 space-y-4">
         <div className="space-y-2">
           <Label htmlFor={`business-name-${business.id}`}>Nome exibido no Painel 1</Label>
-          <Input
-            id={`business-name-${business.id}`}
-            value={form.name}
-            onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
-          />
+          <Input id={`business-name-${business.id}`} value={form.name} onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))} />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor={`business-slug-${business.id}`}>Link público editável</Label>
+          <div className="flex items-center gap-2">
+            <span className="shrink-0 text-xs text-muted-foreground">/agendar/</span>
+            <Input
+              id={`business-slug-${business.id}`}
+              value={form.slug}
+              onChange={(event) => setForm((current) => ({ ...current, slug: sanitizeSlug(event.target.value) }))}
+              placeholder="meu-estabelecimento"
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">Ao alterar e salvar, o link antigo deixa de ser o endereço principal.</p>
         </div>
 
         <div className="space-y-2">
           <Label htmlFor={`business-category-${business.id}`}>Categoria</Label>
-          <Input
-            id={`business-category-${business.id}`}
-            value={form.category}
-            onChange={(event) => setForm((current) => ({ ...current, category: event.target.value }))}
-          />
+          <Input id={`business-category-${business.id}`} value={form.category} onChange={(event) => setForm((current) => ({ ...current, category: event.target.value }))} />
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor={`business-phone-${business.id}`}>Telefone</Label>
-            <Input
-              id={`business-phone-${business.id}`}
-              value={form.phone}
-              onChange={(event) => setForm((current) => ({ ...current, phone: event.target.value }))}
-            />
+            <Input id={`business-phone-${business.id}`} value={form.phone} onChange={(event) => setForm((current) => ({ ...current, phone: event.target.value }))} />
           </div>
           <div className="space-y-2">
             <Label htmlFor={`business-address-${business.id}`}>Endereço</Label>
-            <Input
-              id={`business-address-${business.id}`}
-              value={form.address}
-              onChange={(event) => setForm((current) => ({ ...current, address: event.target.value }))}
-            />
+            <Input id={`business-address-${business.id}`} value={form.address} onChange={(event) => setForm((current) => ({ ...current, address: event.target.value }))} />
           </div>
         </div>
       </div>
 
       <div className="mt-5 flex flex-wrap gap-2">
-        <Button onClick={() => save.mutate()} disabled={save.isPending || !form.name.trim()}>
+        <Button onClick={() => save.mutate()} disabled={save.isPending || !form.name.trim() || sanitizeSlug(form.slug).length < 3}>
           <Save className="size-4" /> {save.isPending ? "Salvando..." : "Salvar"}
         </Button>
         <Button variant="outline" asChild>
@@ -169,9 +183,7 @@ function BusinessSettingsCard({ business, onSaved }: { business: Business; onSav
         </Button>
       </div>
 
-      <p className="mt-4 text-xs text-muted-foreground">
-        Link público: /agendar/{business.slug}
-      </p>
+      <p className="mt-4 text-xs text-muted-foreground">Link atual: /agendar/{business.slug}</p>
     </article>
   );
 }
