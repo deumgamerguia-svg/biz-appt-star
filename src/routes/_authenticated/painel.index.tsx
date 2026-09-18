@@ -626,13 +626,21 @@ function AgendaPage() {
         >
           <ChevronLeft className="size-4" />
         </Button>
-        <Input
-          type="date"
-          className="w-44"
-          value={day}
-          onChange={(event) => setDay(event.target.value)}
-          aria-label="Data da agenda"
-        />
+        <div className="relative w-44 rounded-md">
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-[-1px] overflow-hidden rounded-[7px]"
+          >
+            <span className="absolute left-1/2 top-1/2 h-[340%] w-[340%] -translate-x-1/2 -translate-y-1/2 animate-[spin_3.2s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_0deg,transparent_310deg,rgba(22,119,255,0.10)_326deg,rgba(47,140,255,0.95)_342deg,rgba(93,168,255,0.35)_350deg,transparent_360deg)]" />
+          </span>
+          <Input
+            type="date"
+            className="relative z-10 w-44 border-[#1b2a3d] bg-[#06090d] shadow-[inset_0_0_0_1px_rgba(22,119,255,0.025)]"
+            value={day}
+            onChange={(event) => setDay(event.target.value)}
+            aria-label="Data da agenda"
+          />
+        </div>
         <Button
           variant="outline"
           size="icon"
