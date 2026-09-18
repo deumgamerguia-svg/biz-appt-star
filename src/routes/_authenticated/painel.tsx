@@ -32,6 +32,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useBusiness } from "@/lib/business";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import brandLogo from "@/assets/agenda-agora-logo.png.asset.json";
 
 export const Route = createFileRoute("/_authenticated/painel")({
   head: () => ({
@@ -338,9 +339,9 @@ function PainelLayout() {
           className="group relative z-10 flex h-[5.25rem] shrink-0 items-center border-b border-[#25282c] px-1"
         >
           <img
-            src="/agenda-agora-sidebar-logo.png"
+            src={brandLogo.url}
             alt="Agenda Agora"
-            className="h-[4rem] w-auto max-w-[190px] object-contain object-left transition-transform duration-300 group-hover:scale-[1.01]"
+            className="h-11 w-auto max-w-[220px] object-contain object-left transition-transform duration-300 group-hover:scale-[1.01]"
           />
         </Link>
 
