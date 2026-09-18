@@ -2,7 +2,7 @@ import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ChevronLeft, ChevronRight, Eye, CalendarX2, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Eye, CalendarX2, Trash2, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useBusiness } from "@/lib/business";
 import {
@@ -654,9 +654,23 @@ function AgendaPage() {
         type="button"
         onClick={() => openNewAt(freeSlots[0] ?? baseSlots[0] ?? "09:00")}
         disabled={!baseSlots.length}
-        className="mt-2 ml-12 w-44 rounded-md bg-warning/70 px-4 py-2.5 text-[0.82rem] font-medium text-warning-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+        className="group mt-3 ml-12 block w-[calc(100%-3rem)] max-w-[650px] rounded-[28px] bg-[linear-gradient(112deg,rgba(240,196,72,0.48)_0%,rgba(166,123,26,0.24)_38%,rgba(114,84,22,0.14)_72%,rgba(216,166,43,0.22)_100%)] p-px text-left shadow-[0_12px_34px_rgba(0,0,0,0.34),0_0_34px_rgba(204,154,35,0.04)] transition-all duration-200 hover:-translate-y-[1px] hover:shadow-[0_16px_38px_rgba(0,0,0,0.38),0_0_38px_rgba(204,154,35,0.07)] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
       >
-        Encaixe
+        <span className="flex h-[136px] w-full items-center gap-5 rounded-[27px] bg-[radial-gradient(circle_at_15%_50%,rgba(179,131,24,0.13)_0%,rgba(70,53,18,0.07)_28%,transparent_52%),linear-gradient(100deg,#0c0b08_0%,#0b0b0a_50%,#0d0c09_100%)] px-7">
+          <span className="flex size-[76px] shrink-0 items-center justify-center rounded-[20px] bg-[linear-gradient(145deg,rgba(232,188,61,0.42),rgba(106,78,20,0.20))] p-px shadow-[inset_0_0_0_1px_rgba(255,221,126,0.06),0_8px_24px_rgba(114,78,10,0.16)]">
+            <span className="flex size-full items-center justify-center rounded-[19px] bg-[radial-gradient(circle_at_35%_30%,rgba(163,120,27,0.24),rgba(41,34,16,0.88)_64%,rgba(24,22,15,0.96)_100%)]">
+              <Zap className="size-8 text-[#f5dc95] drop-shadow-[0_0_8px_rgba(237,197,85,0.16)]" strokeWidth={2.1} />
+            </span>
+          </span>
+          <span className="min-w-0">
+            <span className="block text-[2rem] font-semibold leading-none tracking-[-0.035em] text-[#f7f7f7]">
+              Encaixe
+            </span>
+            <span className="mt-3 block truncate text-[1rem] font-normal leading-none tracking-[-0.015em] text-[#76727b]">
+              Agendamento rápido · próximo horário disponível
+            </span>
+          </span>
+        </span>
       </button>
 
       <div className="mt-8 flex items-center gap-3">
