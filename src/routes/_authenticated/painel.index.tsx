@@ -654,13 +654,9 @@ function AgendaPage() {
         type="button"
         onClick={() => openNewAt(freeSlots[0] ?? baseSlots[0] ?? "09:00")}
         disabled={!baseSlots.length}
-        className="group mt-2 ml-12 w-44 rounded-[14px] bg-[linear-gradient(110deg,rgba(247,204,87,0.55)_0%,rgba(155,112,20,0.28)_52%,rgba(225,178,61,0.42)_100%)] p-px text-left shadow-[0_8px_20px_rgba(0,0,0,0.24),0_0_20px_rgba(204,154,35,0.025)] transition-all duration-200 hover:shadow-[0_10px_24px_rgba(0,0,0,0.28),0_0_22px_rgba(204,154,35,0.04)] disabled:cursor-not-allowed disabled:opacity-50"
+        className="group mt-2 ml-12 flex h-[42px] w-44 items-center justify-center rounded-[15px] border-[0.75px] border-[#6d5519]/70 bg-[radial-gradient(circle_at_22%_28%,rgba(224,175,45,0.18)_0%,rgba(128,92,20,0.08)_34%,transparent_66%),linear-gradient(100deg,#0c0b08_0%,#0b0b0a_60%,#0d0c09_100%)] px-4 text-[0.82rem] font-medium tracking-[-0.01em] text-[#f5f5f5] shadow-[inset_0_1px_0_rgba(255,222,129,0.035),0_0_18px_rgba(210,157,32,0.025)] transition-all duration-200 hover:border-[#8b6a1d]/75 hover:bg-[radial-gradient(circle_at_22%_28%,rgba(224,175,45,0.22)_0%,rgba(128,92,20,0.10)_34%,transparent_66%),linear-gradient(100deg,#0d0c09_0%,#0b0b0a_60%,#0d0c09_100%)] hover:shadow-[inset_0_1px_0_rgba(255,222,129,0.05),0_0_20px_rgba(210,157,32,0.035)] disabled:cursor-not-allowed disabled:opacity-50"
       >
-        <span className="flex h-[42px] w-full items-center rounded-[13px] bg-[linear-gradient(100deg,#0c0b08_0%,#0b0b0a_58%,#0d0c09_100%)] px-4">
-          <span className="text-[0.82rem] font-medium tracking-[-0.01em] text-[#f5f5f5]">
-            Encaixe
-          </span>
-        </span>
+        Encaixe
       </button>
 
       <div className="mt-8 flex items-center gap-3">
