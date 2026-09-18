@@ -338,7 +338,7 @@ function PainelLayout() {
           className="group relative z-10 flex h-[5.25rem] shrink-0 items-center border-b border-[#25282c] px-1"
         >
           <img
-            src="/agenda-agora-sidebar-logo.svg"
+            src="/agenda-agora-sidebar-logo.png"
             alt="Agenda Agora"
             className="h-[4rem] w-auto max-w-[190px] object-contain object-left transition-transform duration-300 group-hover:scale-[1.01]"
           />
