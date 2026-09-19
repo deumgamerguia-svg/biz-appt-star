@@ -634,39 +634,44 @@ function AgendaPage() {
             preserveAspectRatio="none"
           >
             <defs>
-              <filter id="date-neon-glow" x="-80%" y="-80%" width="260%" height="260%">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="1.6" result="blurSoft" />
-                <feGaussianBlur in="SourceGraphic" stdDeviation="4.6" result="blurWide" />
+              <filter id="date-scale-reels-glow" x="-60%" y="-120%" width="220%" height="340%">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="2.2" result="softGlow" />
+                <feGaussianBlur in="SourceGraphic" stdDeviation="4.8" result="wideGlow" />
                 <feMerge>
-                  <feMergeNode in="blurWide" />
-                  <feMergeNode in="blurSoft" />
+                  <feMergeNode in="wideGlow" />
+                  <feMergeNode in="softGlow" />
                   <feMergeNode in="SourceGraphic" />
                 </feMerge>
               </filter>
-              <path
-                id="date-outline-path"
-                d="M 15 1 H 985 A 14 14 0 0 1 999 15 V 85 A 14 14 0 0 1 985 99 H 15 A 14 14 0 0 1 1 85 V 15 A 14 14 0 0 1 15 1 Z"
-              />
             </defs>
 
-            <use
-              href="#date-outline-path"
+            <rect
+              x="1"
+              y="1"
+              width="998"
+              height="98"
+              rx="14"
+              ry="14"
               fill="none"
-              stroke="rgba(45,145,255,0.12)"
-              strokeWidth="0.42"
+              stroke="rgba(58,63,72,0.62)"
+              strokeWidth="0.45"
               vectorEffect="non-scaling-stroke"
             />
 
-            <use
-              href="#date-outline-path"
+            <rect
+              x="1"
+              y="1"
+              width="998"
+              height="98"
+              rx="14"
+              ry="14"
               fill="none"
-              stroke="rgba(72,177,255,1)"
-              strokeWidth="0.72"
+              stroke="rgba(31,109,249,0.48)"
+              strokeWidth="1.35"
               strokeLinecap="round"
               pathLength="100"
-              strokeDasharray="18 82"
-              strokeDashoffset="0"
-              filter="url(#date-neon-glow)"
+              strokeDasharray="6 94"
+              filter="url(#date-scale-reels-glow)"
               vectorEffect="non-scaling-stroke"
             >
               <animate
@@ -676,7 +681,31 @@ function AgendaPage() {
                 dur="8s"
                 repeatCount="indefinite"
               />
-            </use>
+            </rect>
+
+            <rect
+              x="1"
+              y="1"
+              width="998"
+              height="98"
+              rx="14"
+              ry="14"
+              fill="none"
+              stroke="#5F97FB"
+              strokeWidth="0.58"
+              strokeLinecap="round"
+              pathLength="100"
+              strokeDasharray="6 94"
+              vectorEffect="non-scaling-stroke"
+            >
+              <animate
+                attributeName="stroke-dashoffset"
+                from="0"
+                to="-100"
+                dur="8s"
+                repeatCount="indefinite"
+              />
+            </rect>
           </svg>
           <Input
             type="date"
