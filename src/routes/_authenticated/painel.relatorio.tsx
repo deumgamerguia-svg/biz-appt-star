@@ -151,31 +151,35 @@ function RelatorioPage() {
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Card
           icon={WalletCards}
+          effect="strong"
           label="Faturamento"
           value={formatPrice(report.revenue)}
           hint="Serviços concluídos"
         />
         <Card
           icon={HandCoins}
+          effect="medium"
           label="Sinais recebidos"
           value={formatPrice(report.deposits)}
           hint="Pagos pelo cliente"
         />
         <Card
           icon={CalendarCheck2}
+          effect="subtle"
           label="Atendimentos"
           value={String(report.total)}
           hint={`${report.done} concluídos · ${report.canceled} cancelados`}
         />
         <Card
           icon={CircleDollarSign}
+          effect="none"
           label="Ticket médio"
           value={formatPrice(report.ticket)}
           hint={`${report.clients} cliente(s) no período`}
         />
       </div>
 
-      <section className="report-luminous-card report-chart-card p-5 sm:p-6">
+      <section className="report-luminous-card report-effect-none report-chart-card p-5 sm:p-6">
         <ReportCardTitle icon={ChartNoAxesColumnIncreasing} title="Atendimentos por dia" />
         {report.chart.length ? (
           <div className="relative z-10 mt-5 h-64">
@@ -214,17 +218,21 @@ function RelatorioPage() {
 
 function Card({
   icon: Icon,
+  effect,
   label,
   value,
   hint,
 }: {
   icon: LucideIcon;
+  effect: "strong" | "medium" | "subtle" | "none";
   label: string;
   value: string;
   hint?: string;
 }) {
   return (
-    <article className="report-luminous-card report-metric-card p-4 sm:p-[1.125rem]">
+    <article
+      className={`report-luminous-card report-effect-${effect} report-metric-card p-4 sm:p-[1.125rem]`}
+    >
       <div className="report-icon-box">
         <Icon className="size-[1.05rem]" strokeWidth={1.8} aria-hidden="true" />
       </div>
@@ -262,7 +270,7 @@ function ListCard({
   rows: { name: string; value: string }[];
 }) {
   return (
-    <section className="report-luminous-card report-list-card p-5 sm:p-6">
+    <section className="report-luminous-card report-effect-none report-list-card p-5 sm:p-6">
       <ReportCardTitle icon={icon} title={title} />
       {rows.length ? (
         <ul className="relative z-10 mt-5 space-y-2 text-sm">
