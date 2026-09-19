@@ -405,7 +405,7 @@ function PainelLayout() {
           </div>
 
           {accountOpen && (
-            <div className="absolute left-0 right-0 top-[calc(100%+0.6rem)] z-30 rounded-2xl border border-[#272a2f] bg-[#090a0c]/98 p-3.5 shadow-[0_18px_55px_rgba(0,0,0,0.55)] backdrop-blur-xl animate-in fade-in slide-in-from-top-2 duration-150">
+            <div className="absolute left-0 right-0 top-[calc(100%+0.6rem)] z-40 rounded-2xl border border-[#272a2f] bg-[#050607] p-3.5 shadow-[0_18px_55px_rgba(0,0,0,0.72)] animate-in fade-in slide-in-from-top-2 duration-150">
               <div className="flex items-center gap-3 border-b border-[#22252a] pb-3">
                 <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-[#f2f3f5] text-[12px] font-semibold text-[#111318] shadow-[inset_0_0_0_1px_rgba(0,0,0,0.06)]">
                   {accountInitial}
