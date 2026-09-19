@@ -168,9 +168,9 @@ function LembretesPage() {
         subtitle="Confirmação ao pagar o sinal e lembrete antes do horário — enviadas sozinhas pelo WhatsApp conectado."
       />
 
-      <div className="rounded-xl border border-border bg-card p-4">
-        <div className="flex items-center gap-3">
-          <MessageCircle className="size-5 text-primary" />
+      <div className="report-luminous-card report-effect-strong p-4">
+        <div className="relative z-10 flex items-center gap-3">
+          <span className="report-icon-box shrink-0"><MessageCircle className="size-[1.05rem]" strokeWidth={1.8} aria-hidden="true" /></span>
           <div>
             <p className="font-semibold">Mensagem 1 — Confirmação do agendamento</p>
             <p className="text-xs text-muted-foreground">
@@ -178,7 +178,7 @@ function LembretesPage() {
             </p>
           </div>
         </div>
-        <div className="mt-3">
+        <div className="relative z-10 mt-3">
           <Label htmlFor="tpl-confirm">Texto da confirmação</Label>
           <Textarea
             id="tpl-confirm"
@@ -199,10 +199,10 @@ function LembretesPage() {
         </div>
       </div>
 
-      <div className="mt-4 rounded-xl border border-border bg-card p-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="report-luminous-card report-effect-medium mt-4 p-4">
+        <div className="relative z-10 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <BellRing className="size-5 text-primary" />
+            <span className="report-icon-box shrink-0"><BellRing className="size-[1.05rem]" strokeWidth={1.8} aria-hidden="true" /></span>
             <div>
               <p className="font-semibold">Mensagem 2 — Lembrete do horário</p>
               <p className="text-xs text-muted-foreground">
@@ -219,7 +219,7 @@ function LembretesPage() {
         </div>
 
         {enabled && (
-          <div className="mt-4 grid gap-4 border-t border-border pt-4 sm:grid-cols-[140px_1fr]">
+          <div className="relative z-10 mt-4 grid gap-4 border-t border-white/[0.07] pt-4 sm:grid-cols-[140px_1fr]">
             <div>
               <Label htmlFor="hours">Avisar quantas horas antes</Label>
               <Input
@@ -267,7 +267,7 @@ function LembretesPage() {
             Clientes a lembrar nas próximas {hoursBefore}h
           </h2>
           {!upcoming.data?.length ? (
-            <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+            <p className="report-luminous-card report-effect-subtle p-6 text-center text-sm text-muted-foreground">
               Nenhum agendamento confirmado nesse período. 🎉
             </p>
           ) : (
@@ -275,7 +275,7 @@ function LembretesPage() {
               {upcoming.data.map((a) => (
                 <div
                   key={a.id}
-                  className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card p-3"
+                  className="report-luminous-card report-effect-none flex flex-wrap items-center gap-3 p-3"
                 >
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-medium">{a.customer_name}</p>
@@ -306,8 +306,8 @@ function LembretesPage() {
       )}
 
       {!enabled && (
-        <div className="mt-6 flex items-center gap-3 rounded-xl border border-dashed border-border p-5 text-sm text-muted-foreground">
-          <MessageCircle className="size-5 shrink-0 text-primary" />
+        <div className="report-luminous-card report-effect-subtle mt-6 flex items-center gap-3 p-5 text-sm text-muted-foreground">
+          <span className="report-icon-box shrink-0"><MessageCircle className="size-[1.05rem]" strokeWidth={1.8} aria-hidden="true" /></span>
           Ative o lembrete acima para os clientes receberem o aviso automaticamente no WhatsApp,
           na antecedência que você definir. A lista de quem será lembrado aparece aqui.
         </div>
