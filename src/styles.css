@@ -842,8 +842,7 @@ main, [data-slot="card"] { animation: page-fade-in 280ms ease-out both; }
 
 /* Profissionais — layout premium inspirado na nova linguagem visual, mantendo o azul Agenda Agora. */
 .owner-panel .professional-main-card,
-.owner-panel .professional-list-panel,
-body:has(.owner-panel) .professional-dialog {
+.owner-panel .professional-list-panel {
   position: relative;
   isolation: isolate;
   overflow: hidden;
@@ -1090,14 +1089,18 @@ body:has(.owner-panel) .professional-dialog::before {
 }
 
 body:has(.owner-panel) .professional-dialog {
-  position: fixed;
-  left: 50%;
-  top: max(16px, 4vh);
-  width: min(calc(100vw - 32px), 36rem);
-  max-height: calc(100vh - max(32px, 8vh));
-  transform: translateX(-50%) !important;
+  position: fixed !important;
+  left: 50% !important;
+  top: clamp(12px, 3vh, 24px) !important;
+  width: min(calc(100vw - 24px), 34rem) !important;
+  max-width: 34rem !important;
+  max-height: calc(100dvh - 24px) !important;
+  translate: -50% 0 !important;
+  transform: none !important;
+  margin: 0 !important;
   overflow-x: hidden;
   overflow-y: auto;
+  overscroll-behavior: contain;
   border-color: rgba(53, 79, 121, 0.46);
   background:
     radial-gradient(ellipse 76% 42% at 82% -10%, rgba(22, 119, 255, 0.09), transparent 68%),
@@ -1288,11 +1291,14 @@ body:has(.owner-panel) .professional-dialog-footer {
   }
 
   body:has(.owner-panel) .professional-dialog {
-    top: 12px;
-    width: calc(100vw - 22px);
-    max-width: none;
-    max-height: calc(100vh - 24px);
-    transform: translateX(-50%) !important;
+    left: 50% !important;
+    top: 10px !important;
+    width: calc(100vw - 20px) !important;
+    max-width: none !important;
+    max-height: calc(100dvh - 20px) !important;
+    translate: -50% 0 !important;
+    transform: none !important;
+    margin: 0 !important;
     border-radius: 0.9rem;
   }
 
