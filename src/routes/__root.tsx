@@ -90,7 +90,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "stylesheet", href: "/agenda-panel-overrides.css" },
       { rel: "icon", href: "/favicon.png", type: "image/png" },
     ],
   }),
