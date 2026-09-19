@@ -60,23 +60,39 @@ function IntegracoesPage() {
 function IntegrationsList({ onOpenWhatsapp }: { onOpenWhatsapp: () => void }) {
   return (
     <section className="mx-auto max-w-2xl">
-      <h1 className="mb-6 text-2xl font-bold tracking-[-0.03em] text-[#f6f7f9]">
-        Integrações externas
-      </h1>
+      <div className="integration-gold-panel p-4 sm:p-5">
+        <div className="relative z-10">
+          <div className="mb-5 flex items-start gap-3">
+            <div className="integration-gold-icon">
+              <Settings2 className="size-[1.05rem]" strokeWidth={1.8} aria-hidden="true" />
+            </div>
+            <div>
+              <h1 className="text-xl font-semibold tracking-[-0.025em] text-[#f4f4f5]">
+                Integrações externas
+              </h1>
+              <p className="mt-1 text-xs leading-relaxed text-[#74747d]">
+                Conecte os canais externos usados pelo seu negócio.
+              </p>
+            </div>
+          </div>
 
-      <div className="space-y-2">
-        <button
-          type="button"
-          onClick={onOpenWhatsapp}
-          className="group flex w-full items-center justify-between rounded-xl border border-white/[0.06] bg-[#34373c] px-4 py-3.5 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.035)] transition hover:border-emerald-400/25 hover:bg-[#3a3e43]"
-        >
-          <span className="flex items-center gap-3">
-            <MessageCircle className="size-7 text-emerald-400" strokeWidth={1.9} />
-            <span className="text-lg font-medium text-white">Whatsapp</span>
-          </span>
-          <ChevronRight className="size-8 text-emerald-400 transition-transform group-hover:translate-x-1" />
-        </button>
-
+          <button
+            type="button"
+            onClick={onOpenWhatsapp}
+            className="integration-gold-row group w-full"
+          >
+            <span className="flex min-w-0 items-center gap-3">
+              <span className="integration-gold-icon">
+                <MessageCircle className="size-[1.05rem]" strokeWidth={1.8} />
+              </span>
+              <span className="min-w-0 text-left">
+                <span className="block text-[0.95rem] font-semibold text-[#ececef]">WhatsApp</span>
+                <span className="mt-0.5 block text-xs text-[#6d6d76]">Conexão, mensagens e lembretes</span>
+              </span>
+            </span>
+            <ChevronRight className="size-5 shrink-0 text-[#d5ad2b] transition-transform group-hover:translate-x-1" />
+          </button>
+        </div>
       </div>
     </section>
   );
@@ -243,10 +259,10 @@ function WhatsappIntegration({
         <button
           type="button"
           onClick={onBack}
-          className="flex items-center gap-2 text-lg font-medium text-white transition hover:text-emerald-300"
+          className="flex items-center gap-2 text-lg font-semibold tracking-[-0.02em] text-[#f0f0f2] transition hover:text-[#e4bd3b]"
         >
           <ArrowLeft className="size-5" />
-          <MessageCircle className="size-7 text-emerald-400" />
+          <span className="integration-gold-icon"><MessageCircle className="size-[1.05rem]" strokeWidth={1.8} /></span>
           Whatsapp
         </button>
 
@@ -257,21 +273,21 @@ function WhatsappIntegration({
             void statusQuery.refetch();
             if (connected) void statsQuery.refetch();
           }}
-          className="flex size-10 items-center justify-center rounded-full bg-[#d83a48] text-white transition hover:brightness-110"
+          className="integration-gold-icon !size-10 transition hover:border-[#d8b229]/55 hover:text-[#f4cf4e]"
         >
           <RefreshCw className={`size-5 ${statusQuery.isFetching ? "animate-spin" : ""}`} />
         </button>
       </div>
 
-      <div className="mb-5 flex flex-wrap items-center gap-3 text-base font-semibold text-white">
+      <div className="mb-5 flex flex-wrap items-center gap-3 text-sm font-semibold text-[#ededee]">
         <span>Valor contratado:</span>
-        <span className="rounded-lg bg-[#4b4e51] px-3 py-1 text-emerald-400">R$ 0,00</span>
+        <span className="rounded-lg border border-[#6a5210]/70 bg-[#211b09] px-3 py-1 text-[#efc52f]">R$ 0,00</span>
       </div>
 
       <Button
         type="button"
         variant="secondary"
-        className="mb-4 bg-[#484b50] text-white hover:bg-[#55595e]"
+        className="mb-4 border border-[#34343a] bg-[#151518] text-[#ececef] shadow-none hover:border-[#6b5415] hover:bg-[#1b190f] hover:text-[#f4ce42]"
         onClick={() => {
           setShowConfig((value) => !value);
           if (!connected && !qrCode && !showConfig) connect.mutate();
@@ -283,12 +299,12 @@ function WhatsappIntegration({
       </Button>
 
       {showConfig && (
-        <div className="mb-4 rounded-xl border border-white/[0.08] bg-[#34373c] p-4">
+        <div className="mb-4 rounded-xl border border-[#2d2d32] bg-[#0e0e11] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.025)]">
           {connected ? (
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="font-semibold text-emerald-400">WhatsApp conectado</p>
-                <p className="mt-1 text-xs text-[#b6b8bb]">A integração está ativa e os dados abaixo são atualizados automaticamente.</p>
+                <p className="mt-1 text-xs text-[#70717a]">A integração está ativa e os dados abaixo são atualizados automaticamente.</p>
               </div>
               <Button
                 variant="destructive"
@@ -302,7 +318,7 @@ function WhatsappIntegration({
             </div>
           ) : qrCode ? (
             <div className="space-y-3">
-              <p className="text-sm text-[#d7d9db]">
+              <p className="text-sm text-[#b9bac1]">
                 Abra o WhatsApp, acesse aparelhos conectados e leia o QR Code.
               </p>
               <div className="mx-auto flex w-fit justify-center rounded-xl bg-white p-3">
@@ -317,7 +333,7 @@ function WhatsappIntegration({
             </div>
           ) : (
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-sm text-[#c4c7ca]">WhatsApp desconectado.</p>
+              <p className="text-sm text-[#8c8d95]">WhatsApp desconectado.</p>
               <Button size="sm" onClick={() => connect.mutate()} disabled={connect.isPending}>
                 <QrCode className="size-4" />
                 Conectar
@@ -326,25 +342,27 @@ function WhatsappIntegration({
           )}
         </div>
       )}
+        </div>
+      </div>
 
-      <div className="grid gap-2 sm:grid-cols-[1fr_176px]">
-        <div className="relative overflow-hidden rounded-xl bg-[#22d467] p-4 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] sm:col-span-2">
-          <MessageCircle className="absolute -right-1 -top-5 size-28 text-emerald-800/30" fill="currentColor" strokeWidth={1.2} />
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="integration-gold-stat relative overflow-hidden p-4 sm:col-span-2">
+          <MessageCircle className="absolute -right-2 -top-6 size-28 text-[#d8aa1f]/[0.07]" fill="currentColor" strokeWidth={1.2} />
           <div className="relative">
-            <p className="flex items-center gap-2 font-bold text-emerald-900/70">
+            <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#777780]">
               <MessageSquareText className="size-5" />
               Mensagens enviadas
             </p>
-            <p className="mt-8 text-3xl font-black tracking-[-0.04em] drop-shadow-sm">
+            <p className="mt-7 text-2xl font-semibold tracking-[-0.035em] text-[#f2f2f4]">
               {messagesSent.toLocaleString("pt-BR")} Mensagens
             </p>
           </div>
         </div>
 
-        <div className="relative overflow-hidden rounded-xl bg-[#22d467] p-4 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]">
-          <Bookmark className="absolute -right-3 -top-2 size-24 text-emerald-800/30" fill="currentColor" strokeWidth={1.2} />
+        <div className="integration-gold-stat relative overflow-hidden p-4">
+          <Bookmark className="absolute -right-3 -top-2 size-24 text-[#d8aa1f]/[0.07]" fill="currentColor" strokeWidth={1.2} />
           <div className="relative">
-            <p className="flex items-center gap-2 font-bold text-emerald-900/70">
+            <p className="flex items-center gap-2 font-bold text-[#777780]">
               <BellRing className="size-5" />
               Lembretes enviados
             </p>
@@ -354,47 +372,47 @@ function WhatsappIntegration({
           </div>
         </div>
 
-        <div className="rounded-xl bg-[#4a4c50] p-4 text-white">
-          <p className="flex items-center gap-2 text-xl font-black">
-            <span className={`size-5 rounded-full ${connected ? "bg-[#54ec6b]" : "bg-[#777b80]"}`} />
+        <div className="integration-gold-stat p-4">
+          <p className="flex items-center gap-2 text-[1.05rem] font-semibold text-[#ececef]">
+            <span className={`size-3 rounded-full ${connected ? "bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.45)]" : "bg-[#5e6067]"}`} />
             {connected ? "Ativo" : "Inativo"}
           </p>
-          <p className="mt-4 text-base font-bold">Tempo online</p>
+          <p className="mt-5 text-xs font-semibold uppercase tracking-[0.12em] text-[#71727a]">Tempo online</p>
           <div className="mt-1 flex items-end justify-between gap-2">
-            <span className="text-xl font-black">{formattedOnline}</span>
-            <span className="text-xl font-black">/h</span>
+            <span className="text-xl font-semibold tracking-[-0.03em] text-[#f0f0f2]">{formattedOnline}</span>
+            <span className="text-sm font-semibold text-[#6c6d74]">/h</span>
           </div>
         </div>
       </div>
 
-      <div className="mt-2 rounded-xl border-[8px] border-white bg-white text-[#8b8d90]">
-        <div className="flex items-center justify-between gap-3 px-1 pb-3 pt-1">
-          <p className="flex items-center gap-2 text-lg font-bold">
+      <div className="integration-gold-panel mt-3 overflow-hidden p-0">
+        <div className="relative z-10 flex items-center justify-between gap-3 border-b border-[#27272c] px-4 py-3.5">
+          <p className="flex items-center gap-2 text-[0.95rem] font-semibold text-[#ececef]">
             <CheckCheck className="size-6" />
             Mensagens pendentes
           </p>
-          <span className="rounded-full bg-[#ededed] px-2 py-0.5 text-xs font-semibold text-[#777]">
+          <span className="rounded-full border border-[#62501a] bg-[#211b09] px-2 py-0.5 text-xs font-semibold text-[#dcb62f]">
             {pendingCount}
           </span>
         </div>
 
-        <div className="min-h-32 rounded-lg bg-[#a3a4a6] p-3 text-white">
-          <div className="grid grid-cols-[1fr_1fr] gap-3 border-b border-white/25 pb-2 text-xs font-bold">
+        <div className="relative z-10 min-h-32 bg-[#0b0b0e] p-4">
+          <div className="grid grid-cols-[1fr_1fr] gap-3 border-b border-[#25252a] pb-2 text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-[#71727a]">
             <span>Nome</span>
             <span>Telefone</span>
           </div>
 
           {pending.length ? (
-            <div className="divide-y divide-white/15">
+            <div className="divide-y divide-[#222227]">
               {pending.map((appointment) => (
-                <div key={appointment.id} className="grid grid-cols-[1fr_1fr] gap-3 py-2 text-xs font-medium">
+                <div key={appointment.id} className="grid grid-cols-[1fr_1fr] gap-3 py-3 text-xs font-medium text-[#c8c9cf]">
                   <span className="truncate">{appointment.customer_name}</span>
                   <span className="truncate">{appointment.customer_phone || "—"}</span>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="flex min-h-20 items-center justify-center text-center text-xs font-semibold text-white/70">
+            <div className="flex min-h-24 items-center justify-center text-center text-xs font-medium text-[#62636b]">
               {connected ? "Nenhuma mensagem pendente" : "Conecte o WhatsApp para carregar os dados"}
             </div>
           )}
