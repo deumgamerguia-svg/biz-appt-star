@@ -8,6 +8,8 @@ export type Panel1Appearance = {
   service_hover_border: string;
   modal_background: string;
   modal_text: string;
+  modal_hover_background: string;
+  modal_hover_text: string;
   modal_active_background: string;
   modal_active_text: string;
   modal_border: string;
@@ -52,8 +54,10 @@ export const DEFAULT_PANEL1_APPEARANCE: Panel1Appearance = {
   service_hover_border: "#1677ff",
   modal_background: "#0b0d0f",
   modal_text: "#f3f4f6",
-  modal_active_background: "#10294a",
-  modal_active_text: "#5da8ff",
+  modal_hover_background: "#e8e8e8",
+  modal_hover_text: "#050607",
+  modal_active_background: "#e8e8e8",
+  modal_active_text: "#050607",
   modal_border: "#2a2d32",
   agenda_background: "#0b0d0f",
   agenda_text: "#f3f4f6",
