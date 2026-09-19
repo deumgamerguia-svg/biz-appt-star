@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/lib/toast";
 import { ChevronLeft, ChevronRight, Eye, CalendarX2, Trash2, Clock3 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { RuntimeProfiler } from "@/lib/runtime-profiler";
 import { useBusiness } from "@/lib/business";
 import {
   STATUSES,
@@ -46,7 +47,7 @@ export const Route = createFileRoute("/_authenticated/painel/")({
       },
     ],
   }),
-  component: AgendaPage,
+  component: ProfiledAgendaPage,
 });
 
 type ScheduleHour = { starts_at: string; ends_at: string };
@@ -123,6 +124,14 @@ const emptyForm = {
   notes: "",
   recurring: false,
 };
+
+function ProfiledAgendaPage() {
+  return (
+    <RuntimeProfiler id="AgendaPage">
+      <AgendaPage />
+    </RuntimeProfiler>
+  );
+}
 
 function AgendaPage() {
   const { businessId, business } = useBusiness();
@@ -935,6 +944,7 @@ function AgendaPage() {
         </div>
       </div>
 
+      <RuntimeProfiler id="AgendaTimeline">
       <div className="mt-3 overflow-hidden rounded-md border border-border">
         {!timelineSlots.length ? (
           <div className="px-6 py-10 text-center">
@@ -1063,12 +1073,14 @@ function AgendaPage() {
           </ul>
         )}
       </div>
+      </RuntimeProfiler>
 
       <p className="mt-4 text-right text-sm text-muted-foreground">
         {(appointments ?? []).length} agendamento(s) · {freeSlots.length} livre(s) ·{" "}
         {formatPrice(total)}
       </p>
 
+      <RuntimeProfiler id="AgendaBookingDialogs">
       <Dialog
         open={encaixeOpen}
         onOpenChange={(value) => {
@@ -1361,6 +1373,8 @@ function AgendaPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      </RuntimeProfiler>
 
       <Dialog open={!!selected} onOpenChange={(value) => !value && setDetail(null)}>
         <DialogContent>
