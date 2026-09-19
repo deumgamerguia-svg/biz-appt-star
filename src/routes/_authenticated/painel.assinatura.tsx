@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Camera, Copy, Check, CreditCard } from "lucide-react";
+import { Camera, Copy, Check, CreditCard, LockKeyhole } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -45,7 +45,8 @@ function SubscriptionAccountPage() {
   const { user } = useAuth();
   const { businesses, business, businessId } = useBusiness();
   const [copied, setCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState<(typeof ACCOUNT_TABS)[number]>("Assinatura");
+  const [activeTab, setActiveTab] = useState<(typeof ACCOUNT_TABS)[number]>("Visão Geral");
+  const [showAccess, setShowAccess] = useState(false);
 
   const { data: profile } = useQuery({
     queryKey: ["subscription-account-profile", user?.id],
@@ -107,6 +108,7 @@ function SubscriptionAccountPage() {
   const planName = paidCurrentMonth ? "Assinatura ativa" : "Teste Grátis";
   const planHint = paidCurrentMonth ? "Plano ativo" : "Plano ativo";
   const currentPlanPrice = payment?.amount_cents ?? business?.monthly_fee_cents ?? 0;
+  const accountPhone = business?.phone || "Não informado";
 
   const copyUserId = async () => {
     if (!user?.id) return;
@@ -176,7 +178,8 @@ function SubscriptionAccountPage() {
       <nav className="mt-7 flex flex-wrap gap-x-7 gap-y-1 border-b border-[#272a30] px-1">
         {ACCOUNT_TABS.map((tab) => {
           const active = tab === activeTab;
-          const interactive = tab === "Assinatura" || tab === "Faturas";
+          const interactive =
+            tab === "Visão Geral" || tab === "Assinatura" || tab === "Faturas";
 
           return (
             <button
@@ -196,7 +199,81 @@ function SubscriptionAccountPage() {
         })}
       </nav>
 
-      {activeTab === "Faturas" ? (
+      {activeTab === "Visão Geral" ? (
+        <div className="mt-4 space-y-4">
+          <section className="rounded-[18px] border border-[#272a30] bg-[#050607] p-5 sm:p-6">
+            <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-[#686f7b]">
+              Segurança
+            </p>
+
+            <div className="mt-4 rounded-[15px] border border-[#282b31] bg-[#0a0b0d] p-4 sm:p-5">
+              <div className="flex items-start gap-3">
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-[#08162d] text-[#3485ff]">
+                  <LockKeyhole className="size-4" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[15px] font-semibold text-[#eef0f3]">Senha de acesso</p>
+                  <p className="mt-1 text-xs leading-5 text-[#6e747e]">
+                    Consulte o usuário desta conta e os dados disponíveis do acesso atual
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowAccess((value) => !value)}
+                    className="mt-4 rounded-full border border-[#383c44] bg-[#121317] px-5 py-2 text-sm font-semibold text-[#e2e5e9] transition-colors hover:border-[#4b505a]"
+                  >
+                    {showAccess ? "Ocultar acesso" : "Ver acesso"}
+                  </button>
+
+                  {showAccess ? (
+                    <div className="mt-4 grid gap-3 rounded-[12px] border border-[#25282e] bg-[#08090b] p-4 text-sm sm:grid-cols-2">
+                      <div>
+                        <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-[#666d77]">
+                          Usuário
+                        </p>
+                        <p className="mt-1 break-all font-medium text-[#dfe2e6]">{accountEmail}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-[#666d77]">
+                          Senha atual
+                        </p>
+                        <p className="mt-1 font-medium text-[#dfe2e6]">••••••••</p>
+                        <p className="mt-1 text-[10px] leading-4 text-[#666d77]">
+                          A senha atual não pode ser recuperada em texto pelo sistema
+                        </p>
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="rounded-[18px] border border-[#272a30] bg-[#050607] p-5 sm:p-6">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-[#686f7b]">
+                Informações da conta
+              </p>
+              <button
+                type="button"
+                className="rounded-[9px] border border-[#30343b] bg-transparent px-3 py-2 text-xs font-medium text-[#b9bec7]"
+              >
+                Atualizar dados
+              </button>
+            </div>
+
+            <div className="mt-5 grid gap-x-8 gap-y-5 sm:grid-cols-2">
+              <AccountInfo label="NOME" value={accountName} />
+              <AccountInfo label="E-MAIL" value={accountEmail} />
+              <AccountInfo label="TELEFONE" value={accountPhone} />
+              <AccountInfo label="CPF / CNPJ" value="—" />
+              <AccountInfo label="PLANO" value={planName} />
+              <AccountInfo label="MEMBRO DESDE" value={formatAccountDate(memberSince)} />
+              <AccountInfo label="ID DA CONTA" value={user?.id || "—"} wide />
+            </div>
+          </section>
+        </div>
+      ) : activeTab === "Faturas" ? (
         <section className="mt-4 rounded-[18px] border border-[#272a30] bg-[#050607] p-4 sm:p-6">
           <div className="mb-4">
             <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-[#686f7b]">Faturas</p>
@@ -287,6 +364,24 @@ function AccountStat({
     <div className={`rounded-[14px] border border-[#282b31] bg-[#0d0e11] p-4 ${className}`}>
       <p className="text-[10px] font-medium uppercase tracking-[0.06em] text-[#676d77]">{label}</p>
       <p className="mt-1.5 text-[15px] font-semibold tracking-[-0.02em] text-[#e6e8eb]">{value}</p>
+    </div>
+  );
+}
+
+
+function AccountInfo({
+  label,
+  value,
+  wide = false,
+}: {
+  label: string;
+  value: string;
+  wide?: boolean;
+}) {
+  return (
+    <div className={wide ? "sm:col-span-2" : ""}>
+      <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-[#666d77]">{label}</p>
+      <p className="mt-1 break-words text-sm font-medium leading-5 text-[#aeb4bd]">{value}</p>
     </div>
   );
 }
