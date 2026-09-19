@@ -45,7 +45,7 @@ jobs:
             fi
             sleep 1
           done
-          PROFILE_MODE=prod node scripts/runtime-profile.mjs
+          timeout 180s env PROFILE_MODE=prod node scripts/runtime-profile.mjs
           kill $SERVER_PID 2>/dev/null || true
           wait $SERVER_PID 2>/dev/null || true
           trap - EXIT
@@ -62,7 +62,7 @@ jobs:
             fi
             sleep 1
           done
-          PROFILE_MODE=react node scripts/runtime-profile.mjs
+          timeout 180s env PROFILE_MODE=react node scripts/runtime-profile.mjs
           kill $SERVER_PID 2>/dev/null || true
           wait $SERVER_PID 2>/dev/null || true
           trap - EXIT
