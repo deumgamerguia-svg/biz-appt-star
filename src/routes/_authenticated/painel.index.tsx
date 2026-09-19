@@ -657,19 +657,19 @@ function AgendaPage() {
               vectorEffect="non-scaling-stroke"
             />
 
-            <circle r="4.6" fill="rgba(28,156,255,0.16)" filter="url(#date-neon-glow)">
+            <circle r="7.2" fill="rgba(28,156,255,0.18)" filter="url(#date-neon-glow)">
               <animateMotion dur="8s" repeatCount="indefinite" rotate="auto">
                 <mpath href="#date-outline-path" />
               </animateMotion>
             </circle>
 
-            <circle r="1.8" fill="rgba(60,188,255,0.98)" filter="url(#date-neon-glow)">
+            <circle r="3.1" fill="rgba(60,188,255,1)" filter="url(#date-neon-glow)">
               <animateMotion dur="8s" repeatCount="indefinite" rotate="auto">
                 <mpath href="#date-outline-path" />
               </animateMotion>
             </circle>
 
-            <circle r="0.72" fill="#eefbff">
+            <circle r="1.15" fill="#eefbff">
               <animateMotion dur="8s" repeatCount="indefinite" rotate="auto">
                 <mpath href="#date-outline-path" />
               </animateMotion>
