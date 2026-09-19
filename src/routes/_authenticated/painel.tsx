@@ -19,11 +19,11 @@ import {
   Plus,
   MessageCircle,
   Clock3,
-  LoaderCircle,
   Package,
   ChevronDown,
   SlidersHorizontal,
   Paintbrush,
+  Pin,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -31,7 +31,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useBusiness } from "@/lib/business";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import brandLogo from "@/assets/agenda-agora-logo.png.asset.json";
 
 export const Route = createFileRoute("/_authenticated/painel")({
   head: () => ({
@@ -115,7 +114,12 @@ const nav = [
         hint: "Mensagens prontas",
         icon: MessageSquareText,
       },
-      { to: "/painel/whatsapp", label: "WhatsApp", hint: "Conexão e mensagens", icon: MessageCircle },
+      {
+        to: "/painel/whatsapp",
+        label: "WhatsApp",
+        hint: "Conexão e mensagens",
+        icon: MessageCircle,
+      },
       { to: "/painel/lembretes", label: "Lembretes", hint: "Envios automáticos", icon: BellRing },
     ],
   },
@@ -235,7 +239,9 @@ function PainelLayout() {
   const { business, businessId } = useBusiness();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const [transitioning, setTransitioning] = useState(false);
+  const [sidebarHovered, setSidebarHovered] = useState(false);
+  const [sidebarFocused, setSidebarFocused] = useState(false);
+  const [sidebarPinned, setSidebarPinned] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const [configOpen, setConfigOpen] = useState(() => pathname.startsWith("/painel/configuracoes"));
@@ -277,10 +283,8 @@ function PainelLayout() {
   }, [pathname]);
 
   useEffect(() => {
-    if (!transitioning) return;
-    const timer = window.setTimeout(() => setTransitioning(false), 360);
-    return () => window.clearTimeout(timer);
-  }, [pathname, transitioning]);
+    setSidebarPinned(window.localStorage.getItem("agenda-sidebar-pinned") === "true");
+  }, []);
 
   useEffect(() => {
     if (!accountOpen) return;
@@ -294,8 +298,17 @@ function PainelLayout() {
   const beginNavigation = () => {
     setOpen(false);
     setAccountOpen(false);
-    setTransitioning(true);
   };
+
+  const toggleSidebarPin = () => {
+    setSidebarPinned((current) => {
+      const next = !current;
+      window.localStorage.setItem("agenda-sidebar-pinned", String(next));
+      return next;
+    });
+  };
+
+  const desktopSidebarExpanded = sidebarPinned || sidebarHovered || sidebarFocused;
 
   const greetingName = greetingProfile?.full_name?.trim() || business?.name || "Usuário";
   const accountName = greetingProfile?.full_name?.trim() || business?.name || "Usuário";
@@ -334,9 +347,20 @@ function PainelLayout() {
       />
 
       <aside
+        data-expanded={desktopSidebarExpanded}
+        onMouseEnter={() => setSidebarHovered(true)}
+        onMouseLeave={() => setSidebarHovered(false)}
+        onFocusCapture={() => setSidebarFocused(true)}
+        onBlurCapture={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+            setSidebarFocused(false);
+          }
+        }}
         className={`${
           open ? "translate-x-0" : "-translate-x-full"
-        } fixed inset-y-0 left-0 z-50 flex w-[17.5rem] max-w-[82vw] flex-col overflow-hidden border-r border-[#1b2d47] bg-[radial-gradient(ellipse_120%_54%_at_0%_0%,rgba(22,119,255,0.28)_0%,rgba(22,119,255,0.15)_28%,rgba(22,119,255,0.055)_49%,transparent_72%),linear-gradient(180deg,rgba(6,9,15,0.72)_0%,rgba(5,7,11,0.68)_34%,rgba(5,6,7,0.62)_100%)] px-5 py-4 shadow-[18px_0_55px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(93,168,255,0.10),inset_-1px_0_0_rgba(22,119,255,0.08)] backdrop-blur-xl transition-transform duration-200 ease-out lg:sticky lg:top-0 lg:h-screen lg:w-[18.5rem] lg:max-w-none lg:shrink-0 lg:translate-x-0 lg:px-5 lg:shadow-[inset_0_1px_0_rgba(93,168,255,0.10),inset_-1px_0_0_rgba(22,119,255,0.08)]`}
+        } owner-sidebar fixed inset-y-0 left-0 z-50 flex w-[17.5rem] max-w-[82vw] flex-col overflow-hidden border-r border-[#1b2d47] bg-[radial-gradient(ellipse_120%_54%_at_0%_0%,rgba(22,119,255,0.28)_0%,rgba(22,119,255,0.15)_28%,rgba(22,119,255,0.055)_49%,transparent_72%),linear-gradient(180deg,rgba(6,9,15,0.72)_0%,rgba(5,7,11,0.68)_34%,rgba(5,6,7,0.62)_100%)] px-5 py-4 shadow-[18px_0_55px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(93,168,255,0.10),inset_-1px_0_0_rgba(22,119,255,0.08)] backdrop-blur-xl transition-transform duration-200 ease-out lg:sticky lg:top-0 lg:h-screen lg:max-w-none lg:shrink-0 lg:translate-x-0 lg:shadow-[inset_0_1px_0_rgba(93,168,255,0.10),inset_-1px_0_0_rgba(22,119,255,0.08)] ${
+          desktopSidebarExpanded ? "lg:w-[18.5rem] lg:px-5" : "lg:w-[5.75rem] lg:px-3"
+        }`}
       >
         <div
           aria-hidden="true"
@@ -354,16 +378,16 @@ function PainelLayout() {
         <Link
           to="/painel"
           onClick={beginNavigation}
-          className="group relative z-10 flex h-[5.25rem] shrink-0 items-center border-b border-[#25282c] px-1"
+          className="group relative z-10 flex h-[5.25rem] shrink-0 items-center overflow-hidden border-b border-[#25282c] px-1"
         >
           <img
-            src={brandLogo.url}
+            src="/agenda-agora-sidebar-logo.svg"
             alt="Agenda Agora"
-            className="h-11 w-auto max-w-[220px] object-contain object-left transition-transform duration-300 group-hover:scale-[1.01]"
+            className="h-[4.25rem] w-[13.75rem] max-w-none shrink-0 object-contain object-left transition-transform duration-300 group-hover:scale-[1.01]"
           />
         </Link>
 
-        <div className="relative z-50 shrink-0 border-b border-[#25282c] px-1 py-3">
+        <div className="owner-sidebar-account relative z-50 shrink-0 border-b border-[#25282c] px-1 py-3">
           <div className="flex items-center rounded-xl px-1 py-1 transition-colors hover:bg-white/[0.025]">
             <button
               type="button"
@@ -375,7 +399,7 @@ function PainelLayout() {
               <span className="flex size-9 shrink-0 items-center justify-center rounded-[11px] bg-[#f2f3f5] text-[11px] font-semibold text-[#111318] shadow-[inset_0_0_0_1px_rgba(0,0,0,0.06)] transition-transform duration-150 group-hover:scale-[1.02]">
                 {accountInitial}
               </span>
-              <span className="min-w-0 flex-1">
+              <span className="owner-sidebar-reveal min-w-0 flex-1">
                 <span className="block truncate text-[11px] font-semibold leading-[14px] tracking-[-0.01em] text-[#f0f1f3]">
                   {accountName}
                 </span>
@@ -392,7 +416,7 @@ function PainelLayout() {
               type="button"
               aria-label="Sair da conta"
               title="Sair da conta"
-              className="flex size-8 shrink-0 items-center justify-center rounded-lg text-[#666d76] transition-colors hover:bg-white/[0.04] hover:text-[#d7dbe1] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1677ff]/70"
+              className="owner-sidebar-reveal flex size-8 shrink-0 items-center justify-center rounded-lg text-[#666d76] transition-colors hover:bg-white/[0.04] hover:text-[#d7dbe1] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1677ff]/70"
               onClick={async () => {
                 await signOut();
                 void navigate({ to: "/auth" });
@@ -403,7 +427,10 @@ function PainelLayout() {
           </div>
 
           {accountOpen && (
-            <div className="absolute left-0 right-0 top-[calc(100%+0.6rem)] z-[60] isolate rounded-2xl border border-[#272a2f] bg-[#050607] p-3.5 shadow-[0_18px_55px_rgba(0,0,0,0.82)] animate-in fade-in slide-in-from-top-2 duration-150" style={{ backgroundColor: "#050607" }}>
+            <div
+              className="absolute left-0 right-0 top-[calc(100%+0.6rem)] z-[60] isolate rounded-2xl border border-[#272a2f] bg-[#050607] p-3.5 shadow-[0_18px_55px_rgba(0,0,0,0.82)] animate-in fade-in slide-in-from-top-2 duration-150"
+              style={{ backgroundColor: "#050607" }}
+            >
               <div className="flex items-center gap-3 border-b border-[#22252a] pb-3">
                 <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-[#f2f3f5] text-[12px] font-semibold text-[#111318] shadow-[inset_0_0_0_1px_rgba(0,0,0,0.06)]">
                   {accountInitial}
@@ -435,7 +462,9 @@ function PainelLayout() {
                 </div>
                 <div className="flex items-start justify-between gap-3">
                   <span className="text-[#646b75]">Acesso</span>
-                  <span className={`text-right font-medium ${business?.status === "suspenso" ? "text-red-400" : "text-[#cfd3d9]"}`}>
+                  <span
+                    className={`text-right font-medium ${business?.status === "suspenso" ? "text-red-400" : "text-[#cfd3d9]"}`}
+                  >
                     {business?.status === "suspenso" ? "Suspenso" : "Ativo"}
                   </span>
                 </div>
@@ -452,10 +481,10 @@ function PainelLayout() {
           )}
         </div>
 
-        <nav className="relative z-10 min-h-0 flex-1 space-y-6 overflow-y-auto py-5 pr-1">
+        <nav className="owner-sidebar-nav relative z-10 min-h-0 flex-1 space-y-6 overflow-x-hidden overflow-y-auto py-5 pr-1">
           {nav.map((group) => (
             <section key={group.title}>
-              <p className="px-3 pb-2 text-[0.66rem] font-semibold uppercase tracking-[0.12em] text-[#4f5660]">
+              <p className="owner-sidebar-reveal px-3 pb-2 text-[0.66rem] font-semibold uppercase tracking-[0.12em] text-[#4f5660]">
                 {group.title}
               </p>
               <div className="space-y-1">
@@ -469,12 +498,24 @@ function PainelLayout() {
                           onClick={() => setConfigOpen((value) => !value)}
                           className={`owner-nav-item group relative flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-all duration-200 ${active ? "owner-nav-active border-[#1677ff]/15 bg-[#1677ff]/[0.09] text-[#f3f4f6]" : "border-transparent text-[#7f8793] hover:border-[#1677ff]/10 hover:bg-[#1677ff]/[0.055] hover:text-[#e5e7eb]"}`}
                         >
-                          <Settings2 className="size-5 shrink-0 transition-colors group-hover:text-[#5da8ff]" strokeWidth={1.8} />
-                          <span className="min-w-0 flex-1 leading-[1.25]"><span className="owner-nav-label block text-[0.86rem] font-medium">Configurações</span><span className="owner-nav-hint block truncate text-[0.7rem] font-normal text-[#555d68]">Preferências do negócio</span></span>
-                          <ChevronDown className={`size-4 shrink-0 transition-transform duration-200 ${configOpen ? "rotate-180" : ""}`} />
+                          <Settings2
+                            className="size-5 shrink-0 transition-colors group-hover:text-[#5da8ff]"
+                            strokeWidth={1.8}
+                          />
+                          <span className="owner-sidebar-reveal min-w-0 flex-1 leading-[1.25]">
+                            <span className="owner-nav-label block text-[0.86rem] font-medium">
+                              Configurações
+                            </span>
+                            <span className="owner-nav-hint block truncate text-[0.7rem] font-normal text-[#555d68]">
+                              Preferências do negócio
+                            </span>
+                          </span>
+                          <ChevronDown
+                            className={`owner-sidebar-reveal size-4 shrink-0 transition-transform duration-200 ${configOpen ? "rotate-180" : ""}`}
+                          />
                         </button>
                         {configOpen && (
-                          <div className="ml-2 space-y-1 rounded-xl border border-[#1677ff]/10 bg-[#1677ff]/[0.045] p-1.5">
+                          <div className="owner-sidebar-reveal ml-2 space-y-1 rounded-xl border border-[#1677ff]/10 bg-[#1677ff]/[0.045] p-1.5">
                             <Link
                               to="/painel/configuracoes"
                               search={{ secao: "preferencias" }}
@@ -515,7 +556,7 @@ function PainelLayout() {
                         className="size-5 shrink-0 transition-colors group-hover:text-[#5da8ff]"
                         strokeWidth={1.8}
                       />
-                      <span className="min-w-0 leading-[1.25]">
+                      <span className="owner-sidebar-reveal min-w-0 leading-[1.25]">
                         <span className="owner-nav-label block text-[0.86rem] font-medium">
                           {item.label}
                         </span>
@@ -530,19 +571,33 @@ function PainelLayout() {
             </section>
           ))}
         </nav>
+
+        <button
+          type="button"
+          aria-pressed={sidebarPinned}
+          aria-label={sidebarPinned ? "Desafixar menu lateral" : "Fixar menu lateral"}
+          onClick={toggleSidebarPin}
+          className={`owner-sidebar-pin relative z-20 mt-2 hidden h-12 shrink-0 items-center gap-3 border-t border-[#25282c] px-3 pt-2 text-left text-[0.78rem] font-medium transition-colors hover:text-white lg:flex ${
+            sidebarPinned ? "text-[#5da8ff]" : "text-[#666d76]"
+          }`}
+        >
+          <Pin
+            className={`size-5 shrink-0 transition-transform duration-300 ${sidebarPinned ? "rotate-[-35deg]" : ""}`}
+            strokeWidth={1.7}
+          />
+          <span className="owner-sidebar-reveal whitespace-nowrap">
+            {sidebarPinned ? "Desafixar sidebar" : "Fixar sidebar"}
+          </span>
+        </button>
       </aside>
 
       <div className="relative z-10 min-w-0 flex-1">
-        <div
-          aria-hidden="true"
-          className={`owner-route-progress ${transitioning ? "is-visible" : ""}`}
-        />
         <header className="sticky top-0 z-30 grid min-h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-b border-[#25282c] bg-[#050607]/90 px-3 py-3 shadow-[0_10px_35px_rgba(0,0,0,0.16)] backdrop-blur-xl sm:px-6">
           <div className="flex min-w-0 items-center gap-2.5">
             <Button
               variant="ghost"
               size="icon"
-              className="size-9 shrink-0 rounded-[11px] border border-[#2b2b2e] bg-[#0d0d10] text-[#e6e6e6] shadow-none hover:bg-[#121216] hover:text-white"
+              className="size-9 shrink-0 rounded-[11px] border border-[#2b2b2e] bg-[#0d0d10] text-[#e6e6e6] shadow-none hover:bg-[#121216] hover:text-white lg:hidden"
               onClick={() => setOpen((v) => !v)}
               aria-label="Abrir menu"
             >
@@ -562,11 +617,6 @@ function PainelLayout() {
         </header>
 
         <main className="relative mx-auto w-full max-w-7xl p-4 sm:p-7 lg:p-8">
-          {transitioning && (
-            <div className="owner-route-loader" aria-label="Carregando página" role="status">
-              <LoaderCircle className="size-6 animate-spin text-[#1677ff]" />
-            </div>
-          )}
           <div key={pathname} className="owner-route-content">
             <Outlet />
           </div>

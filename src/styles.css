@@ -275,20 +275,30 @@
 .owner-panel .owner-nav-active .owner-nav-hint { color: color-mix(in oklab, var(--color-primary) 55%, var(--color-sidebar-foreground)); }
 .owner-panel .owner-nav-item { min-height: 3.45rem; }
 
-.owner-route-progress { position: fixed; z-index: 60; top: 0; left: 0; width: 100%; height: 2px; pointer-events: none; opacity: 0; transform: scaleX(0); transform-origin: left; background: var(--color-primary); box-shadow: 0 0 12px color-mix(in oklab, var(--color-primary) 75%, transparent); }
-.owner-route-progress.is-visible { opacity: 1; animation: owner-route-progress 360ms ease-out both; }
-.owner-route-content { animation: owner-route-enter 220ms cubic-bezier(0.22, 1, 0.36, 1) both; }
-.owner-route-loader { position: absolute; z-index: 20; inset: 1rem; min-height: 12rem; display: grid; place-items: center; border-radius: var(--radius-lg); background: color-mix(in oklab, var(--color-background) 88%, transparent); backdrop-filter: blur(4px); animation: owner-loader-in 120ms ease-out both; }
+.owner-route-content { animation: owner-route-enter 440ms cubic-bezier(0.22, 1, 0.36, 1) both; will-change: opacity, transform, filter; }
+@keyframes owner-route-enter { from { opacity: 0.08; transform: translateY(3px) scale(0.998); filter: brightness(0.58); } to { opacity: 1; transform: translateY(0) scale(1); filter: brightness(1); } }
 
-@keyframes owner-route-progress { 0% { transform: scaleX(0); } 70% { transform: scaleX(0.82); } 100% { transform: scaleX(1); opacity: 0; } }
-@keyframes owner-route-enter { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes owner-loader-in { from { opacity: 0; } to { opacity: 1; } }
+@media (min-width: 1024px) {
+  .owner-sidebar { transition-property: width, padding-left, padding-right; transition-duration: 360ms; transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1); will-change: width, padding-left, padding-right; }
+  .owner-sidebar .owner-sidebar-reveal { transition: opacity 180ms ease, transform 300ms cubic-bezier(0.22, 1, 0.36, 1); }
+  .owner-sidebar .owner-sidebar-account { max-height: 6.5rem; transition: max-height 300ms cubic-bezier(0.22, 1, 0.36, 1), opacity 160ms ease, padding 300ms cubic-bezier(0.22, 1, 0.36, 1), border-color 180ms ease; }
+  .owner-sidebar[data-expanded="false"] .owner-sidebar-reveal { pointer-events: none; opacity: 0; transform: translateX(-8px); }
+  .owner-sidebar[data-expanded="false"] .owner-sidebar-account { pointer-events: none; max-height: 0; overflow: hidden; border-color: transparent; padding-top: 0; padding-bottom: 0; opacity: 0; }
+  .owner-sidebar[data-expanded="false"] .owner-sidebar-nav { padding-top: 0.75rem; scrollbar-width: none; }
+  .owner-sidebar[data-expanded="false"] .owner-sidebar-nav::-webkit-scrollbar { display: none; }
+  .owner-sidebar[data-expanded="false"] .owner-sidebar-nav section > p { max-height: 0; overflow: hidden; padding: 0; }
+  .owner-sidebar[data-expanded="false"] .owner-sidebar-nav section + section { margin-top: 0.35rem; }
+  .owner-sidebar[data-expanded="false"] .owner-nav-item { min-height: 2.85rem; justify-content: center; gap: 0; padding-left: 0; padding-right: 0; }
+  .owner-sidebar[data-expanded="false"] .owner-nav-item > svg { width: 1.18rem; height: 1.18rem; }
+  .owner-sidebar[data-expanded="false"] nav a:hover { transform: none; }
+  .owner-sidebar[data-expanded="false"] .owner-sidebar-pin { justify-content: center; padding-left: 0; padding-right: 0; }
+}
 
 .owner-panel main, .owner-panel [data-slot="card"] { animation-duration: 180ms; }
 
 @media (prefers-reduced-motion: reduce) {
   .owner-panel *, .owner-panel *::before, .owner-panel *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-  .owner-route-progress, .owner-route-content { animation: none !important; }
+  .owner-route-content { animation: none !important; }
 }
 
 @utility surface {
