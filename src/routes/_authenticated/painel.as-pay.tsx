@@ -67,7 +67,7 @@ function AsPayPage() {
         subtitle={`Sinais pagos pelos clientes de ${business?.name ?? "seu negócio"}.`}
       />
 
-      <div className="mx-auto max-w-2xl rounded-2xl border-2 border-primary/70 bg-card p-6 shadow-[0_0_24px_-8px_hsl(var(--primary))]">
+      <div className="report-luminous-card report-effect-strong mx-auto max-w-2xl p-6">
         <p className="text-xs font-semibold uppercase text-muted-foreground">Saldo disponível</p>
         <p className="font-display text-3xl font-bold text-primary">{formatPrice(available)}</p>
         <p className="mt-4 text-xs font-semibold uppercase text-muted-foreground">Saldo pendente</p>
@@ -79,7 +79,7 @@ function AsPayPage() {
       </p>
 
       <div className="mx-auto mt-8 max-w-2xl space-y-3">
-        <section className="as-pay-card as-pay-performance-card">
+        <section className="report-luminous-card report-effect-strong as-pay-card as-pay-performance-card">
           <div className="as-pay-performance-summary">
             <div className="min-w-0">
               <h2>Performance</h2>
@@ -92,7 +92,7 @@ function AsPayPage() {
           <PerformanceChart data={performance.days} />
         </section>
 
-        <section className="as-pay-card p-4 sm:p-5">
+        <section className="report-luminous-card report-effect-medium as-pay-card p-4 sm:p-5">
           <div className="as-pay-section-title">
             <Activity aria-hidden="true" />
             <h2>Fluxo de Caixa</h2>
@@ -114,7 +114,7 @@ function AsPayPage() {
           </div>
         </section>
 
-        <section className="as-pay-card as-pay-month-card">
+        <section className="report-luminous-card report-effect-subtle as-pay-card as-pay-month-card">
           <div>
             <p className="as-pay-eyebrow">Este mês</p>
             <p className="mt-2 text-2xl font-medium tracking-[-0.03em] text-[#f2f4f8]">
@@ -128,7 +128,7 @@ function AsPayPage() {
           </div>
         </section>
 
-        <section className="as-pay-card as-pay-history-card">
+        <section className="report-luminous-card report-effect-none as-pay-card as-pay-history-card">
           <div className="as-pay-history-header">
             <h2>Histórico de Saques</h2>
             <p>Acompanhe seus saques realizados</p>
