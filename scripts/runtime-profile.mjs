@@ -516,7 +516,7 @@ async function run() {
 
     results.push(
       await measureProd(page, cdp, "menu-agenda-return", async () => {
-        await page.locator('aside a[href="/painel"]').click();
+        await page.locator('aside a[href="/painel"]').first().click();
         await waitAgenda();
       }),
     );
@@ -562,7 +562,7 @@ async function run() {
     results.push(await takeReact(page, "clientes-search"));
 
     await resetReact(page);
-    await page.locator('aside a[href="/painel"]').click();
+    await page.locator('aside a[href="/painel"]').first().click();
     await waitAgenda();
     results.push(await takeReact(page, "menu-agenda-return"));
 
