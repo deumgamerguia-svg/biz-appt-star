@@ -1091,11 +1091,11 @@ body:has(.owner-panel) .professional-dialog::before {
 body:has(.owner-panel) .professional-dialog {
   position: fixed !important;
   left: 50% !important;
-  top: clamp(12px, 3vh, 24px) !important;
-  width: min(calc(100vw - 24px), 34rem) !important;
+  top: 50% !important;
+  width: min(calc(100vw - 32px), 34rem) !important;
   max-width: 34rem !important;
-  max-height: calc(100dvh - 24px) !important;
-  translate: -50% 0 !important;
+  max-height: min(88dvh, 46rem) !important;
+  translate: -50% -50% !important;
   transform: none !important;
   margin: 0 !important;
   overflow-x: hidden;
@@ -1126,7 +1126,7 @@ body:has(.owner-panel) .professional-dialog-header {
   border-bottom: 1px solid #24272e;
   background:
     linear-gradient(180deg, rgba(17, 21, 29, 0.72), rgba(10, 11, 14, 0.22));
-  padding: 1rem 1.25rem 0.95rem;
+  padding: 0.9rem 1.1rem 0.85rem;
 }
 
 body:has(.owner-panel) .professional-dialog-icon {
@@ -1277,7 +1277,7 @@ body:has(.owner-panel) .professional-dialog-footer {
   border-top: 1px solid #24272e;
   background:
     linear-gradient(180deg, rgba(9, 10, 13, 0.9), rgba(9, 10, 13, 0.99));
-  padding: 0.9rem 1.25rem 1rem;
+  padding: 0.75rem 1.1rem 0.85rem;
   backdrop-filter: blur(12px);
 }
 
@@ -1292,11 +1292,11 @@ body:has(.owner-panel) .professional-dialog-footer {
 
   body:has(.owner-panel) .professional-dialog {
     left: 50% !important;
-    top: 10px !important;
-    width: calc(100vw - 20px) !important;
+    top: 50% !important;
+    width: calc(100vw - 24px) !important;
     max-width: none !important;
-    max-height: calc(100dvh - 20px) !important;
-    translate: -50% 0 !important;
+    max-height: calc(100dvh - 32px) !important;
+    translate: -50% -50% !important;
     transform: none !important;
     margin: 0 !important;
     border-radius: 0.9rem;
