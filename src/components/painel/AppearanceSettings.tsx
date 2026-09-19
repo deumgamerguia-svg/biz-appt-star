@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ImagePlus, Paintbrush, SlidersHorizontal, Trash2 } from "lucide-react";
+import { Instagram, MapPin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { LOGO_BUCKET, getLogoUrl } from "@/lib/logo";
 import { loadPanel1Config, savePanel1Config } from "@/lib/panel1-config.client";
@@ -9,13 +9,13 @@ import {
   DEFAULT_PANEL1_APPEARANCE,
   type Panel1Appearance as Appearance,
 } from "@/lib/panel1-config";
-import { Button } from "@/components/ui/button";
 
 export function AppearanceSettings({ businessId }: { businessId: string }) {
   const queryClient = useQueryClient();
   const inputRef = useRef<HTMLInputElement>(null);
+  const saveTimerRef = useRef<number | null>(null);
+  const hydratedRef = useRef(false);
   const [busy, setBusy] = useState(false);
-  const [primary, setPrimary] = useState("#1677ff");
   const [background, setBackground] = useState("#050607");
   const [appearance, setAppearance] = useState<Appearance>(DEFAULT_PANEL1_APPEARANCE);
 
@@ -24,17 +24,16 @@ export function AppearanceSettings({ businessId }: { businessId: string }) {
     queryFn: async () => {
       const [{ data: business, error }, config] = await Promise.all([
         (supabase.from("businesses") as any)
-          .select("logo_url, brand_primary, brand_background")
+          .select("logo_url, brand_background")
           .eq("id", businessId)
           .maybeSingle(),
         loadPanel1Config(businessId),
       ]);
       if (error) throw error;
-      const path = business?.logo_url ?? null;
+      const logoPath = business?.logo_url ?? null;
       return {
-        logoPath: path as string | null,
-        logoUrl: await getLogoUrl(path),
-        brand_primary: (business?.brand_primary ?? null) as string | null,
+        logoPath: logoPath as string | null,
+        logoUrl: await getLogoUrl(logoPath),
         brand_background: (business?.brand_background ?? null) as string | null,
         appearance: config.appearance,
       };
@@ -43,214 +42,264 @@ export function AppearanceSettings({ businessId }: { businessId: string }) {
 
   useEffect(() => {
     if (!data) return;
-    setPrimary(data.brand_primary ?? "#1677ff");
+    hydratedRef.current = false;
     setBackground(data.brand_background ?? "#050607");
     setAppearance(data.appearance);
+    window.requestAnimationFrame(() => {
+      hydratedRef.current = true;
+    });
   }, [data]);
 
-  const invalidate = () =>
-    queryClient.invalidateQueries({ queryKey: ["panel1-appearance", businessId] });
-
-  const save = useMutation({
-    mutationFn: async () => {
+  const persistAppearance = useMutation({
+    mutationFn: async ({
+      nextBackground,
+      nextAppearance,
+    }: {
+      nextBackground: string;
+      nextAppearance: Appearance;
+    }) => {
       const { error } = await (supabase.from("businesses") as any)
-        .update({
-          brand_primary: primary,
-          brand_background: background,
-        })
+        .update({ brand_background: nextBackground })
         .eq("id", businessId);
       if (error) throw error;
-      await savePanel1Config(businessId, { appearance });
+      await savePanel1Config(businessId, { appearance: nextAppearance });
     },
-    onSuccess: () => {
-      toast.success("Aparência do Painel 1 atualizada");
-      void invalidate();
-    },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (error: Error) => toast.error(error.message),
   });
+
+  useEffect(() => {
+    if (!hydratedRef.current) return;
+    if (saveTimerRef.current) window.clearTimeout(saveTimerRef.current);
+
+    saveTimerRef.current = window.setTimeout(() => {
+      persistAppearance.mutate({
+        nextBackground: background,
+        nextAppearance: appearance,
+      });
+    }, 450);
+
+    return () => {
+      if (saveTimerRef.current) window.clearTimeout(saveTimerRef.current);
+    };
+  }, [appearance, background]);
 
   const upload = useMutation({
     mutationFn: async (file: File) => {
       const ext = file.name.split(".").pop()?.toLowerCase() || "png";
-      const path = `${businessId}/logo-${Date.now()}.${ext}`;
+      const uploadPath = businessId + "/logo-" + Date.now() + "." + ext;
       const { error } = await supabase.storage
         .from(LOGO_BUCKET)
-        .upload(path, file, { upsert: true, contentType: file.type });
+        .upload(uploadPath, file, { upsert: true, contentType: file.type });
       if (error) throw error;
+
       const { error: dbError } = await supabase
         .from("businesses")
-        .update({ logo_url: path })
+        .update({ logo_url: uploadPath })
         .eq("id", businessId);
       if (dbError) throw dbError;
-      if (data?.logoPath) await supabase.storage.from(LOGO_BUCKET).remove([data.logoPath]);
+
+      if (data?.logoPath) {
+        await supabase.storage.from(LOGO_BUCKET).remove([data.logoPath]);
+      }
     },
     onSuccess: () => {
       toast.success("Logotipo atualizado");
-      void invalidate();
+      void queryClient.invalidateQueries({ queryKey: ["panel1-appearance", businessId] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (error: Error) => toast.error(error.message),
     onSettled: () => setBusy(false),
   });
 
-  const removeLogo = useMutation({
-    mutationFn: async () => {
-      if (data?.logoPath) await supabase.storage.from(LOGO_BUCKET).remove([data.logoPath]);
-      const { error } = await supabase
-        .from("businesses")
-        .update({ logo_url: null })
-        .eq("id", businessId);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast.success("Logotipo removido");
-      void invalidate();
-    },
-    onError: (e: Error) => toast.error(e.message),
-  });
-
-  const setColor = (key: keyof Appearance, value: string) =>
+  const setColor = (key: keyof Appearance, value: string) => {
     setAppearance((current) => ({ ...current, [key]: value }));
+  };
+
+  const previewServices = [
+    { price: "R$ 25,00 - 30min", description: "Exemplo de descrição" },
+    { price: "R$ 45,00 - 40min", description: "Exemplo de descrição" },
+    { price: "R$ 80,00 - 60min", description: "" },
+  ];
 
   return (
-    <div className="rounded-2xl border border-[#25282c] bg-[#090a0c] p-5 sm:p-7">
-      <div className="flex flex-col gap-2 border-b border-[#25282c] pb-6">
-        <div className="flex items-center gap-3">
-          <Paintbrush className="size-5 text-[#5da8ff]" />
-          <h2 className="text-xl font-semibold">Alterar cores</h2>
-        </div>
-        <p className="text-sm text-[#8b929d]">
-          Customize a página que o cliente usa para marcar o horário. Todas as alterações são aplicadas ao Painel 1.
-        </p>
-      </div>
+    <div className="mx-auto w-full max-w-[650px] bg-[#4a4a4a] px-4 pb-9 pt-7 sm:px-8">
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/png,image/jpeg,image/webp,image/svg+xml"
+        className="hidden"
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          event.target.value = "";
+          if (!file) return;
 
-      <div className="mt-7 grid gap-7 xl:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="rounded-2xl border border-[#2a2d32] bg-[#111316] p-5 sm:p-7">
-          <div
-            className="mx-auto max-w-xl rounded-2xl border p-7"
-            style={{
-              background,
-              color: appearance.page_text,
-              borderColor: appearance.service_border,
-            }}
-          >
-            <div className="flex min-h-24 items-center justify-center">
-              {data?.logoUrl ? (
-                <img
-                  src={data.logoUrl}
-                  alt="Logotipo"
-                  className="max-h-20 max-w-[72%] object-contain"
-                />
-              ) : (
-                <span className="text-sm opacity-60">Sua logotipo</span>
-              )}
-            </div>
-            <h3 className="mt-4 text-center text-xl font-semibold">SERVIÇOS</h3>
-            <div className="mt-5 space-y-4">
-              {["Serviço de exemplo", "Outro serviço", "Serviço premium"].map(
-                (label, index) => (
-                  <div
-                    key={label}
-                    className="rounded-lg border px-4 py-4 text-center"
-                    style={{
-                      background: appearance.service_background,
-                      color: appearance.service_text,
-                      borderColor: appearance.service_border,
-                    }}
-                  >
-                    <p>{label}</p>
-                    <p className="mt-2 text-sm opacity-75">
-                      R$ {index === 0 ? "25,00 · 30min" : index === 1 ? "45,00 · 40min" : "80,00 · 60min"}
-                    </p>
-                  </div>
-                ),
-              )}
-            </div>
-          </div>
+          if (file.size > 5 * 1024 * 1024) {
+            toast.error("A imagem precisa ter no máximo 5 MB");
+            return;
+          }
 
-          <input
-            ref={inputRef}
-            type="file"
-            accept="image/png,image/jpeg,image/webp,image/svg+xml"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              e.target.value = "";
-              if (!file) return;
-              if (file.size > 5 * 1024 * 1024) {
-                toast.error("A imagem precisa ter no máximo 5 MB");
-                return;
-              }
-              setBusy(true);
-              upload.mutate(file);
-            }}
-          />
-          <div className="mt-5 flex flex-wrap justify-center gap-3">
-            <Button variant="outline" onClick={() => inputRef.current?.click()} disabled={busy}>
-              <ImagePlus className="mr-2 size-4" />
-              {busy ? "Enviando..." : data?.logoUrl ? "Trocar logotipo" : "Enviar logotipo"}
-            </Button>
-            {data?.logoUrl && (
-              <Button variant="outline" onClick={() => removeLogo.mutate()}>
-                <Trash2 className="mr-2 size-4" /> Remover
-              </Button>
-            )}
-          </div>
-        </div>
+          setBusy(true);
+          upload.mutate(file);
+        }}
+      />
 
-        <aside className="space-y-5">
-          <ColorControl label="Cor de fundo" value={background} onChange={setBackground} />
-          <ColorControl label="Cor de destaque" value={primary} onChange={setPrimary} />
-          <ColorControl
-            label="Texto da página"
-            value={appearance.page_text}
-            onChange={(value) => setColor("page_text", value)}
-          />
-        </aside>
-      </div>
-
-      <div className="mt-8 rounded-2xl border border-[#2a2d32] bg-[#111316] p-5 sm:p-7">
-        <div className="mb-6 flex items-center gap-3">
-          <SlidersHorizontal className="size-5 text-[#5da8ff]" />
-          <h3 className="font-semibold">Configurações avançadas</h3>
-        </div>
-        <div className="grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
-          <ColorControl label="Borda hover serviço" value={appearance.service_hover_border} onChange={(value) => setColor("service_hover_border", value)} />
-          <ColorControl label="Borda serviço" value={appearance.service_border} onChange={(value) => setColor("service_border", value)} />
-          <ColorControl label="Texto hover serviço" value={appearance.service_hover_text} onChange={(value) => setColor("service_hover_text", value)} />
-          <ColorControl label="Texto serviço" value={appearance.service_text} onChange={(value) => setColor("service_text", value)} />
-          <ColorControl label="Hover serviço" value={appearance.service_hover_background} onChange={(value) => setColor("service_hover_background", value)} />
-          <ColorControl label="Background serviço" value={appearance.service_background} onChange={(value) => setColor("service_background", value)} />
-          <ColorControl label="Texto hover modal" value={appearance.modal_active_text} onChange={(value) => setColor("modal_active_text", value)} />
-          <ColorControl label="Texto modal" value={appearance.modal_text} onChange={(value) => setColor("modal_text", value)} />
-          <ColorControl label="Borda modal" value={appearance.modal_border} onChange={(value) => setColor("modal_border", value)} />
-          <ColorControl label="Background modal" value={appearance.modal_background} onChange={(value) => setColor("modal_background", value)} />
-          <ColorControl label="Background ativo modal" value={appearance.modal_active_background} onChange={(value) => setColor("modal_active_background", value)} />
-          <ColorControl label="Borda agenda" value={appearance.agenda_border} onChange={(value) => setColor("agenda_border", value)} />
-          <ColorControl label="Texto agenda" value={appearance.agenda_text} onChange={(value) => setColor("agenda_text", value)} />
-          <ColorControl label="Background agenda" value={appearance.agenda_background} onChange={(value) => setColor("agenda_background", value)} />
-        </div>
-      </div>
-
-      <div className="mt-7 flex flex-wrap justify-end gap-3">
-        <Button
-          variant="outline"
-          onClick={() => {
-            setPrimary("#1677ff");
-            setBackground("#050607");
-            setAppearance({ ...DEFAULT_PANEL1_APPEARANCE });
-          }}
+      <section
+        className="mx-auto w-full max-w-[448px] rounded-[12px] px-5 pb-6 pt-8"
+        style={{
+          backgroundColor: background,
+          color: appearance.page_text,
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => !busy && inputRef.current?.click()}
+          disabled={busy}
+          title="Clique para trocar o logotipo"
+          className="mx-auto flex min-h-[78px] w-full max-w-[270px] items-center justify-center bg-transparent p-0 disabled:cursor-wait"
         >
-          Restaurar padrão
-        </Button>
-        <Button onClick={() => save.mutate()} disabled={save.isPending}>
-          {save.isPending ? "Salvando..." : "Salvar aparência"}
-        </Button>
+          {data?.logoUrl ? (
+            <img
+              src={data.logoUrl}
+              alt="Logotipo"
+              className="max-h-[76px] max-w-full object-contain"
+            />
+          ) : (
+            <span className="text-sm font-medium opacity-60">
+              {busy ? "Enviando..." : "SUA LOGO"}
+            </span>
+          )}
+        </button>
+
+        <h3 className="mt-5 text-center text-[28px] font-medium leading-none">
+          SERVIÇOS
+        </h3>
+
+        <div className="mx-auto mt-6 w-full max-w-[306px] space-y-6">
+          {previewServices.map((service, index) => (
+            <div
+              key={index}
+              className="flex min-h-[112px] flex-col items-center justify-center rounded-[8px] border-2 px-4 py-3 text-center"
+              style={{
+                backgroundColor: appearance.service_background,
+                color: appearance.service_text,
+                borderColor: appearance.service_border,
+              }}
+            >
+              <p className="text-[16px] font-medium leading-5">Serviço de exemplo</p>
+              <p className="mt-7 text-[16px] font-semibold leading-5">{service.price}</p>
+              {service.description ? (
+                <p className="mt-1 text-[16px] font-medium leading-5">
+                  {service.description}
+                </p>
+              ) : null}
+            </div>
+          ))}
+        </div>
+
+        <div
+          className="mt-6 flex items-center justify-center gap-2.5"
+          style={{ color: appearance.page_text }}
+        >
+          <MapPin className="size-8" strokeWidth={2.1} />
+          <Instagram className="size-8" strokeWidth={2.1} />
+        </div>
+      </section>
+
+      <div className="mx-auto mt-8 flex w-full max-w-[448px] justify-center">
+        <div className="rounded-[12px] bg-[#2c2c2c] px-4 py-3 text-[16px] font-bold text-white shadow-[0_4px_12px_rgba(0,0,0,0.20)]">
+          Configurações avançadas
+        </div>
       </div>
+
+      <section className="mx-auto mt-5 grid w-full max-w-[430px] grid-cols-2 gap-x-10 gap-y-3 sm:gap-x-16">
+        <ColorDotControl label="Cor de fundo" value={background} onChange={setBackground} />
+        <ColorDotControl
+          label="Texto da página"
+          value={appearance.page_text}
+          onChange={(value) => setColor("page_text", value)}
+        />
+
+        <ColorDotControl
+          label="Borda hover serviço"
+          value={appearance.service_hover_border}
+          onChange={(value) => setColor("service_hover_border", value)}
+        />
+        <ColorDotControl
+          label="Borda serviço"
+          value={appearance.service_border}
+          onChange={(value) => setColor("service_border", value)}
+        />
+
+        <ColorDotControl
+          label="Texto hover serviço"
+          value={appearance.service_hover_text}
+          onChange={(value) => setColor("service_hover_text", value)}
+        />
+        <ColorDotControl
+          label="Texto serviço"
+          value={appearance.service_text}
+          onChange={(value) => setColor("service_text", value)}
+        />
+
+        <ColorDotControl
+          label="Texto hover modal"
+          value={appearance.modal_hover_text}
+          onChange={(value) => setColor("modal_hover_text", value)}
+        />
+        <ColorDotControl
+          label="Hover serviço"
+          value={appearance.service_hover_background}
+          onChange={(value) => setColor("service_hover_background", value)}
+        />
+
+        <ColorDotControl
+          label="Texto ativo modal"
+          value={appearance.modal_active_text}
+          onChange={(value) => setColor("modal_active_text", value)}
+        />
+        <ColorDotControl
+          label="Borda modal"
+          value={appearance.modal_border}
+          onChange={(value) => setColor("modal_border", value)}
+        />
+
+        <ColorDotControl
+          label="Borda agenda"
+          value={appearance.agenda_border}
+          onChange={(value) => setColor("agenda_border", value)}
+        />
+        <ColorDotControl
+          label="Texto modal"
+          value={appearance.modal_text}
+          onChange={(value) => setColor("modal_text", value)}
+        />
+
+        <ColorDotControl
+          label="Texto agenda"
+          value={appearance.agenda_text}
+          onChange={(value) => setColor("agenda_text", value)}
+        />
+        <ColorDotControl
+          label="Background agenda"
+          value={appearance.agenda_background}
+          onChange={(value) => setColor("agenda_background", value)}
+        />
+
+        <ColorDotControl
+          label="Background hover modal"
+          value={appearance.modal_hover_background}
+          onChange={(value) => setColor("modal_hover_background", value)}
+        />
+        <ColorDotControl
+          label="Background ativo modal"
+          value={appearance.modal_active_background}
+          onChange={(value) => setColor("modal_active_background", value)}
+        />
+      </section>
     </div>
   );
 }
 
-function ColorControl({
+function ColorDotControl({
   label,
   value,
   onChange,
@@ -260,16 +309,21 @@ function ColorControl({
   onChange: (value: string) => void;
 }) {
   return (
-    <label className="flex items-center justify-between gap-4">
-      <span className="text-sm font-medium text-[#d9dde3]">{label}</span>
-      <span className="flex items-center gap-2">
+    <label className="flex min-w-0 cursor-pointer flex-col items-center text-center">
+      <span className="min-h-[40px] text-[15px] font-bold leading-[19px] text-white">
+        {label}
+      </span>
+      <span
+        className="relative mt-1 block size-[52px] overflow-hidden rounded-full border border-black/10 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]"
+        style={{ backgroundColor: value }}
+      >
         <input
           type="color"
           value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="size-11 cursor-pointer rounded-full border-0 bg-transparent p-0"
+          onChange={(event) => onChange(event.target.value)}
+          aria-label={label}
+          className="absolute inset-0 size-full cursor-pointer opacity-0"
         />
-        <span className="w-[74px] text-xs uppercase text-[#7f8793]">{value}</span>
       </span>
     </label>
   );
