@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/lib/toast";
@@ -92,13 +92,22 @@ function buildSlots(hours: ScheduleHour[]) {
   return [...slots].sort((a, b) => minutesOf(a) - minutesOf(b));
 }
 
+const AGENDA_TIME_FORMATTER = new Intl.DateTimeFormat("pt-BR", {
+  timeZone: "America/Sao_Paulo",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+});
+const AGENDA_DATE_FORMATTER = new Intl.DateTimeFormat("pt-BR", {
+  timeZone: "America/Sao_Paulo",
+});
+const AGENDA_WEEKDAY_FORMATTER = new Intl.DateTimeFormat("pt-BR", {
+  weekday: "long",
+  timeZone: "America/Sao_Paulo",
+});
+
 function timeFromIso(iso: string) {
-  return new Date(iso).toLocaleTimeString("pt-BR", {
-    timeZone: "America/Sao_Paulo",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
+  return AGENDA_TIME_FORMATTER.format(new Date(iso));
 }
 
 function toAgendaIso(date: string, time: string) {
@@ -106,9 +115,7 @@ function toAgendaIso(date: string, time: string) {
 }
 
 function agendaDateLabel(date: string) {
-  return new Date(`${date}T12:00:00-03:00`).toLocaleDateString("pt-BR", {
-    timeZone: "America/Sao_Paulo",
-  });
+  return AGENDA_DATE_FORMATTER.format(new Date(`${date}T12:00:00-03:00`));
 }
 
 function overlaps(start: number, end: number, otherStart: number, otherEnd: number) {
@@ -143,7 +150,7 @@ function AgendaPage() {
   const [showCancelled, setShowCancelled] = useState(true);
   const [form, setForm] = useState(emptyForm);
   const [encaixeForm, setEncaixeForm] = useState({ ...emptyForm, time: "" });
-  const weekdayNumber = new Date(`${day}T12:00:00-03:00`).getDay();
+  const weekdayNumber = useMemo(() => new Date(`${day}T12:00:00-03:00`).getDay(), [day]);
 
   const { data: services } = useQuery({
     queryKey: ["services", businessId],
@@ -496,12 +503,16 @@ function AgendaPage() {
     onError: (error: Error) => toast.error(error.message),
   });
 
-  const dayBlocks = (timeBlocks ?? []).filter(
-    (block) =>
-      !block.recurring &&
-      !block.professional_id &&
-      block.block_date === day &&
-      block.reason === DAY_BLOCK_REASON,
+  const dayBlocks = useMemo(
+    () =>
+      (timeBlocks ?? []).filter(
+        (block) =>
+          !block.recurring &&
+          !block.professional_id &&
+          block.block_date === day &&
+          block.reason === DAY_BLOCK_REASON,
+      ),
+    [timeBlocks, day],
   );
   const dayBlocked = dayBlocks.length > 0;
 
@@ -590,90 +601,172 @@ function AgendaPage() {
     setDay(toDateInput(next));
   };
 
-  const baseSlots = buildSlots(businessHours ?? []);
-  const timelineSlots = [
-    ...new Set([
-      ...baseSlots,
-      ...(appointments ?? []).map((appointment) => timeFromIso(appointment.starts_at)),
-    ]),
-  ].sort((a, b) => minutesOf(a) - minutesOf(b));
+  const baseSlots = useMemo(() => buildSlots(businessHours ?? []), [businessHours]);
 
   type Appointment = NonNullable<typeof appointments>[number];
-  const visibleAppointments = (appointments ?? []).filter(
-    (appointment) => showCancelled || appointment.status !== "cancelado",
+  const appointmentTimes = useMemo(() => {
+    const map = new Map<
+      string,
+      { startTime: string; startMinute: number; endMinute: number }
+    >();
+    for (const appointment of appointments ?? []) {
+      const startTime = timeFromIso(appointment.starts_at);
+      const endTime = timeFromIso(appointment.ends_at);
+      map.set(appointment.id, {
+        startTime,
+        startMinute: minutesOf(startTime),
+        endMinute: minutesOf(endTime),
+      });
+    }
+    return map;
+  }, [appointments]);
+
+  const timelineSlots = useMemo(
+    () =>
+      [
+        ...new Set([
+          ...baseSlots,
+          ...(appointments ?? []).map(
+            (appointment) =>
+              appointmentTimes.get(appointment.id)?.startTime ??
+              timeFromIso(appointment.starts_at),
+          ),
+        ]),
+      ].sort((a, b) => minutesOf(a) - minutesOf(b)),
+    [baseSlots, appointments, appointmentTimes],
   );
-  const bySlot = new Map<string, Appointment[]>();
-  for (const appointment of visibleAppointments) {
-    const key = timeFromIso(appointment.starts_at);
-    bySlot.set(key, [...(bySlot.get(key) ?? []), appointment]);
-  }
 
-  const blockForSlot = (slot: string) => {
-    const minute = minutesOf(slot);
-    return (timeBlocks ?? []).find(
-      (block) =>
-        !block.professional_id &&
-        minute >= minutesOf(block.starts_at) &&
-        minute < minutesOf(block.ends_at),
-    );
-  };
+  const bySlot = useMemo(() => {
+    const map = new Map<string, Appointment[]>();
+    for (const appointment of appointments ?? []) {
+      if (!showCancelled && appointment.status === "cancelado") continue;
+      const key =
+        appointmentTimes.get(appointment.id)?.startTime ??
+        timeFromIso(appointment.starts_at);
+      const current = map.get(key);
+      if (current) current.push(appointment);
+      else map.set(key, [appointment]);
+    }
+    return map;
+  }, [appointments, appointmentTimes, showCancelled]);
 
-  const weekday = new Date(`${day}T12:00:00-03:00`).toLocaleDateString("pt-BR", {
-    weekday: "long",
-    timeZone: "America/Sao_Paulo",
-  });
+  const globalBlocks = useMemo(
+    () =>
+      (timeBlocks ?? [])
+        .filter((block) => !block.professional_id)
+        .map((block) => ({
+          block,
+          startMinute: minutesOf(block.starts_at),
+          endMinute: minutesOf(block.ends_at),
+        })),
+    [timeBlocks],
+  );
 
-  const total = (appointments ?? []).reduce(
-    (sum, appointment) =>
-      appointment.status !== "cancelado" && appointment.status !== "bloqueado"
-        ? sum + ((appointment.services as { price_cents: number } | null)?.price_cents ?? 0)
-        : sum,
-    0,
+  const blockBySlot = useMemo(() => {
+    const map = new Map<string, ScheduleBlock>();
+    for (const slot of timelineSlots) {
+      const minute = minutesOf(slot);
+      const found = globalBlocks.find(
+        ({ startMinute, endMinute }) =>
+          minute >= startMinute && minute < endMinute,
+      );
+      if (found) map.set(slot, found.block);
+    }
+    return map;
+  }, [timelineSlots, globalBlocks]);
+
+  const blockForSlot = (slot: string) => blockBySlot.get(slot);
+
+  const weekday = useMemo(
+    () => AGENDA_WEEKDAY_FORMATTER.format(new Date(`${day}T12:00:00-03:00`)),
+    [day],
+  );
+
+  const total = useMemo(
+    () =>
+      (appointments ?? []).reduce(
+        (sum, appointment) =>
+          appointment.status !== "cancelado" && appointment.status !== "bloqueado"
+            ? sum +
+              ((appointment.services as { price_cents: number } | null)?.price_cents ?? 0)
+            : sum,
+        0,
+      ),
+    [appointments],
   );
 
   const selected =
     (appointments ?? []).find((appointment) => appointment.id === detail) ?? null;
 
-  const freeSlots = baseSlots.filter((slot) => {
-    const startMinute = minutesOf(slot);
-    const endMinute = startMinute + SLOT_MINUTES;
-    const hasBusyAppointment = (appointments ?? []).some((appointment) => {
-      if (appointment.status === "cancelado" || appointment.status === "aguardando_sinal") {
-        return false;
-      }
-      return overlaps(
-        startMinute,
-        endMinute,
-        minutesOf(timeFromIso(appointment.starts_at)),
-        minutesOf(timeFromIso(appointment.ends_at)),
-      );
-    });
-    const hasBlock = (timeBlocks ?? []).some(
-      (block) =>
-        !block.professional_id &&
-        overlaps(
-          startMinute,
-          endMinute,
-          minutesOf(block.starts_at),
-          minutesOf(block.ends_at),
-        ),
-    );
-    return !hasBusyAppointment && !hasBlock;
-  });
-
-  const scheduleLabel = (businessHours ?? [])
-    .map((hour) => `${hour.starts_at.slice(0, 5)}–${hour.ends_at.slice(0, 5)}`)
-    .join(" · ");
-
-  const linkedForSelectedService = (serviceLinks ?? []).filter(
-    (link) => link.service_id === form.service_id,
+  const busyAppointmentRanges = useMemo(
+    () =>
+      (appointments ?? []).flatMap((appointment) => {
+        if (
+          appointment.status === "cancelado" ||
+          appointment.status === "aguardando_sinal"
+        ) {
+          return [];
+        }
+        const timing = appointmentTimes.get(appointment.id);
+        return timing
+          ? [{ startMinute: timing.startMinute, endMinute: timing.endMinute }]
+          : [];
+      }),
+    [appointments, appointmentTimes],
   );
-  const linkedIds = new Set(linkedForSelectedService.map((link) => link.professional_id));
-  const eligibleProfessionals = (professionals ?? []).filter((professional) => {
-    const worksToday = (professional.working_days ?? []).includes(weekdayNumber);
-    const linked = !linkedForSelectedService.length || linkedIds.has(professional.id);
-    return worksToday && linked;
-  });
+
+  const freeSlots = useMemo(
+    () =>
+      baseSlots.filter((slot) => {
+        const startMinute = minutesOf(slot);
+        const endMinute = startMinute + SLOT_MINUTES;
+        const hasBusyAppointment = busyAppointmentRanges.some((range) =>
+          overlaps(
+            startMinute,
+            endMinute,
+            range.startMinute,
+            range.endMinute,
+          ),
+        );
+        const hasBlock = globalBlocks.some((range) =>
+          overlaps(
+            startMinute,
+            endMinute,
+            range.startMinute,
+            range.endMinute,
+          ),
+        );
+        return !hasBusyAppointment && !hasBlock;
+      }),
+    [baseSlots, busyAppointmentRanges, globalBlocks],
+  );
+
+  const scheduleLabel = useMemo(
+    () =>
+      (businessHours ?? [])
+        .map((hour) => `${hour.starts_at.slice(0, 5)}–${hour.ends_at.slice(0, 5)}`)
+        .join(" · "),
+    [businessHours],
+  );
+
+  const linkedForSelectedService = useMemo(
+    () => (serviceLinks ?? []).filter((link) => link.service_id === form.service_id),
+    [serviceLinks, form.service_id],
+  );
+  const linkedIds = useMemo(
+    () => new Set(linkedForSelectedService.map((link) => link.professional_id)),
+    [linkedForSelectedService],
+  );
+  const eligibleProfessionals = useMemo(
+    () =>
+      (professionals ?? []).filter((professional) => {
+        const worksToday = (professional.working_days ?? []).includes(weekdayNumber);
+        const linked =
+          !linkedForSelectedService.length || linkedIds.has(professional.id);
+        return worksToday && linked;
+      }),
+    [professionals, weekdayNumber, linkedForSelectedService.length, linkedIds],
+  );
 
   const defaultProfessionalForService = (serviceId: string) => {
     const links = (serviceLinks ?? []).filter((link) => link.service_id === serviceId);
@@ -723,15 +816,28 @@ function AgendaPage() {
     });
   };
 
-  const encaixeLinkedForSelectedService = (serviceLinks ?? []).filter(
-    (link) => link.service_id === encaixeForm.service_id,
+  const encaixeLinkedForSelectedService = useMemo(
+    () =>
+      (serviceLinks ?? []).filter(
+        (link) => link.service_id === encaixeForm.service_id,
+      ),
+    [serviceLinks, encaixeForm.service_id],
   );
-  const encaixeLinkedIds = new Set(
-    encaixeLinkedForSelectedService.map((link) => link.professional_id),
+  const encaixeLinkedIds = useMemo(
+    () =>
+      new Set(
+        encaixeLinkedForSelectedService.map((link) => link.professional_id),
+      ),
+    [encaixeLinkedForSelectedService],
   );
-  const encaixeProfessionals = (professionals ?? []).filter(
-    (professional) =>
-      !encaixeLinkedForSelectedService.length || encaixeLinkedIds.has(professional.id),
+  const encaixeProfessionals = useMemo(
+    () =>
+      (professionals ?? []).filter(
+        (professional) =>
+          !encaixeLinkedForSelectedService.length ||
+          encaixeLinkedIds.has(professional.id),
+      ),
+    [professionals, encaixeLinkedForSelectedService.length, encaixeLinkedIds],
   );
 
   const openEncaixe = () => {
