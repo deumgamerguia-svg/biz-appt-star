@@ -26,8 +26,8 @@ import {
   SlidersHorizontal,
   Paintbrush,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { useIsFetching, useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useBusiness } from "@/lib/business";
 import { supabase } from "@/integrations/supabase/client";
@@ -240,13 +240,6 @@ function PainelLayout() {
   const [transitioning, setTransitioning] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const pathname = useRouterState({ select: (state) => state.location.pathname });
-  const locationHref = useRouterState({ select: (state) => state.location.href });
-  const routerPending = useRouterState({ select: (state) => state.status === "pending" });
-  const initialFetches = useIsFetching({
-    predicate: (query) => query.state.data === undefined,
-  });
-  const transitionOriginRef = useRef(locationHref);
-  const destinationCommittedRef = useRef(false);
   const [configOpen, setConfigOpen] = useState(() => pathname.startsWith("/painel/configuracoes"));
 
   const { data: greetingProfile } = useQuery({
@@ -282,46 +275,14 @@ function PainelLayout() {
 
   useEffect(() => {
     if (pathname.startsWith("/painel/configuracoes")) setConfigOpen(true);
-    setOpen(false);
     setAccountOpen(false);
   }, [pathname]);
 
   useEffect(() => {
     if (!transitioning) return;
-    if (locationHref !== transitionOriginRef.current) {
-      destinationCommittedRef.current = true;
-    }
-  }, [locationHref, transitioning]);
-
-  useEffect(() => {
-    if (!transitioning || !destinationCommittedRef.current) return;
-    if (routerPending || initialFetches > 0) return;
-
-    // Two frames guarantee that the destination DOM has committed and painted
-    // before the loading cover is removed.
-    let secondFrame = 0;
-    const firstFrame = window.requestAnimationFrame(() => {
-      secondFrame = window.requestAnimationFrame(() => {
-        setTransitioning(false);
-        destinationCommittedRef.current = false;
-      });
-    });
-
-    return () => {
-      window.cancelAnimationFrame(firstFrame);
-      if (secondFrame) window.cancelAnimationFrame(secondFrame);
-    };
-  }, [transitioning, routerPending, initialFetches, locationHref]);
-
-  useEffect(() => {
-    if (!transitioning) return;
-    // Safety only: never trap the user behind the loader if a request fails silently.
-    const fallback = window.setTimeout(() => {
-      setTransitioning(false);
-      destinationCommittedRef.current = false;
-    }, 8000);
-    return () => window.clearTimeout(fallback);
-  }, [transitioning]);
+    const timer = window.setTimeout(() => setTransitioning(false), 360);
+    return () => window.clearTimeout(timer);
+  }, [pathname, transitioning]);
 
   useEffect(() => {
     if (!accountOpen) return;
@@ -333,11 +294,8 @@ function PainelLayout() {
   }, [accountOpen]);
 
   const beginNavigation = () => {
-    // Cover the current page immediately, before the router starts swapping routes.
     setOpen(false);
     setAccountOpen(false);
-    transitionOriginRef.current = locationHref;
-    destinationCommittedRef.current = false;
     setTransitioning(true);
   };
 
@@ -397,7 +355,6 @@ function PainelLayout() {
 
         <Link
           to="/painel"
-          onPointerDown={beginNavigation}
           onClick={beginNavigation}
           className="group relative z-10 flex h-[5.25rem] shrink-0 items-center border-b border-[#25282c] px-1"
         >
@@ -488,7 +445,6 @@ function PainelLayout() {
 
               <Link
                 to="/painel/assinatura"
-                onPointerDown={beginNavigation}
                 onClick={beginNavigation}
                 className="mt-3 flex w-full items-center justify-center rounded-xl border border-[#262a30] bg-[#111317] px-3 py-2 text-[11px] font-medium text-[#cfd3d9] transition-colors hover:border-[#1677ff]/30 hover:bg-[#1677ff]/[0.06] hover:text-white"
               >
@@ -524,7 +480,6 @@ function PainelLayout() {
                             <Link
                               to="/painel/configuracoes"
                               search={{ secao: "preferencias" }}
-                              onPointerDown={beginNavigation}
                               onClick={beginNavigation}
                               className="flex items-center gap-2 rounded-lg px-3 py-2 text-[0.82rem] font-medium text-[#c9ced6] transition-colors hover:bg-[#1677ff]/10 hover:text-white"
                             >
@@ -534,7 +489,6 @@ function PainelLayout() {
                             <Link
                               to="/painel/configuracoes"
                               search={{ secao: "aparencia" }}
-                              onPointerDown={beginNavigation}
                               onClick={beginNavigation}
                               className="flex items-center gap-2 rounded-lg px-3 py-2 text-[0.82rem] font-medium text-[#c9ced6] transition-colors hover:bg-[#1677ff]/10 hover:text-white"
                             >
@@ -552,7 +506,6 @@ function PainelLayout() {
                       key={item.to}
                       to={item.to}
                       activeOptions={{ exact: "exact" in item ? item.exact : false }}
-                      onPointerDown={beginNavigation}
                       onClick={beginNavigation}
                       className="owner-nav-item group relative flex items-center gap-3 rounded-xl border border-transparent px-3 py-2.5 text-[#7f8793] transition-all duration-200 hover:border-[#1677ff]/10 hover:bg-[#1677ff]/[0.055] hover:text-[#e5e7eb]"
                       activeProps={{
@@ -613,13 +566,10 @@ function PainelLayout() {
         <main className="relative mx-auto w-full max-w-7xl p-4 sm:p-7 lg:p-8">
           {transitioning && (
             <div className="owner-route-loader" aria-label="Carregando página" role="status">
-              <div className="owner-route-loader-inner">
-                <LoaderCircle className="size-6 animate-spin text-[#1677ff]" />
-                <span>Carregando</span>
-              </div>
+              <LoaderCircle className="size-6 animate-spin text-[#1677ff]" />
             </div>
           )}
-          <div className={`owner-route-content ${transitioning ? "is-transitioning" : ""}`}>
+          <div key={pathname} className="owner-route-content">
             <Outlet />
           </div>
         </main>
