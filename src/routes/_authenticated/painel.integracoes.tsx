@@ -14,7 +14,7 @@ import {
   Settings2,
   Unplug,
 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { NoBusiness } from "@/components/painel/PageHeader";
 import { supabase } from "@/integrations/supabase/client";
