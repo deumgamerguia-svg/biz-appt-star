@@ -634,9 +634,9 @@ function AgendaPage() {
             preserveAspectRatio="none"
           >
             <defs>
-              <filter id="date-neon-glow" x="-60%" y="-60%" width="220%" height="220%">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="2.4" result="blurSoft" />
-                <feGaussianBlur in="SourceGraphic" stdDeviation="5.2" result="blurWide" />
+              <filter id="date-neon-glow" x="-80%" y="-80%" width="260%" height="260%">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="1.35" result="blurSoft" />
+                <feGaussianBlur in="SourceGraphic" stdDeviation="3.8" result="blurWide" />
                 <feMerge>
                   <feMergeNode in="blurWide" />
                   <feMergeNode in="blurSoft" />
@@ -652,28 +652,31 @@ function AgendaPage() {
             <use
               href="#date-outline-path"
               fill="none"
-              stroke="rgba(36,139,255,0.10)"
-              strokeWidth="0.4"
+              stroke="rgba(45,145,255,0.13)"
+              strokeWidth="0.42"
               vectorEffect="non-scaling-stroke"
             />
 
-            <ellipse rx="50.4" ry="7.2" fill="rgba(28,156,255,0.18)" filter="url(#date-neon-glow)">
-              <animateMotion dur="8s" repeatCount="indefinite" rotate="auto">
-                <mpath href="#date-outline-path" />
-              </animateMotion>
-            </ellipse>
-
-            <ellipse rx="21.7" ry="3.1" fill="rgba(60,188,255,1)" filter="url(#date-neon-glow)">
-              <animateMotion dur="8s" repeatCount="indefinite" rotate="auto">
-                <mpath href="#date-outline-path" />
-              </animateMotion>
-            </ellipse>
-
-            <ellipse rx="8.05" ry="1.15" fill="#eefbff">
-              <animateMotion dur="8s" repeatCount="indefinite" rotate="auto">
-                <mpath href="#date-outline-path" />
-              </animateMotion>
-            </ellipse>
+            <use
+              href="#date-outline-path"
+              fill="none"
+              stroke="rgba(72,177,255,1)"
+              strokeWidth="0.62"
+              strokeLinecap="round"
+              pathLength="100"
+              strokeDasharray="14 86"
+              strokeDashoffset="0"
+              filter="url(#date-neon-glow)"
+              vectorEffect="non-scaling-stroke"
+            >
+              <animate
+                attributeName="stroke-dashoffset"
+                from="0"
+                to="-100"
+                dur="8s"
+                repeatCount="indefinite"
+              />
+            </use>
           </svg>
           <Input
             type="date"
