@@ -4,7 +4,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   BadgeCheck,
-  Clock3,
   ImagePlus,
   Layers3,
   Link2,
@@ -466,7 +465,7 @@ function ServicosPage() {
               <div className="space-y-2">
                 <Label className="professional-section-label">Descrição</Label>
                 <Textarea
-                  className="professional-input min-h-24 resize-none py-3"
+                  className="professional-input service-description-input min-h-24 resize-none py-3"
                   value={form.description}
                   onChange={(event) => setForm({ ...form, description: event.target.value })}
                 />
