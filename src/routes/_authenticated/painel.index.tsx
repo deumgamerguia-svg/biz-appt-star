@@ -983,7 +983,7 @@ function AgendaPage() {
               if (!items.length && block) {
                 return (
                   <li key={slot}>
-                    <div className="flex w-full items-center gap-4 border-b border-background bg-slot-blocked px-4 py-2.5 text-slot-blocked-foreground">
+                    <div className="flex w-full items-center gap-4 rounded-md border-b border-background bg-slot-blocked px-4 py-2.5 text-slot-blocked-foreground">
                       <span className="w-14 font-bold">{slot}</span>
                       <span className="flex-1 text-center text-sm font-medium">
                         Horário bloqueado
@@ -1018,7 +1018,7 @@ function AgendaPage() {
                     <button
                       type="button"
                       onClick={() => openNewAt(slot)}
-                      className="flex w-full items-center gap-4 border-b border-background bg-slot-free px-4 py-2.5 text-left text-slot-free-foreground transition-opacity hover:opacity-90"
+                      className="flex w-full items-center gap-4 rounded-md border-b border-background bg-slot-free px-4 py-2.5 text-left text-slot-free-foreground transition-opacity hover:opacity-90"
                     >
                       <span className="w-14 font-medium">{slot}</span>
                       <span className="flex-1 text-center text-xs font-medium uppercase tracking-wide opacity-70">
@@ -1058,7 +1058,7 @@ function AgendaPage() {
                     <button
                       type="button"
                       onClick={() => setDetail(appointment.id)}
-                      className={`flex w-full items-center gap-4 border-b border-background px-4 py-2.5 text-left transition-opacity hover:opacity-90 ${tone}`}
+                      className={`flex w-full items-center gap-4 rounded-md border-b border-background px-4 py-2.5 text-left transition-opacity hover:opacity-90 ${tone}`}
                     >
                       <span className="w-14 font-bold">{timeFromIso(appointment.starts_at)}</span>
                       <span className="flex-1 text-center text-sm">
