@@ -74,9 +74,13 @@ const bundleAuditPlugin = {
     };
 
     reportClosure("client-entry", (chunk: any) => chunk.isEntry);
-    reportClosure("route-auth", (chunk: any) => String(chunk.facadeModuleId ?? "").endsWith("/src/routes/auth.tsx"));
-    reportClosure("route-panel", (chunk: any) => String(chunk.facadeModuleId ?? "").endsWith("/src/routes/_authenticated/painel.index.tsx"));
-    reportClosure("route-public-booking", (chunk: any) => String(chunk.facadeModuleId ?? "").endsWith("/src/routes/agendar.$slug.tsx"));
+    const hasModule = (chunk: any, suffix: string) =>
+      String(chunk.facadeModuleId ?? "").endsWith(suffix) ||
+      Object.keys(chunk.modules ?? {}).some((id) => id.endsWith(suffix));
+
+    reportClosure("route-auth", (chunk: any) => hasModule(chunk, "/src/routes/auth.tsx"));
+    reportClosure("route-panel", (chunk: any) => hasModule(chunk, "/src/routes/_authenticated/painel.index.tsx"));
+    reportClosure("route-public-booking", (chunk: any) => hasModule(chunk, "/src/routes/agendar.$slug.tsx"));
 
     const cssAssets = emittedAssets.filter((asset: any) => String(asset.fileName).endsWith(".css"));
     const cssRaw = cssAssets.reduce((sum: number, asset: any) => {
