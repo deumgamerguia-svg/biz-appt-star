@@ -266,6 +266,98 @@
 }
 
 .owner-panel .surface { box-shadow: none; }
+.owner-panel .as-pay-card {
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.095);
+  border-radius: 1rem;
+  background: linear-gradient(145deg, rgba(10, 13, 18, 0.98), rgba(4, 6, 9, 0.99));
+  box-shadow: 0 18px 42px -34px rgba(0, 0, 0, 0.95);
+}
+.owner-panel .as-pay-performance-card { padding: 1rem 1rem 0.9rem; }
+.owner-panel .as-pay-performance-summary {
+  display: grid;
+  grid-template-columns: minmax(5.5rem, 1fr) repeat(3, auto);
+  align-items: start;
+  gap: 1rem;
+}
+.owner-panel .as-pay-performance-summary h2,
+.owner-panel .as-pay-section-title h2,
+.owner-panel .as-pay-history-header h2 {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #f0f2f6;
+}
+.owner-panel .as-pay-performance-summary > div:first-child > p,
+.owner-panel .as-pay-history-header p,
+.owner-panel .as-pay-eyebrow {
+  margin-top: 0.2rem;
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #555b65;
+}
+.owner-panel .as-pay-metric { text-align: right; }
+.owner-panel .as-pay-metric span {
+  display: block;
+  white-space: nowrap;
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #555b65;
+}
+.owner-panel .as-pay-metric strong {
+  display: block;
+  margin-top: 0.18rem;
+  white-space: nowrap;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #aeb3bc;
+}
+.owner-panel .as-pay-chart { margin-top: 0.85rem; }
+.owner-panel .as-pay-chart svg { display: block; width: 100%; height: 12rem; overflow: visible; }
+.owner-panel .as-pay-grid-line { stroke: rgba(255, 255, 255, 0.045); stroke-width: 1; stroke-dasharray: 5 7; }
+.owner-panel .as-pay-chart-line { fill: none; stroke: #1677ff; stroke-width: 3; vector-effect: non-scaling-stroke; }
+.owner-panel .as-pay-chart-point { fill: #080b10; stroke: #5da8ff; stroke-width: 3; vector-effect: non-scaling-stroke; }
+.owner-panel .as-pay-chart-labels { display: grid; grid-template-columns: repeat(7, 1fr); margin-top: -0.1rem; }
+.owner-panel .as-pay-chart-labels span { text-align: center; font-size: 0.67rem; color: #626872; }
+.owner-panel .as-pay-section-title { display: flex; align-items: center; gap: 0.55rem; }
+.owner-panel .as-pay-section-title svg { width: 0.9rem; height: 0.9rem; color: #5d6570; }
+.owner-panel .as-pay-flow-row {
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 0.85rem;
+  background: rgba(255, 255, 255, 0.012);
+  padding: 0.9rem;
+}
+.owner-panel .as-pay-flow-row > div:first-child > span {
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #555b65;
+}
+.owner-panel .as-pay-flow-row svg { width: 0.8rem; height: 0.8rem; }
+.owner-panel .as-pay-flow-row strong { font-size: 0.86rem; font-weight: 500; color: #aeb3bc; }
+.owner-panel .as-pay-progress-track { height: 0.42rem; flex: 1; overflow: hidden; border-radius: 999px; background: rgba(255, 255, 255, 0.045); }
+.owner-panel .as-pay-progress-track > span { display: block; height: 100%; border-radius: inherit; background: #555b65; }
+.owner-panel .as-pay-progress-track > span.is-positive { background: linear-gradient(90deg, #1159bd, #1677ff 70%, #5da8ff); box-shadow: 0 0 12px rgba(22, 119, 255, 0.34); }
+.owner-panel .as-pay-month-card { min-height: 13rem; display: flex; flex-direction: column; justify-content: space-between; padding: 1.1rem; }
+.owner-panel .as-pay-month-segments { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.28rem; }
+.owner-panel .as-pay-month-segments span { height: 0.7rem; border-radius: 0.22rem; background: rgba(255, 255, 255, 0.065); }
+.owner-panel .as-pay-month-segments span.is-active { background: linear-gradient(90deg, #105cc8, #1677ff, #5da8ff); box-shadow: 0 0 14px rgba(22, 119, 255, 0.3); }
+.owner-panel .as-pay-history-card { min-height: 17.5rem; }
+.owner-panel .as-pay-history-header { border-bottom: 1px solid rgba(255, 255, 255, 0.065); padding: 1.1rem; }
+.owner-panel .as-pay-empty-withdrawals { display: flex; min-height: 12rem; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.owner-panel .as-pay-empty-icon { display: grid; width: 3rem; height: 3rem; place-items: center; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 0.8rem; color: #68707b; background: rgba(255, 255, 255, 0.018); }
+.owner-panel .as-pay-empty-icon svg { width: 1.1rem; height: 1.1rem; }
+.owner-panel .as-pay-empty-withdrawals > p { margin-top: 1rem; font-size: 0.86rem; color: #747a84; }
+.owner-panel .as-pay-empty-withdrawals > span { margin-top: 0.25rem; font-size: 0.72rem; color: #41464e; }
+@media (max-width: 520px) {
+  .owner-panel .as-pay-performance-summary { grid-template-columns: minmax(4.6rem, 1fr) repeat(3, auto); gap: 0.55rem; }
+  .owner-panel .as-pay-metric span { font-size: 0.5rem; letter-spacing: 0.06em; }
+  .owner-panel .as-pay-metric strong { font-size: 0.69rem; }
+  .owner-panel .as-pay-chart svg { height: 10.5rem; }
+}
 .owner-panel .report-luminous-card {
   --report-glow-alpha: 0;
   --report-orb-alpha: 0;
