@@ -838,3 +838,412 @@ main, [data-slot="card"] { animation: page-fade-in 280ms ease-out both; }
     min-height: 7.2rem;
   }
 }
+
+
+/* Profissionais — layout premium inspirado na nova linguagem visual, mantendo o azul Agenda Agora. */
+.owner-panel .professional-main-card,
+.owner-panel .professional-list-panel,
+body:has(.owner-panel) .professional-dialog {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid rgba(63, 88, 129, 0.27);
+  border-radius: 1rem;
+  background:
+    radial-gradient(ellipse 72% 36% at 80% -12%, rgba(22, 119, 255, 0.08), transparent 70%),
+    linear-gradient(145deg, rgba(14, 15, 18, 0.99), rgba(8, 9, 12, 1) 66%, rgba(6, 7, 9, 1));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.025),
+    0 24px 54px -40px rgba(0, 0, 0, 0.98),
+    0 10px 32px -30px rgba(22, 119, 255, 0.5);
+}
+
+.owner-panel .professional-main-card {
+  padding: 1.05rem;
+}
+
+.owner-panel .professional-main-card::before,
+.owner-panel .professional-list-panel::before,
+body:has(.owner-panel) .professional-dialog::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  top: -1px;
+  left: 8%;
+  width: 84%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(72, 140, 255, 0.1) 18%,
+    rgba(93, 168, 255, 0.42) 50%,
+    rgba(72, 140, 255, 0.1) 82%,
+    transparent
+  );
+  box-shadow: 0 0 16px rgba(22, 119, 255, 0.1);
+}
+
+.owner-panel .professional-main-card::after,
+.owner-panel .professional-list-panel::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  top: -5rem;
+  right: -3rem;
+  width: 17rem;
+  height: 10rem;
+  border-radius: 50%;
+  background: rgba(22, 119, 255, 0.045);
+  filter: blur(34px);
+  pointer-events: none;
+}
+
+.owner-panel .professional-icon-box {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  width: 2.55rem;
+  height: 2.55rem;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(51, 125, 255, 0.36);
+  border-radius: 0.72rem;
+  color: #69a2ff;
+  background: linear-gradient(145deg, rgba(19, 42, 78, 0.82), rgba(12, 25, 47, 0.74));
+  box-shadow:
+    inset 0 1px 0 rgba(180, 213, 255, 0.045),
+    0 0 18px rgba(22, 119, 255, 0.075);
+}
+
+.owner-panel .professional-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.45rem;
+  border: 1px solid rgba(53, 55, 62, 0.95);
+  border-radius: 999px;
+  background: rgba(22, 23, 27, 0.9);
+  padding: 0.15rem 0.55rem;
+  color: #7a7d86;
+  font-size: 0.63rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.owner-panel .professional-primary-button {
+  border: 1px solid rgba(66, 137, 255, 0.64);
+  background: linear-gradient(180deg, #2f83ff 0%, #176df0 100%);
+  color: #ffffff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 10px 22px -16px rgba(22, 119, 255, 0.85);
+}
+
+.owner-panel .professional-primary-button:hover {
+  border-color: rgba(103, 166, 255, 0.82);
+  background: linear-gradient(180deg, #4a94ff 0%, #1f7fff 100%);
+  color: #ffffff;
+}
+
+.owner-panel .professional-secondary-button {
+  border: 1px solid rgba(52, 53, 59, 0.98);
+  background: linear-gradient(180deg, rgba(23, 24, 28, 0.98), rgba(15, 16, 19, 0.98));
+  color: #cfd2d8;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+}
+
+.owner-panel .professional-secondary-button:hover {
+  border-color: rgba(54, 112, 205, 0.6);
+  background: linear-gradient(180deg, rgba(17, 26, 42, 0.98), rgba(11, 17, 28, 0.98));
+  color: #6fa6ff;
+}
+
+.owner-panel .professional-stat-card {
+  position: relative;
+  min-height: 7.2rem;
+  overflow: hidden;
+  border: 1px solid rgba(43, 45, 51, 0.95);
+  border-radius: 0.88rem;
+  background:
+    radial-gradient(ellipse 80% 70% at 90% -25%, rgba(22, 119, 255, 0.045), transparent 64%),
+    linear-gradient(150deg, rgba(15, 16, 20, 0.99), rgba(9, 10, 13, 1));
+  padding: 0.8rem;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.018),
+    0 18px 35px -31px rgba(0, 0, 0, 1);
+}
+
+.owner-panel .professional-stat-card > p {
+  margin-top: 0.85rem;
+  color: #696c75;
+  font-size: 0.61rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.owner-panel .professional-stat-card > strong {
+  display: block;
+  margin-top: 0.25rem;
+  color: #f0f2f6;
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.owner-panel .professional-list-panel {
+  min-height: 15rem;
+}
+
+.owner-panel .professional-segmented-header {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.25rem;
+  margin: 0.72rem 0.72rem 0;
+  border: 1px solid rgba(40, 42, 48, 0.98);
+  border-radius: 0.82rem;
+  background: rgba(11, 12, 15, 0.92);
+  padding: 0.25rem;
+}
+
+.owner-panel .professional-segmented-header button {
+  min-height: 2.2rem;
+  border-radius: 0.62rem;
+  color: #5f626b;
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.owner-panel .professional-segmented-header button.is-active {
+  background: linear-gradient(180deg, #202228, #181a1f);
+  color: #f1f2f4;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+.owner-panel .professional-person-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.9rem 1rem;
+  transition: background 150ms ease-out;
+}
+
+.owner-panel .professional-person-row:hover {
+  background: rgba(22, 119, 255, 0.025);
+}
+
+.owner-panel .professional-avatar {
+  display: flex;
+  width: 2.7rem;
+  height: 2.7rem;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(61, 127, 234, 0.35);
+  border-radius: 0.75rem;
+  background: rgba(22, 119, 255, 0.08);
+  color: #6da5ff;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.owner-panel .professional-icon-action {
+  border: 1px solid transparent;
+  border-radius: 0.65rem;
+  color: #666a73;
+}
+
+.owner-panel .professional-icon-action:hover {
+  border-color: rgba(56, 100, 171, 0.36);
+  background: rgba(22, 119, 255, 0.05);
+  color: #6fa6ff;
+}
+
+.owner-panel .professional-empty-state {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  min-height: 16rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  text-align: center;
+}
+
+.owner-panel .professional-empty-state h3 {
+  margin-top: 1rem;
+  color: #e6e8ec;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.owner-panel .professional-empty-state p {
+  max-width: 26rem;
+  margin-top: 0.55rem;
+  color: #646771;
+  font-size: 0.78rem;
+  line-height: 1.65;
+}
+
+body:has(.owner-panel) .professional-dialog {
+  border-color: rgba(53, 66, 88, 0.4);
+  background:
+    radial-gradient(ellipse 72% 40% at 86% -8%, rgba(22, 119, 255, 0.065), transparent 68%),
+    linear-gradient(145deg, rgba(15, 16, 19, 1), rgba(8, 9, 12, 1));
+  color: #eef0f4;
+  box-shadow:
+    0 26px 72px rgba(0, 0, 0, 0.72),
+    0 0 0 1px rgba(255, 255, 255, 0.012),
+    0 14px 38px -30px rgba(22, 119, 255, 0.62);
+}
+
+body:has(.owner-panel) .professional-dialog [data-slot="dialog-close"] {
+  color: #6c7079;
+}
+
+body:has(.owner-panel) .professional-dialog [data-slot="dialog-close"]:hover {
+  color: #dfe2e8;
+}
+
+body:has(.owner-panel) .professional-dialog-header {
+  position: relative;
+  z-index: 1;
+  border-bottom: 1px solid #24262c;
+  padding: 1rem 1.25rem 0.9rem;
+}
+
+body:has(.owner-panel) .professional-tabs {
+  height: auto;
+  min-height: 2.55rem;
+  margin-top: 1rem;
+  border: 1px solid #2a2c32;
+  border-radius: 0.72rem;
+  background: #17181c;
+  padding: 0.22rem;
+}
+
+body:has(.owner-panel) .professional-tabs [data-state="active"] {
+  background: #0d0e11;
+  color: #f0f2f5;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.018);
+}
+
+body:has(.owner-panel) .professional-tabs [data-state="inactive"] {
+  color: #7c7f88;
+}
+
+body:has(.owner-panel) .professional-section-label {
+  display: block;
+  color: #8b8e96;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+body:has(.owner-panel) .professional-input {
+  height: 2.75rem;
+  border-color: #30333a;
+  border-radius: 0.7rem;
+  background: #0d0e11;
+  color: #e7e9ed;
+  box-shadow: none;
+}
+
+body:has(.owner-panel) .professional-input:focus-visible {
+  border-color: #2f83ff;
+  box-shadow: 0 0 0 3px rgba(22, 119, 255, 0.13);
+}
+
+body:has(.owner-panel) .professional-day-option {
+  display: flex;
+  min-height: 2.45rem;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #30323a;
+  border-radius: 0.68rem;
+  background: #111216;
+  color: #70737d;
+  font-size: 0.7rem;
+  font-weight: 600;
+  transition: border-color 150ms ease-out, background 150ms ease-out, color 150ms ease-out;
+}
+
+body:has(.owner-panel) .professional-day-option.is-selected {
+  border-color: rgba(47, 131, 255, 0.72);
+  background: rgba(22, 119, 255, 0.11);
+  color: #69a2ff;
+  box-shadow: inset 0 0 0 1px rgba(22, 119, 255, 0.08);
+}
+
+body:has(.owner-panel) .professional-info-box,
+body:has(.owner-panel) .professional-choice-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  border: 1px solid #292c32;
+  border-radius: 0.78rem;
+  background: #101115;
+  padding: 0.8rem 0.85rem;
+}
+
+body:has(.owner-panel) .professional-info-box {
+  color: #777a83;
+  font-size: 0.75rem;
+  line-height: 1.55;
+}
+
+body:has(.owner-panel) .professional-choice-row {
+  justify-content: space-between;
+}
+
+body:has(.owner-panel) .professional-choice-row:hover {
+  border-color: rgba(57, 112, 199, 0.44);
+  background: rgba(22, 119, 255, 0.025);
+}
+
+body:has(.owner-panel) .professional-empty-inline {
+  border: 1px dashed #30323a;
+  border-radius: 0.78rem;
+  padding: 1rem;
+  color: #656871;
+  text-align: center;
+  font-size: 0.78rem;
+}
+
+body:has(.owner-panel) .professional-dialog-footer {
+  position: sticky;
+  z-index: 3;
+  bottom: 0;
+  margin-top: 0;
+  border-top: 1px solid #24262c;
+  background: rgba(10, 11, 14, 0.96);
+  padding: 0.9rem 1.25rem 1rem;
+  backdrop-filter: blur(10px);
+}
+
+@media (max-width: 639px) {
+  .owner-panel .professional-main-card {
+    padding: 0.9rem;
+  }
+
+  .owner-panel .professional-person-row {
+    align-items: flex-start;
+  }
+
+  body:has(.owner-panel) .professional-dialog {
+    width: calc(100vw - 22px);
+    max-width: none;
+    border-radius: 0.9rem;
+  }
+
+  body:has(.owner-panel) .professional-dialog-footer {
+    flex-direction: row;
+  }
+}
