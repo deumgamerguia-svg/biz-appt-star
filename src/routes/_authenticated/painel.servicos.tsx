@@ -3,9 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
-  BadgeCheck,
   ImagePlus,
-  Layers3,
   Link2,
   Pencil,
   Plus,
@@ -267,11 +265,6 @@ function ServicosPage() {
 
   if (!businessId) return <NoBusiness />;
 
-  const total = services?.length ?? 0;
-  const active = services?.filter((service) => service.active).length ?? 0;
-  const combos = services?.filter((service) => service.is_combo).length ?? 0;
-  const linkCount = links?.length ?? 0;
-
   return (
     <div className="services-premium mx-auto w-full max-w-5xl space-y-3">
       <section className="professional-main-card">
@@ -300,12 +293,6 @@ function ServicosPage() {
             </Button>
           </div>
 
-          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <MetricCard icon={Scissors} label="Serviços" value={String(total)} />
-            <MetricCard icon={BadgeCheck} label="Ativos" value={String(active)} />
-            <MetricCard icon={Layers3} label="Combos" value={String(combos)} />
-            <MetricCard icon={Link2} label="Vínculos" value={String(linkCount)} />
-          </div>
         </div>
       </section>
 
@@ -577,26 +564,6 @@ function ServicosPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
-  );
-}
-
-function MetricCard({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: typeof Scissors;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="professional-stat-card">
-      <div className="professional-icon-box !size-9">
-        <Icon className="size-4" strokeWidth={1.8} />
-      </div>
-      <p>{label}</p>
-      <strong>{value}</strong>
     </div>
   );
 }
