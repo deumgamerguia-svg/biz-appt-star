@@ -141,6 +141,8 @@ function WhatsappPage() {
                 <img
                   src={qrCode}
                   alt="QR Code para conectar o WhatsApp do negócio"
+                  loading="lazy"
+                  decoding="async"
                   className="w-64 max-w-full"
                 />
               </div>
