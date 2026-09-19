@@ -634,11 +634,9 @@ function AgendaPage() {
             preserveAspectRatio="none"
           >
             <defs>
-              <filter id="date-scale-reels-glow" x="-60%" y="-120%" width="220%" height="340%">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="2.2" result="softGlow" />
-                <feGaussianBlur in="SourceGraphic" stdDeviation="4.8" result="wideGlow" />
+              <filter id="date-scalereels-soft-glow" x="-50%" y="-140%" width="200%" height="380%">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="1.7" result="softGlow" />
                 <feMerge>
-                  <feMergeNode in="wideGlow" />
                   <feMergeNode in="softGlow" />
                   <feMergeNode in="SourceGraphic" />
                 </feMerge>
@@ -653,8 +651,8 @@ function AgendaPage() {
               rx="14"
               ry="14"
               fill="none"
-              stroke="rgba(58,63,72,0.62)"
-              strokeWidth="0.45"
+              stroke="#262626"
+              strokeWidth="0.7"
               vectorEffect="non-scaling-stroke"
             />
 
@@ -666,12 +664,12 @@ function AgendaPage() {
               rx="14"
               ry="14"
               fill="none"
-              stroke="rgba(31,109,249,0.48)"
-              strokeWidth="1.35"
+              stroke="rgba(45,92,171,0.44)"
+              strokeWidth="0.9"
               strokeLinecap="round"
               pathLength="100"
-              strokeDasharray="6 94"
-              filter="url(#date-scale-reels-glow)"
+              strokeDasharray="14 86"
+              filter="url(#date-scalereels-soft-glow)"
               vectorEffect="non-scaling-stroke"
             >
               <animate
@@ -691,11 +689,11 @@ function AgendaPage() {
               rx="14"
               ry="14"
               fill="none"
-              stroke="#5F97FB"
-              strokeWidth="0.58"
+              stroke="rgba(94,148,247,0.96)"
+              strokeWidth="0.62"
               strokeLinecap="round"
               pathLength="100"
-              strokeDasharray="6 94"
+              strokeDasharray="4.2 95.8"
               vectorEffect="non-scaling-stroke"
             >
               <animate
@@ -709,7 +707,7 @@ function AgendaPage() {
           </svg>
           <Input
             type="date"
-            className="relative z-10 w-full border-[#1b2a3d] bg-[#06090d] shadow-[inset_0_0_0_1px_rgba(22,119,255,0.025)]"
+            className="relative z-10 w-full border-[#262626] bg-[#06090d] shadow-none"
             value={day}
             onChange={(event) => setDay(event.target.value)}
             aria-label="Data da agenda"
