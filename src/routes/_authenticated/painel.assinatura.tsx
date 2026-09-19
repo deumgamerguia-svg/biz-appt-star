@@ -101,6 +101,9 @@ function SubscriptionAccountPage() {
     business?.name ||
     "Usuário";
   const accountEmail = profile?.email || user?.email || "E-mail não informado";
+  const accountUsername =
+    (user?.email ?? profile?.email ?? business?.phone ?? "").replace(/\D/g, "") ||
+    "Não informado";
   const accountInitial = accountName.charAt(0).toUpperCase() || "U";
   const memberSince = profile?.created_at || user?.created_at || null;
   const lastAccess = user?.last_sign_in_at || user?.updated_at || null;
@@ -231,7 +234,7 @@ function SubscriptionAccountPage() {
                         <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-[#666d77]">
                           Usuário
                         </p>
-                        <p className="mt-1 break-all font-medium text-[#dfe2e6]">{accountEmail}</p>
+                        <p className="mt-1 break-all font-medium text-[#dfe2e6]">{accountUsername}</p>
                       </div>
                       <div>
                         <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-[#666d77]">
