@@ -627,84 +627,54 @@ function AgendaPage() {
           <ChevronLeft className="size-4" />
         </Button>
         <div className="relative min-w-0 flex-1 rounded-md">
-          <svg
+          <style>{`
+            @property --date-border-angle {
+              syntax: "<angle>";
+              initial-value: 0deg;
+              inherits: false;
+            }
+
+            @keyframes date-border-beam-spin {
+              to {
+                --date-border-angle: 360deg;
+              }
+            }
+
+            .date-border-beam {
+              padding: 1px;
+              background:
+                conic-gradient(
+                  from var(--date-border-angle),
+                  transparent 0deg,
+                  transparent 270deg,
+                  rgba(95, 151, 251, 0.015) 282deg,
+                  rgba(95, 151, 251, 0.055) 296deg,
+                  rgba(95, 151, 251, 0.13) 309deg,
+                  rgba(95, 151, 251, 0.28) 321deg,
+                  rgba(95, 151, 251, 0.52) 331deg,
+                  rgb(95, 151, 251) 338deg,
+                  rgba(95, 151, 251, 0.62) 342deg,
+                  rgba(95, 151, 251, 0.24) 348deg,
+                  rgba(95, 151, 251, 0.07) 354deg,
+                  transparent 359deg,
+                  transparent 360deg
+                );
+              -webkit-mask:
+                linear-gradient(#000 0 0) content-box,
+                linear-gradient(#000 0 0);
+              -webkit-mask-composite: xor;
+              mask-composite: exclude;
+              filter:
+                drop-shadow(0 0 1px rgba(95, 151, 251, 0.52))
+                drop-shadow(0 0 3px rgba(55, 118, 235, 0.20));
+              animation: date-border-beam-spin 6s linear infinite;
+              will-change: --date-border-angle;
+            }
+          `}</style>
+          <span
             aria-hidden="true"
-            className="pointer-events-none absolute inset-[-1px] z-20 h-[calc(100%+2px)] w-[calc(100%+2px)] overflow-visible"
-            viewBox="0 0 1000 100"
-            preserveAspectRatio="none"
-          >
-            <defs>
-              <filter id="date-scalereels-soft-glow" x="-50%" y="-140%" width="200%" height="380%">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="1.7" result="softGlow" />
-                <feMerge>
-                  <feMergeNode in="softGlow" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-            </defs>
-
-            <rect
-              x="1"
-              y="1"
-              width="998"
-              height="98"
-              rx="14"
-              ry="14"
-              fill="none"
-              stroke="#262626"
-              strokeWidth="0.7"
-              vectorEffect="non-scaling-stroke"
-            />
-
-            <rect
-              x="1"
-              y="1"
-              width="998"
-              height="98"
-              rx="14"
-              ry="14"
-              fill="none"
-              stroke="rgba(45,92,171,0.44)"
-              strokeWidth="0.9"
-              strokeLinecap="round"
-              pathLength="100"
-              strokeDasharray="14 86"
-              filter="url(#date-scalereels-soft-glow)"
-              vectorEffect="non-scaling-stroke"
-            >
-              <animate
-                attributeName="stroke-dashoffset"
-                from="0"
-                to="-100"
-                dur="8s"
-                repeatCount="indefinite"
-              />
-            </rect>
-
-            <rect
-              x="1"
-              y="1"
-              width="998"
-              height="98"
-              rx="14"
-              ry="14"
-              fill="none"
-              stroke="rgba(94,148,247,0.96)"
-              strokeWidth="0.62"
-              strokeLinecap="round"
-              pathLength="100"
-              strokeDasharray="4.2 95.8"
-              vectorEffect="non-scaling-stroke"
-            >
-              <animate
-                attributeName="stroke-dashoffset"
-                from="0"
-                to="-100"
-                dur="8s"
-                repeatCount="indefinite"
-              />
-            </rect>
-          </svg>
+            className="date-border-beam pointer-events-none absolute inset-[-1px] z-20 rounded-[7px]"
+          />
           <Input
             type="date"
             className="relative z-10 w-full border-[#262626] bg-[#06090d] shadow-none"
