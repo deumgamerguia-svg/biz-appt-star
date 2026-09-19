@@ -633,42 +633,47 @@ function AgendaPage() {
             viewBox="0 0 1000 100"
             preserveAspectRatio="none"
           >
-            <rect
-              x="1"
-              y="1"
-              width="998"
-              height="98"
-              rx="14"
-              ry="14"
+            <defs>
+              <filter id="date-neon-glow" x="-60%" y="-60%" width="220%" height="220%">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="2.4" result="blurSoft" />
+                <feGaussianBlur in="SourceGraphic" stdDeviation="5.2" result="blurWide" />
+                <feMerge>
+                  <feMergeNode in="blurWide" />
+                  <feMergeNode in="blurSoft" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+              <path
+                id="date-outline-path"
+                d="M 15 1 H 985 A 14 14 0 0 1 999 15 V 85 A 14 14 0 0 1 985 99 H 15 A 14 14 0 0 1 1 85 V 15 A 14 14 0 0 1 15 1 Z"
+              />
+            </defs>
+
+            <use
+              href="#date-outline-path"
               fill="none"
-              stroke="rgba(36,139,255,0.12)"
-              strokeWidth="0.45"
+              stroke="rgba(36,139,255,0.10)"
+              strokeWidth="0.4"
               vectorEffect="non-scaling-stroke"
             />
-            <rect
-              x="1"
-              y="1"
-              width="998"
-              height="98"
-              rx="14"
-              ry="14"
-              fill="none"
-              stroke="rgba(55,170,255,1)"
-              strokeWidth="0.55"
-              strokeLinecap="round"
-              pathLength="100"
-              strokeDasharray="9 91"
-              vectorEffect="non-scaling-stroke"
-              style={{ filter: "drop-shadow(0 0 1.5px rgba(70,190,255,0.95)) drop-shadow(0 0 4px rgba(0,136,255,0.72)) drop-shadow(0 0 8px rgba(0,94,255,0.38))" }}
-            >
-              <animate
-                attributeName="stroke-dashoffset"
-                from="0"
-                to="-100"
-                dur="8s"
-                repeatCount="indefinite"
-              />
-            </rect>
+
+            <circle r="4.6" fill="rgba(28,156,255,0.16)" filter="url(#date-neon-glow)">
+              <animateMotion dur="8s" repeatCount="indefinite" rotate="auto">
+                <mpath href="#date-outline-path" />
+              </animateMotion>
+            </circle>
+
+            <circle r="1.8" fill="rgba(60,188,255,0.98)" filter="url(#date-neon-glow)">
+              <animateMotion dur="8s" repeatCount="indefinite" rotate="auto">
+                <mpath href="#date-outline-path" />
+              </animateMotion>
+            </circle>
+
+            <circle r="0.72" fill="#eefbff">
+              <animateMotion dur="8s" repeatCount="indefinite" rotate="auto">
+                <mpath href="#date-outline-path" />
+              </animateMotion>
+            </circle>
           </svg>
           <Input
             type="date"
