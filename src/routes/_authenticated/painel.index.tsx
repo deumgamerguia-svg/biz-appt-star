@@ -635,8 +635,8 @@ function AgendaPage() {
           >
             <defs>
               <filter id="date-neon-glow" x="-80%" y="-80%" width="260%" height="260%">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="1.35" result="blurSoft" />
-                <feGaussianBlur in="SourceGraphic" stdDeviation="3.8" result="blurWide" />
+                <feGaussianBlur in="SourceGraphic" stdDeviation="1.6" result="blurSoft" />
+                <feGaussianBlur in="SourceGraphic" stdDeviation="4.6" result="blurWide" />
                 <feMerge>
                   <feMergeNode in="blurWide" />
                   <feMergeNode in="blurSoft" />
@@ -652,7 +652,7 @@ function AgendaPage() {
             <use
               href="#date-outline-path"
               fill="none"
-              stroke="rgba(45,145,255,0.13)"
+              stroke="rgba(45,145,255,0.12)"
               strokeWidth="0.42"
               vectorEffect="non-scaling-stroke"
             />
@@ -661,10 +661,10 @@ function AgendaPage() {
               href="#date-outline-path"
               fill="none"
               stroke="rgba(72,177,255,1)"
-              strokeWidth="0.62"
+              strokeWidth="0.72"
               strokeLinecap="round"
               pathLength="100"
-              strokeDasharray="14 86"
+              strokeDasharray="18 82"
               strokeDashoffset="0"
               filter="url(#date-neon-glow)"
               vectorEffect="non-scaling-stroke"
