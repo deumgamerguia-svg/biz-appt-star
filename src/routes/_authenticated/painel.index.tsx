@@ -104,6 +104,12 @@ function toAgendaIso(date: string, time: string) {
   return new Date(`${date}T${time}:00-03:00`).toISOString();
 }
 
+function agendaDateLabel(date: string) {
+  return new Date(`${date}T12:00:00-03:00`).toLocaleDateString("pt-BR", {
+    timeZone: "America/Sao_Paulo",
+  });
+}
+
 function overlaps(start: number, end: number, otherStart: number, otherEnd: number) {
   return start < otherEnd && end > otherStart;
 }
@@ -123,9 +129,11 @@ function AgendaPage() {
   const queryClient = useQueryClient();
   const [day, setDay] = useState(() => toDateInput(new Date()));
   const [open, setOpen] = useState(false);
+  const [encaixeOpen, setEncaixeOpen] = useState(false);
   const [detail, setDetail] = useState<string | null>(null);
   const [showCancelled, setShowCancelled] = useState(true);
   const [form, setForm] = useState(emptyForm);
+  const [encaixeForm, setEncaixeForm] = useState({ ...emptyForm, time: "" });
   const weekdayNumber = new Date(`${day}T12:00:00-03:00`).getDay();
 
   const { data: services } = useQuery({
@@ -339,6 +347,73 @@ function AgendaPage() {
       toast.success("Agendamento criado e salvo na agenda.");
       setOpen(false);
       setForm(emptyForm);
+      void invalidateAppointments();
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  const validateEncaixe = () => {
+    const customerName = encaixeForm.customer_name.trim();
+    if (!customerName) throw new Error("Informe o nome do cliente.");
+    if (!encaixeForm.service_id) throw new Error("Selecione um serviço.");
+    if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(encaixeForm.time)) {
+      throw new Error("Informe um horário válido para o encaixe.");
+    }
+
+    const service = services?.find((item) => item.id === encaixeForm.service_id);
+    if (!service) throw new Error("O serviço selecionado não está mais disponível.");
+
+    if (encaixeForm.professional_id) {
+      const professional = professionals?.find(
+        (item) => item.id === encaixeForm.professional_id,
+      );
+      if (!professional) {
+        throw new Error("O profissional selecionado não está mais disponível.");
+      }
+
+      const linkedProfessionals = (serviceLinks ?? []).filter(
+        (link) => link.service_id === service.id,
+      );
+      if (
+        linkedProfessionals.length &&
+        !linkedProfessionals.some(
+          (link) => link.professional_id === encaixeForm.professional_id,
+        )
+      ) {
+        throw new Error("Este profissional não está vinculado ao serviço selecionado.");
+      }
+    }
+
+    // Encaixe é uma exceção manual: não depende dos slots de 30 minutos,
+    // expediente, dia de trabalho ou bloqueios da grade.
+    const startsAt = toAgendaIso(day, encaixeForm.time);
+    return {
+      startsAt,
+      endsAt: addMinutesIso(startsAt, service.duration_minutes),
+      customerName,
+    };
+  };
+
+  const createEncaixe = useMutation({
+    mutationFn: async () => {
+      const { startsAt, endsAt, customerName } = validateEncaixe();
+      const { error } = await supabase.from("appointments").insert({
+        business_id: businessId!,
+        service_id: encaixeForm.service_id,
+        professional_id: encaixeForm.professional_id || null,
+        customer_name: customerName,
+        customer_phone: encaixeForm.customer_phone.trim() || null,
+        starts_at: startsAt,
+        ends_at: endsAt,
+        notes: null,
+        status: "agendado",
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Encaixe criado e salvo na agenda.");
+      setEncaixeOpen(false);
+      setEncaixeForm({ ...emptyForm, time: "" });
       void invalidateAppointments();
     },
     onError: (error: Error) => toast.error(error.message),
@@ -639,6 +714,42 @@ function AgendaPage() {
     });
   };
 
+  const encaixeLinkedForSelectedService = (serviceLinks ?? []).filter(
+    (link) => link.service_id === encaixeForm.service_id,
+  );
+  const encaixeLinkedIds = new Set(
+    encaixeLinkedForSelectedService.map((link) => link.professional_id),
+  );
+  const encaixeProfessionals = (professionals ?? []).filter(
+    (professional) =>
+      !encaixeLinkedForSelectedService.length || encaixeLinkedIds.has(professional.id),
+  );
+
+  const openEncaixe = () => {
+    setEncaixeForm({
+      ...emptyForm,
+      time: "",
+      service_id: services?.[0]?.id ?? "",
+      professional_id: "",
+    });
+    setEncaixeOpen(true);
+  };
+
+  const handleEncaixeServiceChange = (serviceId: string) => {
+    const links = (serviceLinks ?? []).filter((link) => link.service_id === serviceId);
+    const linkedIds = new Set(links.map((link) => link.professional_id));
+
+    setEncaixeForm((current) => ({
+      ...current,
+      service_id: serviceId,
+      professional_id:
+        current.professional_id &&
+        (!links.length || linkedIds.has(current.professional_id))
+          ? current.professional_id
+          : "",
+    }));
+  };
+
   const handleDelete = () => {
     if (!selected) return;
     if (!window.confirm(`Excluir o agendamento de ${selected.customer_name}?`)) return;
@@ -775,8 +886,8 @@ function AgendaPage() {
 
       <button
         type="button"
-        onClick={() => openNewAt(freeSlots[0] ?? baseSlots[0] ?? "09:00")}
-        disabled={!baseSlots.length}
+        onClick={openEncaixe}
+        disabled={!services?.length}
         className="group relative isolate mt-2 ml-12 flex h-[42px] w-44 items-center justify-center rounded-[15px] border-[0.75px] border-[#6d5519]/70 bg-[radial-gradient(circle_at_22%_28%,rgba(224,175,45,0.18)_0%,rgba(128,92,20,0.08)_34%,transparent_66%),linear-gradient(100deg,#0c0b08_0%,#0b0b0a_60%,#0d0c09_100%)] px-4 text-[0.82rem] font-medium tracking-[-0.01em] text-[#f5f5f5] shadow-[inset_0_1px_0_rgba(255,222,129,0.035),0_0_18px_rgba(210,157,32,0.025)] transition-all duration-200 hover:border-[#8b6a1d]/75 hover:bg-[radial-gradient(circle_at_22%_28%,rgba(224,175,45,0.22)_0%,rgba(128,92,20,0.10)_34%,transparent_66%),linear-gradient(100deg,#0d0c09_0%,#0b0b0a_60%,#0d0c09_100%)] hover:shadow-[inset_0_1px_0_rgba(255,222,129,0.05),0_0_20px_rgba(210,157,32,0.035)] disabled:cursor-not-allowed disabled:opacity-50"
       >
         <span
@@ -957,6 +1068,150 @@ function AgendaPage() {
         {(appointments ?? []).length} agendamento(s) · {freeSlots.length} livre(s) ·{" "}
         {formatPrice(total)}
       </p>
+
+      <Dialog
+        open={encaixeOpen}
+        onOpenChange={(value) => {
+          setEncaixeOpen(value);
+          if (!value) setEncaixeForm({ ...emptyForm, time: "" });
+        }}
+      >
+        <DialogContent className="w-[calc(100%-16px)] max-w-[500px] gap-0 rounded-[16px] border border-[#454545] bg-[#343434] p-[24px] text-[#f4f4f4] shadow-[0_24px_70px_rgba(0,0,0,0.55)] [&>button.absolute]:right-5 [&>button.absolute]:top-5 [&>button.absolute]:text-[#d7d7d7] [&>button.absolute]:opacity-80 [&>button.absolute>svg]:size-6">
+          <DialogHeader className="space-y-0 pr-10 text-left">
+            <DialogTitle className="text-[19px] font-medium leading-7 tracking-[-0.02em] text-[#f3f3f3]">
+              Agendar serviço na data: {agendaDateLabel(day)}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="mt-8 space-y-[18px]">
+            <div className="grid grid-cols-2 gap-[14px]">
+              <div className="space-y-2">
+                <Label
+                  htmlFor="encaixe-time"
+                  className="text-[14px] font-semibold text-[#f3f3f3]"
+                >
+                  Horário
+                </Label>
+                <Input
+                  id="encaixe-time"
+                  type="time"
+                  step={60}
+                  value={encaixeForm.time}
+                  onChange={(event) =>
+                    setEncaixeForm({ ...encaixeForm, time: event.target.value })
+                  }
+                  className="h-[39px] rounded-[7px] border-0 bg-[#505050] px-3 text-[14px] text-[#f4f4f4] placeholder:text-[#9c9c9f] focus-visible:ring-0"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-[14px] font-semibold text-[#f3f3f3]">
+                  Funcionário
+                </Label>
+                <Select
+                  value={encaixeForm.professional_id || "__agenda__"}
+                  onValueChange={(value) =>
+                    setEncaixeForm({
+                      ...encaixeForm,
+                      professional_id: value === "__agenda__" ? "" : value,
+                    })
+                  }
+                >
+                  <SelectTrigger className="h-[39px] rounded-[7px] border-0 bg-[#505050] px-4 text-[14px] font-medium text-[#f4f4f4] shadow-none focus:ring-0">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__agenda__">Agenda</SelectItem>
+                    {encaixeProfessionals.map((professional) => (
+                      <SelectItem key={professional.id} value={professional.id}>
+                        {professional.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-[14px] font-semibold text-[#f3f3f3]">
+                Serviço
+              </Label>
+              <Select
+                value={encaixeForm.service_id}
+                onValueChange={handleEncaixeServiceChange}
+              >
+                <SelectTrigger className="h-[39px] rounded-[7px] border-0 bg-[#505050] px-4 text-[14px] font-semibold uppercase text-[#f4f4f4] shadow-none focus:ring-0">
+                  <SelectValue placeholder="Selecione um serviço" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(services ?? []).map((service) => (
+                    <SelectItem key={service.id} value={service.id}>
+                      {service.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-[14px]">
+              <div className="space-y-2">
+                <Label
+                  htmlFor="encaixe-name"
+                  className="text-[14px] font-semibold text-[#f3f3f3]"
+                >
+                  Nome Cliente
+                </Label>
+                <Input
+                  id="encaixe-name"
+                  placeholder="Nome"
+                  value={encaixeForm.customer_name}
+                  onChange={(event) =>
+                    setEncaixeForm({
+                      ...encaixeForm,
+                      customer_name: event.target.value,
+                    })
+                  }
+                  className="h-[39px] rounded-[7px] border-0 bg-[#505050] px-3 text-[14px] text-[#f4f4f4] placeholder:text-[#9c9c9f] focus-visible:ring-0"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label
+                  htmlFor="encaixe-phone"
+                  className="text-[14px] font-semibold text-[#f3f3f3]"
+                >
+                  Número Cliente
+                </Label>
+                <Input
+                  id="encaixe-phone"
+                  placeholder="(DDD)(9º Digito)0000-0000"
+                  value={encaixeForm.customer_phone}
+                  onChange={(event) =>
+                    setEncaixeForm({
+                      ...encaixeForm,
+                      customer_phone: event.target.value,
+                    })
+                  }
+                  className="h-[39px] rounded-[7px] border-0 bg-[#505050] px-3 text-[14px] text-[#f4f4f4] placeholder:text-[#9c9c9f] focus-visible:ring-0"
+                />
+              </div>
+            </div>
+          </div>
+
+          <Button
+            onClick={() => createEncaixe.mutate()}
+            disabled={
+              !encaixeForm.time ||
+              !encaixeForm.customer_name.trim() ||
+              !encaixeForm.service_id ||
+              createEncaixe.isPending
+            }
+            className="mt-[18px] h-[39px] w-full rounded-[7px] bg-[#080d39] text-[14px] font-medium uppercase text-white shadow-none hover:bg-[#0b1248]"
+          >
+            {createEncaixe.isPending ? "SALVANDO..." : "AGENDAR"}
+          </Button>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="w-[calc(100%-16px)] max-w-[496px] gap-0 rounded-[12px] border border-[#3a3a3a] bg-[#303030] p-[22px] text-[#f4f4f4] shadow-[0_24px_70px_rgba(0,0,0,0.5)] sm:rounded-[12px] [&>button.absolute]:right-5 [&>button.absolute]:top-6 [&>button.absolute]:text-[#d7d7d7] [&>button.absolute]:opacity-80 [&>button.absolute>svg]:size-6">
