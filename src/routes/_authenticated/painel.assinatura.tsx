@@ -23,8 +23,6 @@ const ACCOUNT_TABS = [
   "Visão Geral",
   "Assinatura",
   "Faturas",
-  "Afiliados",
-  "Notificações",
   "Suporte & FAQ",
 ] as const;
 
