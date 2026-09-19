@@ -627,12 +627,49 @@ function AgendaPage() {
           <ChevronLeft className="size-4" />
         </Button>
         <div className="relative min-w-0 flex-1 rounded-md">
-          <span
+          <svg
             aria-hidden="true"
-            className="pointer-events-none absolute inset-[-1px] overflow-hidden rounded-[7px]"
+            className="pointer-events-none absolute inset-[-1px] z-20 h-[calc(100%+2px)] w-[calc(100%+2px)] overflow-visible"
+            viewBox="0 0 1000 100"
+            preserveAspectRatio="none"
           >
-            <span className="absolute left-1/2 top-1/2 h-[340%] w-[340%] -translate-x-1/2 -translate-y-1/2 animate-[spin_3.2s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_0deg,transparent_310deg,rgba(22,119,255,0.10)_326deg,rgba(47,140,255,0.95)_342deg,rgba(93,168,255,0.35)_350deg,transparent_360deg)]" />
-          </span>
+            <rect
+              x="1"
+              y="1"
+              width="998"
+              height="98"
+              rx="14"
+              ry="14"
+              fill="none"
+              stroke="rgba(47,140,255,0.20)"
+              strokeWidth="1"
+              vectorEffect="non-scaling-stroke"
+            />
+            <rect
+              x="1"
+              y="1"
+              width="998"
+              height="98"
+              rx="14"
+              ry="14"
+              fill="none"
+              stroke="rgba(47,140,255,0.98)"
+              strokeWidth="1"
+              strokeLinecap="round"
+              pathLength="100"
+              strokeDasharray="9 91"
+              vectorEffect="non-scaling-stroke"
+              style={{ filter: "drop-shadow(0 0 2px rgba(47,140,255,0.45))" }}
+            >
+              <animate
+                attributeName="stroke-dashoffset"
+                from="0"
+                to="-100"
+                dur="3.2s"
+                repeatCount="indefinite"
+              />
+            </rect>
+          </svg>
           <Input
             type="date"
             className="relative z-10 w-full border-[#1b2a3d] bg-[#06090d] shadow-[inset_0_0_0_1px_rgba(22,119,255,0.025)]"
