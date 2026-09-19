@@ -270,6 +270,7 @@ export function PublicBookingPage({ slug }: { slug: string }) {
 
   return (
     <div
+      data-booking-page="true"
       className="flex min-h-screen flex-col bg-background pb-28 text-foreground"
       style={
         {
@@ -364,7 +365,7 @@ export function PublicBookingPage({ slug }: { slug: string }) {
       </main>
 
       <Dialog open={!!service} onOpenChange={(open) => !open && closeService()}>
-        <DialogContent className="max-h-[92vh] max-w-lg overflow-y-auto bg-card p-0">
+        <DialogContent data-booking-modal="true" className="max-h-[92vh] max-w-lg overflow-y-auto bg-card p-0">
           {service ? (
             <div className="space-y-6 p-5 text-center sm:p-6">
               <div>
@@ -403,6 +404,8 @@ export function PublicBookingPage({ slug }: { slug: string }) {
                       <button
                         key={item.id}
                         type="button"
+                        data-booking-agenda-option="true"
+                        data-active={professional?.id === item.id ? "true" : "false"}
                         onClick={() => {
                           setProfessional(item);
                           setDate(null);
@@ -458,6 +461,8 @@ export function PublicBookingPage({ slug }: { slug: string }) {
                           <button
                             key={item.date}
                             type="button"
+                            data-booking-agenda-option="true"
+                            data-active={date === item.date ? "true" : "false"}
                             onClick={() => {
                               setDate(item.date);
                               setTime(null);
@@ -513,6 +518,8 @@ export function PublicBookingPage({ slug }: { slug: string }) {
                         <button
                           key={slot}
                           type="button"
+                          data-booking-agenda-option="true"
+                          data-active={time === slot ? "true" : "false"}
                           onClick={() => setTime(slot)}
                           className={`rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
                             time === slot
@@ -693,6 +700,7 @@ function ServiceSection({
           <button
             key={service.id}
             type="button"
+            data-booking-service-card="true"
             onClick={() => onSelect(service)}
             className="w-full rounded-lg border border-border bg-card px-4 py-5 text-center text-card-foreground transition-colors hover:border-primary"
           >
