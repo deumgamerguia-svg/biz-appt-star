@@ -2,11 +2,11 @@ import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Plus, Trash2 } from "lucide-react";
+import { CalendarX2, Clock3, Plus, Repeat2, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useBusiness } from "@/lib/business";
 import { WEEKDAYS, weekdayLabel, hhmm, toDateInput } from "@/lib/format";
-import { PageHeader, NoBusiness, EmptyList } from "@/components/painel/PageHeader";
+import { NoBusiness } from "@/components/painel/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,7 +17,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -39,20 +38,22 @@ export const Route = createFileRoute("/_authenticated/painel/bloqueios")({
   component: BloqueiosPage,
 });
 
+const initialForm = {
+  recurring: true,
+  weekday: "1",
+  date: toDateInput(new Date()),
+  starts: "09:00",
+  ends: "09:30",
+  reason: "",
+};
+
 function BloqueiosPage() {
   const { businessId } = useBusiness();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [showRecurring, setShowRecurring] = useState(true);
   const [showSpecific, setShowSpecific] = useState(true);
-  const [form, setForm] = useState({
-    recurring: true,
-    weekday: "1",
-    date: toDateInput(new Date()),
-    starts: "09:00",
-    ends: "09:30",
-    reason: "",
-  });
+  const [form, setForm] = useState(initialForm);
 
   const { data: blocks } = useQuery({
     queryKey: ["time_blocks", businessId],
@@ -68,7 +69,18 @@ function BloqueiosPage() {
     },
   });
 
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: ["time_blocks", businessId] });
+  const invalidate = () =>
+    queryClient.invalidateQueries({ queryKey: ["time_blocks", businessId] });
+
+  const close = () => {
+    setOpen(false);
+    setForm(initialForm);
+  };
+
+  const openCreate = () => {
+    setForm(initialForm);
+    setOpen(true);
+  };
 
   const create = useMutation({
     mutationFn: async () => {
@@ -85,10 +97,10 @@ function BloqueiosPage() {
     },
     onSuccess: () => {
       toast.success("Bloqueio cadastrado!");
-      setOpen(false);
+      close();
       void invalidate();
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (error: Error) => toast.error(error.message),
   });
 
   const remove = useMutation({
@@ -101,178 +113,273 @@ function BloqueiosPage() {
 
   if (!businessId) return <NoBusiness />;
 
-  const filtered = (blocks ?? []).filter((b) =>
-    b.recurring ? showRecurring : showSpecific,
+  const filtered = (blocks ?? []).filter((block) =>
+    block.recurring ? showRecurring : showSpecific,
   );
 
   return (
-    <div>
-      <PageHeader
-        title="Horários bloqueados"
-        subtitle="Horários que não aparecem para os clientes agendarem."
-        action={
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="size-4" /> Cadastrar
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Novo bloqueio</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
+    <div className="bloqueios-premium mx-auto w-full max-w-5xl space-y-3">
+      <section className="professional-list-panel">
+        <div className="professional-segmented-header">
+          <button type="button" className="is-active">
+            Horários bloqueados
+          </button>
+          <button type="button" disabled>
+            Indisponibilidades
+          </button>
+        </div>
+
+        <div className="relative z-10 border-b border-[#25272d] px-4 py-4 sm:px-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="professional-icon-box !size-9">
+                <CalendarX2 className="size-4" strokeWidth={1.8} />
+              </div>
+              <div>
+                <h1 className="text-[0.98rem] font-semibold text-[#eef0f4]">
+                  Horários bloqueados
+                </h1>
+                <p className="mt-0.5 text-xs text-[#62656e]">
+                  Defina folgas, pausas e períodos que não podem receber agendamentos.
+                </p>
+              </div>
+            </div>
+
+            <Button className="professional-primary-button" onClick={openCreate}>
+              <Plus className="size-4" />
+              Cadastrar bloqueio
+            </Button>
+          </div>
+        </div>
+
+        <div className="relative z-10 flex flex-wrap items-center gap-2 border-b border-[#22252b] px-4 py-3 sm:px-5">
+          <label
+            className={`bloqueio-filter-chip ${showRecurring ? "is-selected" : ""}`}
+          >
+            <Checkbox
+              className="sr-only"
+              checked={showRecurring}
+              onCheckedChange={(value) => setShowRecurring(value === true)}
+            />
+            <Repeat2 className="size-3.5" />
+            Recorrentes
+          </label>
+
+          <label
+            className={`bloqueio-filter-chip ${showSpecific ? "is-selected" : ""}`}
+          >
+            <Checkbox
+              className="sr-only"
+              checked={showSpecific}
+              onCheckedChange={(value) => setShowSpecific(value === true)}
+            />
+            <CalendarX2 className="size-3.5" />
+            Específicos
+          </label>
+        </div>
+
+        {!filtered.length ? (
+          <div className="professional-empty-state">
+            <div className="professional-icon-box !size-14">
+              <CalendarX2 className="size-6" />
+            </div>
+            <h3>Nenhum horário bloqueado</h3>
+            <p>
+              Cadastre uma folga, pausa recorrente ou período específico para impedir novos agendamentos.
+            </p>
+            <Button className="professional-primary-button mt-5" onClick={openCreate}>
+              <Plus className="size-4" />
+              Criar primeiro bloqueio
+            </Button>
+          </div>
+        ) : (
+          <div className="relative z-10 divide-y divide-[#22252b]">
+            {filtered.map((block) => (
+              <div key={block.id} className="professional-person-row">
+                <div className="professional-avatar">
+                  {block.recurring ? (
+                    <Repeat2 className="size-4" strokeWidth={1.8} />
+                  ) : (
+                    <CalendarX2 className="size-4" strokeWidth={1.8} />
+                  )}
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="truncate text-sm font-semibold text-[#eef0f3]">
+                      {block.recurring
+                        ? weekdayLabel(block.weekday ?? 0)
+                        : new Date(`${block.block_date}T00:00:00`).toLocaleDateString("pt-BR")}
+                    </p>
+                    <span className="professional-badge">
+                      {block.recurring ? "Recorrente" : "Específico"}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-[#686b74]">
+                    {hhmm(block.starts_at)} até {hhmm(block.ends_at)}
+                    {block.reason ? ` · ${block.reason}` : ""}
+                  </p>
+                </div>
+
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="professional-icon-action hover:!text-red-400"
+                  onClick={() => remove.mutate(block.id)}
+                  aria-label="Remover bloqueio"
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <Dialog
+        open={open}
+        onOpenChange={(value) => {
+          setOpen(value);
+          if (!value) setForm(initialForm);
+        }}
+      >
+        <DialogContent className="professional-dialog max-w-xl overflow-y-auto p-0">
+          <DialogHeader className="professional-dialog-header">
+            <div className="flex items-start gap-3 text-left">
+              <div className="professional-dialog-icon">
+                <CalendarX2 className="size-[1.05rem]" strokeWidth={1.8} />
+              </div>
+              <div className="min-w-0">
+                <DialogTitle className="text-lg font-semibold tracking-[-0.025em] text-[#f1f2f4]">
+                  Adicionar bloqueio
+                </DialogTitle>
+                <p className="mt-1 text-xs leading-relaxed text-[#686b74]">
+                  Escolha se o bloqueio se repete semanalmente ou acontece em uma data específica.
+                </p>
+              </div>
+            </div>
+          </DialogHeader>
+
+          <div className="professional-dialog-body px-4 pb-4 sm:px-5 sm:pb-5">
+            <div className="professional-form-section mt-4 space-y-5">
+              <div>
+                <Label className="professional-section-label">Tipo de bloqueio</Label>
+                <div className="mt-2 grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => setForm({ ...form, recurring: true })}
-                    className={`inline-flex min-h-10 items-center justify-center rounded-md border px-3 text-sm font-semibold transition-colors ${
-                      form.recurring
-                        ? "border-[#8f9eea] bg-[#8f9eea] text-white"
-                        : "border-[#00c8e8] bg-transparent text-[#00c8e8] hover:bg-[#00c8e8]/10"
-                    }`}
+                    className={`bloqueio-type-option ${form.recurring ? "is-selected" : ""}`}
                   >
-                    <Plus className="mr-1 size-4" /> Bloqueio de semana
+                    <Repeat2 className="size-4" />
+                    Semanal
                   </button>
+
                   <button
                     type="button"
                     onClick={() => setForm({ ...form, recurring: false })}
-                    className={`inline-flex min-h-10 items-center justify-center rounded-md border px-3 text-sm font-semibold transition-colors ${
-                      !form.recurring
-                        ? "border-[#8f9eea] bg-[#8f9eea] text-white"
-                        : "border-[#00c8e8] bg-transparent text-[#00c8e8] hover:bg-[#00c8e8]/10"
-                    }`}
+                    className={`bloqueio-type-option ${!form.recurring ? "is-selected" : ""}`}
                   >
-                    <Plus className="mr-1 size-4" /> Bloqueio de dia
+                    <CalendarX2 className="size-4" />
+                    Data específica
                   </button>
                 </div>
+              </div>
 
-                {form.recurring ? (
-                  <div className="space-y-2">
-                    <Label>Dia da semana</Label>
-                    <Select
-                      value={form.weekday}
-                      onValueChange={(weekday) => setForm({ ...form, weekday })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {WEEKDAYS.map((d) => (
-                          <SelectItem key={d.value} value={String(d.value)}>
-                            {d.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <Label htmlFor="bdate">Data específica</Label>
-                    <Input
-                      id="bdate"
-                      type="date"
-                      value={form.date}
-                      onChange={(e) => setForm({ ...form, date: e.target.value })}
-                    />
-                  </div>
-                )}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="bstart">Começo</Label>
-                    <Input
-                      id="bstart"
-                      type="time"
-                      value={form.starts}
-                      onChange={(e) => setForm({ ...form, starts: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="bend">Fim</Label>
-                    <Input
-                      id="bend"
-                      type="time"
-                      value={form.ends}
-                      onChange={(e) => setForm({ ...form, ends: e.target.value })}
-                    />
-                  </div>
-                </div>
+              {form.recurring ? (
                 <div className="space-y-2">
-                  <Label htmlFor="breason">Motivo (opcional)</Label>
+                  <Label className="professional-section-label">Dia da semana</Label>
+                  <Select
+                    value={form.weekday}
+                    onValueChange={(weekday) => setForm({ ...form, weekday })}
+                  >
+                    <SelectTrigger className="professional-input w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {WEEKDAYS.map((day) => (
+                        <SelectItem key={day.value} value={String(day.value)}>
+                          {day.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Label className="professional-section-label" htmlFor="bdate">
+                    Data específica
+                  </Label>
                   <Input
-                    id="breason"
-                    value={form.reason}
-                    onChange={(e) => setForm({ ...form, reason: e.target.value })}
-                    placeholder="Almoço, compromisso pessoal..."
+                    id="bdate"
+                    className="professional-input"
+                    type="date"
+                    value={form.date}
+                    onChange={(event) => setForm({ ...form, date: event.target.value })}
+                  />
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="professional-section-label" htmlFor="bstart">
+                    Começo
+                  </Label>
+                  <Input
+                    id="bstart"
+                    className="professional-input"
+                    type="time"
+                    value={form.starts}
+                    onChange={(event) => setForm({ ...form, starts: event.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="professional-section-label" htmlFor="bend">
+                    Fim
+                  </Label>
+                  <Input
+                    id="bend"
+                    className="professional-input"
+                    type="time"
+                    value={form.ends}
+                    onChange={(event) => setForm({ ...form, ends: event.target.value })}
                   />
                 </div>
               </div>
-              <DialogFooter>
-                <Button onClick={() => create.mutate()} disabled={create.isPending}>
-                  Salvar
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        }
-      />
 
-      <div className="mb-4 flex flex-wrap items-center gap-4 text-sm">
-        <label className="flex items-center gap-2">
-          <Checkbox
-            checked={showRecurring}
-            onCheckedChange={(v) => setShowRecurring(v === true)}
-          />
-          Recorrentes
-        </label>
-        <label className="flex items-center gap-2">
-          <Checkbox checked={showSpecific} onCheckedChange={(v) => setShowSpecific(v === true)} />
-          Específicos
-        </label>
-      </div>
+              <div className="space-y-2">
+                <Label className="professional-section-label" htmlFor="breason">
+                  Motivo (opcional)
+                </Label>
+                <Input
+                  id="breason"
+                  className="professional-input"
+                  value={form.reason}
+                  onChange={(event) => setForm({ ...form, reason: event.target.value })}
+                  placeholder="Almoço, compromisso pessoal..."
+                />
+              </div>
+            </div>
+          </div>
 
-      {!filtered.length ? (
-        <EmptyList text="Nenhum horário bloqueado." />
-      ) : (
-        <div className="surface overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/40 text-left text-xs uppercase text-muted-foreground">
-              <tr>
-                <th className="px-4 py-3">Data</th>
-                <th className="px-4 py-3">Começo</th>
-                <th className="px-4 py-3">Fim</th>
-                <th className="px-4 py-3" />
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((b) => (
-                <tr key={b.id} className="border-t border-border/60">
-                  <td className="px-4 py-3 font-medium">
-                    {b.recurring
-                      ? weekdayLabel(b.weekday ?? 0)
-                      : new Date(`${b.block_date}T00:00:00`).toLocaleDateString("pt-BR")}
-                    {b.reason && (
-                      <span className="ml-2 text-xs text-muted-foreground">{b.reason}</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3">{hhmm(b.starts_at)}</td>
-                  <td className="px-4 py-3">{hhmm(b.ends_at)}</td>
-                  <td className="px-4 py-3 text-right">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => remove.mutate(b.id)}
-                      aria-label="Remover bloqueio"
-                    >
-                      <Trash2 className="size-4 text-destructive" />
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+          <DialogFooter className="professional-dialog-footer">
+            <Button
+              variant="outline"
+              className="professional-secondary-button"
+              onClick={close}
+            >
+              Cancelar
+            </Button>
+            <Button
+              className="professional-primary-button"
+              onClick={() => create.mutate()}
+              disabled={create.isPending}
+            >
+              {create.isPending ? "Salvando..." : "Criar bloqueio"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
