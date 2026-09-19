@@ -657,23 +657,23 @@ function AgendaPage() {
               vectorEffect="non-scaling-stroke"
             />
 
-            <circle r="7.2" fill="rgba(28,156,255,0.18)" filter="url(#date-neon-glow)">
+            <ellipse rx="50.4" ry="7.2" fill="rgba(28,156,255,0.18)" filter="url(#date-neon-glow)">
               <animateMotion dur="8s" repeatCount="indefinite" rotate="auto">
                 <mpath href="#date-outline-path" />
               </animateMotion>
-            </circle>
+            </ellipse>
 
-            <circle r="3.1" fill="rgba(60,188,255,1)" filter="url(#date-neon-glow)">
+            <ellipse rx="21.7" ry="3.1" fill="rgba(60,188,255,1)" filter="url(#date-neon-glow)">
               <animateMotion dur="8s" repeatCount="indefinite" rotate="auto">
                 <mpath href="#date-outline-path" />
               </animateMotion>
-            </circle>
+            </ellipse>
 
-            <circle r="1.15" fill="#eefbff">
+            <ellipse rx="8.05" ry="1.15" fill="#eefbff">
               <animateMotion dur="8s" repeatCount="indefinite" rotate="auto">
                 <mpath href="#date-outline-path" />
               </animateMotion>
-            </circle>
+            </ellipse>
           </svg>
           <Input
             type="date"
