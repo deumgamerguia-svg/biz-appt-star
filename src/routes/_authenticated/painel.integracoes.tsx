@@ -8,7 +8,6 @@ import {
   CheckCheck,
   ChevronRight,
   Loader2,
-  MessageCircle,
   MessageSquareText,
   QrCode,
   RefreshCw,
@@ -26,6 +25,19 @@ import {
   getWhatsappStatus,
   refreshWhatsappQr,
 } from "@/lib/whatsapp.functions";
+
+function WhatsAppIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      className={className}
+      fill="currentColor"
+    >
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.198.297-.767.966-.94 1.164-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.009-.371-.011-.57-.011-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479s1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.262.489 1.693.625.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.981.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.897a9.884 9.884 0 0 1-6.992 16.878m8.413-18.297A11.815 11.815 0 0 0 12.055 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.689 1.448h.005c6.557 0 11.892-5.335 11.895-11.893a11.821 11.821 0 0 0-3.487-8.413Z" />
+    </svg>
+  );
+}
 
 export const Route = createFileRoute("/_authenticated/painel/integracoes")({
   head: () => ({
@@ -82,7 +94,7 @@ function IntegrationsList({ onOpenWhatsapp }: { onOpenWhatsapp: () => void }) {
           >
             <span className="flex min-w-0 items-center gap-3">
               <span className="integration-gold-icon integration-whatsapp-icon">
-                <MessageCircle className="size-[1.05rem]" strokeWidth={1.8} />
+                <WhatsAppIcon className="size-[1.05rem]" />
               </span>
               <span className="min-w-0 text-left">
                 <span className="block text-[0.95rem] font-semibold text-[#ececef]">WhatsApp</span>
@@ -264,7 +276,7 @@ function WhatsappIntegration({
             >
               <ArrowLeft className="size-4 shrink-0 text-[#8b8b93]" />
               <span className="integration-gold-icon integration-whatsapp-icon">
-                <MessageCircle className="size-[1.05rem]" strokeWidth={1.8} />
+                <WhatsAppIcon className="size-[1.05rem]" />
               </span>
               <span className="min-w-0">
                 <span className="flex flex-wrap items-center gap-2">
