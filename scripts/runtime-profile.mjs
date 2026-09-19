@@ -461,11 +461,12 @@ async function run() {
   const results = [];
 
   const waitAgenda = async () => {
-    await page.locator('input[type="date"]').waitFor({ state: "visible", timeout: 15000 });
-    await page.getByText("Disponível", { exact: true }).first().waitFor({ state: "visible", timeout: 15000 });
+    await page.locator('input[type="date"]').waitFor({ state: "attached", timeout: 15000 });
+    await page.getByText("Disponível", { exact: true }).first().waitFor({ state: "attached", timeout: 15000 });
+    await settle(page, 180);
   };
   const waitClientes = async () => {
-    await page.getByPlaceholder("Buscar cliente pelo nome").waitFor({ state: "visible", timeout: 15000 });
+    await page.getByPlaceholder("Buscar cliente pelo nome").waitFor({ state: "attached", timeout: 15000 });
     await page.getByText("Total de clientes:", { exact: false }).waitFor({ state: "visible", timeout: 15000 });
   };
   const waitAsPay = async () => {
@@ -485,7 +486,7 @@ async function run() {
 
     results.push(
       await measureProd(page, cdp, "agenda-modal-open", async () => {
-        await page.getByText("Disponível", { exact: true }).first().click();
+        await page.locator('button').filter({ hasText: "Disponível" }).first().evaluate((element) => element.click());
         await page.getByRole("heading", { name: "Agendar horário" }).waitFor();
       }),
     );
@@ -539,7 +540,7 @@ async function run() {
     results.push(await takeReact(page, "dashboard-open"));
 
     await resetReact(page);
-    await page.getByText("Disponível", { exact: true }).first().click();
+    await page.locator('button').filter({ hasText: "Disponível" }).first().evaluate((element) => element.click());
     await page.getByRole("heading", { name: "Agendar horário" }).waitFor();
     results.push(await takeReact(page, "agenda-modal-open"));
     await page.getByRole("button", { name: "Cancelar" }).click();
