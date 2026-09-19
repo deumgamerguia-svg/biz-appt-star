@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useDeferredValue, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/lib/toast";
@@ -77,10 +77,13 @@ function ClientesPage() {
     },
   });
 
-  const lastVisit: Record<string, string> = {};
-  for (const v of visits ?? []) {
-    if (v.customer_id && !lastVisit[v.customer_id]) lastVisit[v.customer_id] = v.starts_at;
-  }
+  const lastVisit = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const visit of visits ?? []) {
+      if (visit.customer_id && !map[visit.customer_id]) map[visit.customer_id] = visit.starts_at;
+    }
+    return map;
+  }, [visits]);
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ["customers", businessId] });
 
@@ -117,9 +120,14 @@ function ClientesPage() {
 
   if (!businessId) return <NoBusiness />;
 
-  const filtered = (customers ?? []).filter((c) =>
-    c.name.toLowerCase().includes(term.toLowerCase()),
-  );
+  const deferredTerm = useDeferredValue(term);
+  const filtered = useMemo(() => {
+    const normalized = deferredTerm.trim().toLowerCase();
+    if (!normalized) return customers ?? [];
+    return (customers ?? []).filter((customer) =>
+      customer.name.toLowerCase().includes(normalized),
+    );
+  }, [customers, deferredTerm]);
 
   const exportCsv = () => {
     const rows = filtered.map((c) => [
@@ -233,47 +241,175 @@ function ClientesPage() {
         <EmptyList text="Nenhum cliente encontrado." />
       ) : (
         <RuntimeProfiler id="ClientesTable">
-        <div className="surface overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/40 text-left text-xs uppercase text-muted-foreground">
-              <tr>
-                <th className="px-4 py-3">Nome</th>
-                <th className="px-4 py-3">Telefone</th>
-                <th className="px-4 py-3">Dias ausente</th>
-                <th className="px-4 py-3" />
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((c) => {
-                const last = lastVisit[c.id];
-                const days = last === undefined ? null : daysSince(last);
-                return (
-                  <tr key={c.id} className="border-t border-border/60">
-                    <td className="px-4 py-3 font-medium">{c.name}</td>
-                    <td className="px-4 py-3 text-primary">{c.phone ?? "—"}</td>
-                    <td className="px-4 py-3">{days === null ? "—" : `${days} dias`}</td>
-                    <td className="px-4 py-3 text-right">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => remove.mutate(c.id)}
-                        aria-label={`Remover ${c.name}`}
-                      >
-                        <Trash2 className="size-4 text-destructive" />
-                      </Button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-          <p className="border-t border-border/60 px-4 py-3 text-center text-sm text-muted-foreground">
-            Total de clientes: <span className="text-primary">{filtered.length}</span>
-          </p>
-        </div>
+          <CustomersTable
+            customers={filtered}
+            lastVisit={lastVisit}
+            onRemove={(id) => remove.mutate(id)}
+          />
         </RuntimeProfiler>
       )}
 
     </div>
+  );
+}
+
+
+const CUSTOMER_ROW_HEIGHT = 49;
+const CUSTOMER_VIRTUAL_THRESHOLD = 200;
+const CUSTOMER_VIEWPORT_HEIGHT = 560;
+const CUSTOMER_OVERSCAN = 8;
+
+type CustomerRow = {
+  id: string;
+  name: string;
+  phone: string | null;
+};
+
+function CustomersTable({
+  customers,
+  lastVisit,
+  onRemove,
+}: {
+  customers: CustomerRow[];
+  lastVisit: Record<string, string>;
+  onRemove: (id: string) => void;
+}) {
+  const [scrollTop, setScrollTop] = useState(0);
+  const virtualized = customers.length > CUSTOMER_VIRTUAL_THRESHOLD;
+
+  if (!virtualized) {
+    return (
+      <div className="surface overflow-hidden">
+        <table className="w-full text-sm">
+          <CustomerTableHead />
+          <tbody>
+            {customers.map((customer) => (
+              <CustomerTableRow
+                key={customer.id}
+                customer={customer}
+                lastVisit={lastVisit[customer.id]}
+                onRemove={onRemove}
+              />
+            ))}
+          </tbody>
+        </table>
+        <CustomerTableFooter count={customers.length} />
+      </div>
+    );
+  }
+
+  const visibleCount = Math.ceil(CUSTOMER_VIEWPORT_HEIGHT / CUSTOMER_ROW_HEIGHT);
+  const startIndex = Math.max(
+    0,
+    Math.floor(scrollTop / CUSTOMER_ROW_HEIGHT) - CUSTOMER_OVERSCAN,
+  );
+  const endIndex = Math.min(
+    customers.length,
+    startIndex + visibleCount + CUSTOMER_OVERSCAN * 2,
+  );
+  const visible = customers.slice(startIndex, endIndex);
+
+  return (
+    <div className="surface overflow-hidden">
+      <div className="grid grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(110px,.7fr)_52px] bg-muted/40 text-left text-xs uppercase text-muted-foreground">
+        <div className="px-4 py-3">Nome</div>
+        <div className="px-4 py-3">Telefone</div>
+        <div className="px-4 py-3">Dias ausente</div>
+        <div className="px-4 py-3" />
+      </div>
+      <div
+        className="overflow-y-auto"
+        style={{ height: CUSTOMER_VIEWPORT_HEIGHT }}
+        onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
+      >
+        <div
+          className="relative"
+          style={{ height: customers.length * CUSTOMER_ROW_HEIGHT }}
+        >
+          {visible.map((customer, offset) => {
+            const index = startIndex + offset;
+            const last = lastVisit[customer.id];
+            const days = last === undefined ? null : daysSince(last);
+            return (
+              <div
+                key={customer.id}
+                className="absolute left-0 right-0 grid grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(110px,.7fr)_52px] items-center border-t border-border/60 text-sm"
+                style={{
+                  height: CUSTOMER_ROW_HEIGHT,
+                  transform: `translateY(${index * CUSTOMER_ROW_HEIGHT}px)`,
+                }}
+              >
+                <div className="truncate px-4 py-3 font-medium">{customer.name}</div>
+                <div className="truncate px-4 py-3 text-primary">
+                  {customer.phone ?? "—"}
+                </div>
+                <div className="px-4 py-3">{days === null ? "—" : `${days} dias`}</div>
+                <div className="px-2 py-1 text-right">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onRemove(customer.id)}
+                    aria-label={`Remover ${customer.name}`}
+                  >
+                    <Trash2 className="size-4 text-destructive" />
+                  </Button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      <CustomerTableFooter count={customers.length} />
+    </div>
+  );
+}
+
+function CustomerTableHead() {
+  return (
+    <thead className="bg-muted/40 text-left text-xs uppercase text-muted-foreground">
+      <tr>
+        <th className="px-4 py-3">Nome</th>
+        <th className="px-4 py-3">Telefone</th>
+        <th className="px-4 py-3">Dias ausente</th>
+        <th className="px-4 py-3" />
+      </tr>
+    </thead>
+  );
+}
+
+function CustomerTableRow({
+  customer,
+  lastVisit,
+  onRemove,
+}: {
+  customer: CustomerRow;
+  lastVisit?: string;
+  onRemove: (id: string) => void;
+}) {
+  const days = lastVisit === undefined ? null : daysSince(lastVisit);
+  return (
+    <tr className="border-t border-border/60">
+      <td className="px-4 py-3 font-medium">{customer.name}</td>
+      <td className="px-4 py-3 text-primary">{customer.phone ?? "—"}</td>
+      <td className="px-4 py-3">{days === null ? "—" : `${days} dias`}</td>
+      <td className="px-4 py-3 text-right">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => onRemove(customer.id)}
+          aria-label={`Remover ${customer.name}`}
+        >
+          <Trash2 className="size-4 text-destructive" />
+        </Button>
+      </td>
+    </tr>
+  );
+}
+
+function CustomerTableFooter({ count }: { count: number }) {
+  return (
+    <p className="border-t border-border/60 px-4 py-3 text-center text-sm text-muted-foreground">
+      Total de clientes: <span className="text-primary">{count}</span>
+    </p>
   );
 }
