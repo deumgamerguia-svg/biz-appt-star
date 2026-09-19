@@ -254,149 +254,224 @@ function WhatsappIntegration({
   }, [connected, onlineSeconds]);
 
   return (
-    <section className="mx-auto max-w-2xl">
-      <div className="mb-5 flex items-center justify-between gap-3">
-        <button
-          type="button"
-          onClick={onBack}
-          className="flex items-center gap-2 text-lg font-semibold tracking-[-0.02em] text-[#f0f0f2] transition hover:text-[#e4bd3b]"
-        >
-          <ArrowLeft className="size-5" />
-          <span className="integration-gold-icon"><MessageCircle className="size-[1.05rem]" strokeWidth={1.8} /></span>
-          Whatsapp
-        </button>
+    <section className="mx-auto max-w-2xl space-y-3">
+      <div className="integration-gold-panel p-4 sm:p-5">
+        <div className="relative z-10">
+          <div className="mb-5 flex items-start justify-between gap-3">
+            <button
+              type="button"
+              onClick={onBack}
+              className="flex min-w-0 items-center gap-3 text-left"
+            >
+              <ArrowLeft className="size-4 shrink-0 text-[#8b8b93]" />
+              <span className="integration-gold-icon">
+                <MessageCircle className="size-[1.05rem]" strokeWidth={1.8} />
+              </span>
+              <span className="min-w-0">
+                <span className="flex flex-wrap items-center gap-2">
+                  <span className="text-lg font-semibold tracking-[-0.025em] text-[#f1f1f3]">
+                    WhatsApp
+                  </span>
+                  <span className="rounded-full border border-[#313137] bg-[#17171a] px-2.5 py-1 text-[0.63rem] font-semibold text-[#8a8a92]">
+                    Integração externa
+                  </span>
+                </span>
+                <span className="mt-1 block text-xs text-[#6f7078]">
+                  Mensagens, lembretes e conexão do seu número
+                </span>
+              </span>
+            </button>
 
-        <button
-          type="button"
-          aria-label="Atualizar status"
-          onClick={() => {
-            void statusQuery.refetch();
-            if (connected) void statsQuery.refetch();
-          }}
-          className="integration-gold-icon !size-10 transition hover:border-[#d8b229]/55 hover:text-[#f4cf4e]"
-        >
-          <RefreshCw className={`size-5 ${statusQuery.isFetching ? "animate-spin" : ""}`} />
-        </button>
-      </div>
+            <button
+              type="button"
+              aria-label="Atualizar status"
+              onClick={() => {
+                void statusQuery.refetch();
+                if (connected) void statsQuery.refetch();
+              }}
+              className="integration-gold-icon !size-10 shrink-0 transition hover:border-[#d8b229]/55 hover:text-[#f4cf4e]"
+            >
+              <RefreshCw className={`size-4 ${statusQuery.isFetching ? "animate-spin" : ""}`} />
+            </button>
+          </div>
 
-      <div className="mb-5 flex flex-wrap items-center gap-3 text-sm font-semibold text-[#ededee]">
-        <span>Valor contratado:</span>
-        <span className="rounded-lg border border-[#6a5210]/70 bg-[#211b09] px-3 py-1 text-[#efc52f]">R$ 0,00</span>
-      </div>
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            <span className="rounded-full border border-[#6a5210]/70 bg-[#211b09] px-2.5 py-1 text-[0.68rem] font-semibold text-[#dfb72e]">
+              {connected ? "Conectado" : status === "conectando" ? "Conectando" : "Desconectado"}
+            </span>
+            <span className="rounded-full border border-[#2f2f34] bg-[#151518] px-2.5 py-1 text-[0.68rem] font-medium text-[#777780]">
+              Valor contratado R$ 0,00
+            </span>
+          </div>
 
-      <Button
-        type="button"
-        variant="secondary"
-        className="mb-4 border border-[#34343a] bg-[#151518] text-[#ececef] shadow-none hover:border-[#6b5415] hover:bg-[#1b190f] hover:text-[#f4ce42]"
-        onClick={() => {
-          setShowConfig((value) => !value);
-          if (!connected && !qrCode && !showConfig) connect.mutate();
-        }}
-        disabled={connect.isPending}
-      >
-        {connect.isPending ? <Loader2 className="size-4 animate-spin" /> : <Settings2 className="size-4" />}
-        Configurar
-      </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              className="integration-dark-button"
+              onClick={() => {
+                setShowConfig((value) => !value);
+                if (!connected && !qrCode && !showConfig) connect.mutate();
+              }}
+              disabled={connect.isPending}
+            >
+              {connect.isPending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Settings2 className="size-4" />
+              )}
+              Configurar
+            </Button>
 
-      {showConfig && (
-        <div className="mb-4 rounded-xl border border-[#2d2d32] bg-[#0e0e11] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.025)]">
-          {connected ? (
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="font-semibold text-emerald-400">WhatsApp conectado</p>
-                <p className="mt-1 text-xs text-[#70717a]">A integração está ativa e os dados abaixo são atualizados automaticamente.</p>
-              </div>
+            {!connected && (
               <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => disconnect.mutate()}
-                disabled={disconnect.isPending}
+                type="button"
+                className="integration-gold-button"
+                onClick={() => connect.mutate()}
+                disabled={connect.isPending}
               >
-                {disconnect.isPending ? <Loader2 className="size-4 animate-spin" /> : <Unplug className="size-4" />}
-                Desconectar
-              </Button>
-            </div>
-          ) : qrCode ? (
-            <div className="space-y-3">
-              <p className="text-sm text-[#b9bac1]">
-                Abra o WhatsApp, acesse aparelhos conectados e leia o QR Code.
-              </p>
-              <div className="mx-auto flex w-fit justify-center rounded-xl bg-white p-3">
-                <img src={qrCode} alt="QR Code para conectar o WhatsApp" className="w-56 max-w-full" />
-              </div>
-              <div className="flex justify-center">
-                <Button variant="outline" size="sm" onClick={() => refreshQr.mutate()}>
-                  {refreshQr.isPending ? <Loader2 className="size-4 animate-spin" /> : <QrCode className="size-4" />}
-                  Gerar novo QR Code
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-sm text-[#8c8d95]">WhatsApp desconectado.</p>
-              <Button size="sm" onClick={() => connect.mutate()} disabled={connect.isPending}>
                 <QrCode className="size-4" />
                 Conectar
               </Button>
+            )}
+          </div>
+
+          {showConfig && (
+            <div className="mt-4 rounded-xl border border-[#2b2b30] bg-[#0d0d10] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.025)]">
+              {connected ? (
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-[#e7e7e9]">WhatsApp conectado</p>
+                    <p className="mt-1 text-xs text-[#6e6f77]">
+                      A integração está ativa e os dados abaixo são atualizados automaticamente.
+                    </p>
+                  </div>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => disconnect.mutate()}
+                    disabled={disconnect.isPending}
+                  >
+                    {disconnect.isPending ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <Unplug className="size-4" />
+                    )}
+                    Desconectar
+                  </Button>
+                </div>
+              ) : qrCode ? (
+                <div className="space-y-3">
+                  <p className="text-sm text-[#aaaab1]">
+                    Abra o WhatsApp, acesse aparelhos conectados e leia o QR Code.
+                  </p>
+                  <div className="mx-auto flex w-fit justify-center rounded-xl bg-white p-3">
+                    <img
+                      src={qrCode}
+                      alt="QR Code para conectar o WhatsApp"
+                      className="w-56 max-w-full"
+                    />
+                  </div>
+                  <div className="flex justify-center">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => refreshQr.mutate()}
+                      className="integration-dark-button"
+                    >
+                      {refreshQr.isPending ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : (
+                        <QrCode className="size-4" />
+                      )}
+                      Gerar novo QR Code
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-[#777780]">WhatsApp desconectado.</p>
+              )}
             </div>
           )}
-        </div>
-      )}
+
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <div className="integration-gold-stat p-4">
+              <div className="integration-gold-icon !size-9">
+                <MessageSquareText className="size-4" />
+              </div>
+              <p className="mt-4 text-[0.63rem] font-semibold uppercase tracking-[0.16em] text-[#6d6e76]">
+                Mensagens enviadas
+              </p>
+              <p className="mt-2 text-xl font-semibold tracking-[-0.03em] text-[#f0f0f2]">
+                {messagesSent.toLocaleString("pt-BR")}
+              </p>
+            </div>
+
+            <div className="integration-gold-stat p-4">
+              <div className="integration-gold-icon !size-9">
+                <BellRing className="size-4" />
+              </div>
+              <p className="mt-4 text-[0.63rem] font-semibold uppercase tracking-[0.16em] text-[#6d6e76]">
+                Lembretes enviados
+              </p>
+              <p className="mt-2 text-xl font-semibold tracking-[-0.03em] text-[#f0f0f2]">
+                {remindersSent.toLocaleString("pt-BR")}
+              </p>
+            </div>
+
+            <div className="integration-gold-stat p-4">
+              <div className="integration-gold-icon !size-9">
+                <CheckCheck className="size-4" />
+              </div>
+              <p className="mt-4 text-[0.63rem] font-semibold uppercase tracking-[0.16em] text-[#6d6e76]">
+                Status
+              </p>
+              <p className="mt-2 flex items-center gap-2 text-base font-semibold text-[#f0f0f2]">
+                <span
+                  className={`size-2.5 rounded-full ${
+                    connected
+                      ? "bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.45)]"
+                      : "bg-[#55575e]"
+                  }`}
+                />
+                {connected ? "Ativo" : "Inativo"}
+              </p>
+            </div>
+
+            <div className="integration-gold-stat p-4">
+              <div className="integration-gold-icon !size-9">
+                <RefreshCw className="size-4" />
+              </div>
+              <p className="mt-4 text-[0.63rem] font-semibold uppercase tracking-[0.16em] text-[#6d6e76]">
+                Tempo online
+              </p>
+              <p className="mt-2 text-base font-semibold tracking-[-0.02em] text-[#f0f0f2]">
+                {formattedOnline}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="integration-gold-stat relative overflow-hidden p-4 sm:col-span-2">
-          <MessageCircle className="absolute -right-2 -top-6 size-28 text-[#d8aa1f]/[0.07]" fill="currentColor" strokeWidth={1.2} />
-          <div className="relative">
-            <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#777780]">
-              <MessageSquareText className="size-5" />
-              Mensagens enviadas
-            </p>
-            <p className="mt-7 text-2xl font-semibold tracking-[-0.035em] text-[#f2f2f4]">
-              {messagesSent.toLocaleString("pt-BR")} Mensagens
-            </p>
-          </div>
-        </div>
-
-        <div className="integration-gold-stat relative overflow-hidden p-4">
-          <Bookmark className="absolute -right-3 -top-2 size-24 text-[#d8aa1f]/[0.07]" fill="currentColor" strokeWidth={1.2} />
-          <div className="relative">
-            <p className="flex items-center gap-2 font-bold text-[#777780]">
-              <BellRing className="size-5" />
-              Lembretes enviados
-            </p>
-            <p className="mt-8 text-3xl font-black tracking-[-0.04em] drop-shadow-sm">
-              {remindersSent.toLocaleString("pt-BR")} Lembretes
-            </p>
-          </div>
-        </div>
-
-        <div className="integration-gold-stat p-4">
-          <p className="flex items-center gap-2 text-[1.05rem] font-semibold text-[#ececef]">
-            <span className={`size-3 rounded-full ${connected ? "bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.45)]" : "bg-[#5e6067]"}`} />
-            {connected ? "Ativo" : "Inativo"}
-          </p>
-          <p className="mt-5 text-xs font-semibold uppercase tracking-[0.12em] text-[#71727a]">Tempo online</p>
-          <div className="mt-1 flex items-end justify-between gap-2">
-            <span className="text-xl font-semibold tracking-[-0.03em] text-[#f0f0f2]">{formattedOnline}</span>
-            <span className="text-sm font-semibold text-[#6c6d74]">/h</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="integration-gold-panel mt-3 overflow-hidden p-0">
+      <div className="integration-gold-panel overflow-hidden p-0">
         <div className="relative z-10 flex items-center justify-between gap-3 border-b border-[#27272c] px-4 py-3.5">
-          <p className="flex items-center gap-2 text-[0.95rem] font-semibold text-[#ececef]">
-            <CheckCheck className="size-6" />
-            Mensagens pendentes
-          </p>
+          <div className="flex items-center gap-3">
+            <div className="integration-gold-icon !size-9">
+              <MessageSquareText className="size-4" />
+            </div>
+            <div>
+              <p className="text-[0.95rem] font-semibold text-[#ececef]">Mensagens pendentes</p>
+              <p className="mt-0.5 text-xs text-[#666770]">
+                Acompanhe os envios que ainda aguardam processamento.
+              </p>
+            </div>
+          </div>
           <span className="rounded-full border border-[#62501a] bg-[#211b09] px-2 py-0.5 text-xs font-semibold text-[#dcb62f]">
             {pendingCount}
           </span>
         </div>
 
-        <div className="relative z-10 min-h-32 bg-[#0b0b0e] p-4">
+        <div className="relative z-10 min-h-40 bg-[#0b0b0e] p-4">
           <div className="grid grid-cols-[1fr_1fr] gap-3 border-b border-[#25252a] pb-2 text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-[#71727a]">
             <span>Nome</span>
             <span>Telefone</span>
@@ -405,15 +480,28 @@ function WhatsappIntegration({
           {pending.length ? (
             <div className="divide-y divide-[#222227]">
               {pending.map((appointment) => (
-                <div key={appointment.id} className="grid grid-cols-[1fr_1fr] gap-3 py-3 text-xs font-medium text-[#c8c9cf]">
+                <div
+                  key={appointment.id}
+                  className="grid grid-cols-[1fr_1fr] gap-3 py-3 text-xs font-medium text-[#c8c9cf]"
+                >
                   <span className="truncate">{appointment.customer_name}</span>
                   <span className="truncate">{appointment.customer_phone || "—"}</span>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="flex min-h-24 items-center justify-center text-center text-xs font-medium text-[#62636b]">
-              {connected ? "Nenhuma mensagem pendente" : "Conecte o WhatsApp para carregar os dados"}
+            <div className="flex min-h-28 flex-col items-center justify-center text-center">
+              <div className="integration-gold-icon !size-12">
+                <MessageSquareText className="size-5" />
+              </div>
+              <p className="mt-4 text-sm font-semibold text-[#d9d9dc]">
+                {connected ? "Nenhuma mensagem pendente" : "Nenhum dado disponível"}
+              </p>
+              <p className="mt-1 max-w-sm text-xs leading-relaxed text-[#5f6068]">
+                {connected
+                  ? "Os próximos envios aparecerão aqui."
+                  : "Conecte o WhatsApp para carregar mensagens e lembretes."}
+              </p>
             </div>
           )}
         </div>
