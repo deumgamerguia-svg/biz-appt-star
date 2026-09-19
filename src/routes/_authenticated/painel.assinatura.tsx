@@ -47,6 +47,7 @@ function SubscriptionAccountPage() {
   const { user } = useAuth();
   const { businesses, business, businessId } = useBusiness();
   const [copied, setCopied] = useState(false);
+  const [activeTab, setActiveTab] = useState<(typeof ACCOUNT_TABS)[number]>("Assinatura");
 
   const { data: profile } = useQuery({
     queryKey: ["subscription-account-profile", user?.id],
@@ -76,6 +77,21 @@ function SubscriptionAccountPage() {
         .maybeSingle();
       if (error) throw error;
       return data;
+    },
+    staleTime: 60_000,
+  });
+
+  const { data: invoices, isLoading: invoicesLoading } = useQuery({
+    queryKey: ["subscription-account-invoices", businessId],
+    enabled: !!businessId && activeTab === "Faturas",
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("subscription_payments")
+        .select("id, status, amount_cents, reference_month, paid_at, created_at")
+        .eq("business_id", businessId!)
+        .order("reference_month", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
     },
     staleTime: 60_000,
   });
@@ -161,24 +177,17 @@ function SubscriptionAccountPage() {
 
       <nav className="mt-7 flex flex-wrap gap-x-7 gap-y-1 border-b border-[#272a30] px-1">
         {ACCOUNT_TABS.map((tab) => {
-          const active = tab === "Assinatura";
-          if (tab === "Faturas") {
-            return (
-              <Link
-                key={tab}
-                to="/painel/pagamentos"
-                className="relative py-3 text-sm font-medium text-[#666d78] transition-colors hover:text-[#d9dce1]"
-              >
-                {tab}
-              </Link>
-            );
-          }
+          const active = tab === activeTab;
+          const interactive = tab === "Assinatura" || tab === "Faturas";
 
           return (
             <button
               key={tab}
               type="button"
-              className={`relative py-3 text-sm font-medium ${active ? "text-white" : "text-[#666d78]"}`}
+              onClick={() => interactive && setActiveTab(tab)}
+              className={`relative py-3 text-sm font-medium transition-colors ${
+                active ? "text-white" : "text-[#666d78] hover:text-[#d9dce1]"
+              } ${interactive ? "cursor-pointer" : "cursor-default"}`}
             >
               {tab}
               {active ? (
@@ -189,32 +198,80 @@ function SubscriptionAccountPage() {
         })}
       </nav>
 
-      <section className="mt-4 rounded-[18px] border border-[#272a30] bg-[#050607] p-5 sm:p-6">
-        <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-[#686f7b]">Plano atual</p>
-        <p className="mt-5 text-[11px] font-medium uppercase tracking-[0.10em] text-[#686f7b]">Seu plano</p>
-        <p className="mt-2 text-[26px] font-medium tracking-[-0.04em] text-[#f5f5f6]">{planName}</p>
-
-        <div className="mt-4 flex flex-wrap items-center gap-3">
-          <span className="rounded-full border border-emerald-400/30 bg-emerald-400/[0.08] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.06em] text-emerald-300">
-            Ativo
-          </span>
-          <span className="text-sm font-medium text-emerald-300">
-            {paidCurrentMonth
-              ? payment?.paid_at
-                ? `Pagamento confirmado em ${formatAccountDate(payment.paid_at)}`
-                : "Pagamento confirmado"
-              : "Conta ativa em período de teste"}
-          </span>
-        </div>
-
-        {currentPlanPrice > 0 ? (
-          <div className="mt-5 flex items-center gap-2 border-t border-[#202329] pt-4 text-sm">
-            <CreditCard className="size-4 text-[#6d7480]" />
-            <span className="text-[#6d7480]">Valor mensal</span>
-            <span className="ml-auto font-semibold text-[#e8eaed]">{formatPrice(currentPlanPrice)}</span>
+      {activeTab === "Faturas" ? (
+        <section className="mt-4 rounded-[18px] border border-[#272a30] bg-[#050607] p-4 sm:p-6">
+          <div className="mb-4">
+            <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-[#686f7b]">Faturas</p>
+            <p className="mt-1 text-sm text-[#7b818b]">Histórico de mensalidades da sua conta.</p>
           </div>
-        ) : null}
-      </section>
+
+          {invoicesLoading ? (
+            <div className="rounded-[12px] border border-[#25282d] bg-[#0d0e11] px-4 py-5 text-center text-sm text-[#777e88]">
+              Carregando faturas...
+            </div>
+          ) : invoices?.length ? (
+            <div className="space-y-3">
+              {invoices.map((invoice) => {
+                const paid = invoice.status === "pago";
+                const dateValue = paid
+                  ? invoice.paid_at || invoice.created_at
+                  : invoice.reference_month;
+                const invoiceDate = new Date(dateValue).toLocaleDateString("pt-BR", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  timeZone: "America/Sao_Paulo",
+                });
+
+                return (
+                  <div
+                    key={invoice.id}
+                    className={`grid min-h-[64px] grid-cols-[1fr_1fr_1fr] items-center rounded-[9px] border px-4 text-sm font-semibold ${
+                      paid
+                        ? "border-emerald-300/70 bg-[#008332] text-white"
+                        : "border-amber-200/80 bg-[#dfa900] text-white"
+                    }`}
+                  >
+                    <span className="text-left sm:text-center">{invoiceDate}</span>
+                    <span className="text-center">{formatPrice(invoice.amount_cents)}</span>
+                    <span className="text-right sm:text-center">{paid ? "Pago" : "A vencer"}</span>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="rounded-[12px] border border-[#25282d] bg-[#0d0e11] px-4 py-6 text-center text-sm text-[#777e88]">
+              Nenhuma fatura registrada ainda.
+            </div>
+          )}
+        </section>
+      ) : (
+        <section className="mt-4 rounded-[18px] border border-[#272a30] bg-[#050607] p-5 sm:p-6">
+          <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-[#686f7b]">Plano atual</p>
+          <p className="mt-5 text-[11px] font-medium uppercase tracking-[0.10em] text-[#686f7b]">Seu plano</p>
+          <p className="mt-2 text-[26px] font-medium tracking-[-0.04em] text-[#f5f5f6]">{planName}</p>
+
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <span className="rounded-full border border-emerald-400/30 bg-emerald-400/[0.08] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.06em] text-emerald-300">
+              Ativo
+            </span>
+            <span className="text-sm font-medium text-emerald-300">
+              {paidCurrentMonth
+                ? payment?.paid_at
+                  ? `Pagamento confirmado em ${formatAccountDate(payment.paid_at)}`
+                  : "Pagamento confirmado"
+                : "Conta ativa em período de teste"}
+            </span>
+          </div>
+
+          {currentPlanPrice > 0 ? (
+            <div className="mt-5 flex items-center gap-2 border-t border-[#202329] pt-4 text-sm">
+              <CreditCard className="size-4 text-[#6d7480]" />
+              <span className="text-[#6d7480]">Valor mensal</span>
+              <span className="ml-auto font-semibold text-[#e8eaed]">{formatPrice(currentPlanPrice)}</span>
+            </div>
+          ) : null}
+        </section>
+      )}
     </div>
   );
 }
