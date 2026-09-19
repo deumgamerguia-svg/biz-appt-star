@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
 import { Copy, ExternalLink, Save, Store } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useBusiness, type Business } from "@/lib/business";
 import { categoryLabel } from "@/lib/format";
