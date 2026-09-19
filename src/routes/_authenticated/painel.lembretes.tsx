@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { BellRing, MessageCircle, CheckCheck, Send } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useBusiness } from "@/lib/business";
 import { PageHeader, NoBusiness } from "@/components/painel/PageHeader";
