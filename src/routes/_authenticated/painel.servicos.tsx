@@ -267,35 +267,6 @@ function ServicosPage() {
 
   return (
     <div className="services-premium mx-auto w-full max-w-5xl space-y-3">
-      <section className="professional-main-card">
-        <div className="relative z-10">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="flex items-start gap-3">
-              <div className="professional-icon-box">
-                <Scissors className="size-[1.05rem]" strokeWidth={1.8} />
-              </div>
-              <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="text-[1.35rem] font-semibold tracking-[-0.035em] text-[#f3f4f6]">
-                    Serviços
-                  </h1>
-                  <span className="professional-badge">Catálogo e valores</span>
-                </div>
-                <p className="mt-1 max-w-xl text-xs leading-relaxed text-[#6d7079]">
-                  Configure serviços, preços, duração, sinal, profissionais vinculados e como cada opção aparece para o cliente.
-                </p>
-              </div>
-            </div>
-
-            <Button className="professional-primary-button" onClick={openCreate}>
-              <Plus className="size-4" />
-              Novo serviço
-            </Button>
-          </div>
-
-        </div>
-      </section>
-
       <section className="professional-list-panel">
         <div className="professional-segmented-header">
           <button type="button" className="is-active">Serviços</button>
