@@ -44,12 +44,41 @@ function isH3SwallowedErrorBody(body: string): boolean {
   }
 }
 
+function withFrontendCacheHeaders(request: Request, response: Response): Response {
+  if (!response.ok) return response;
+
+  const pathname = new URL(request.url).pathname;
+  let cacheControl: string | null = null;
+
+  if (pathname.startsWith("/assets/")) {
+    cacheControl = "public, max-age=31536000, immutable";
+  } else if (pathname.startsWith("/fonts/")) {
+    cacheControl = "public, max-age=2592000, stale-while-revalidate=604800";
+  } else if (
+    pathname === "/agenda-agora-sidebar-logo.svg" ||
+    pathname === "/favicon.png"
+  ) {
+    cacheControl = "public, max-age=604800, stale-while-revalidate=2592000";
+  }
+
+  if (!cacheControl) return response;
+
+  const headers = new Headers(response.headers);
+  headers.set("Cache-Control", cacheControl);
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
-      return await normalizeCatastrophicSsrResponse(response);
+      const normalized = await normalizeCatastrophicSsrResponse(response);
+      return withFrontendCacheHeaders(request, normalized);
     } catch (error) {
       console.error(error);
       return new Response(renderErrorPage(), {
