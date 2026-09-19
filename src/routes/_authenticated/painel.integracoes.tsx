@@ -8,7 +8,6 @@ import {
   Bookmark,
   CheckCheck,
   ChevronRight,
-  Cpu,
   Loader2,
   MessageCircle,
   MessageSquareText,
@@ -78,40 +77,6 @@ function IntegrationsList({ onOpenWhatsapp }: { onOpenWhatsapp: () => void }) {
           <ChevronRight className="size-8 text-emerald-400 transition-transform group-hover:translate-x-1" />
         </button>
 
-        <div className="flex min-h-[64px] items-center justify-between rounded-xl border border-white/[0.06] bg-[#34373c] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)]">
-          <span className="flex items-center gap-3">
-            <MessageSquareText className="size-7 text-[#fff47a]" strokeWidth={1.9} />
-            <span className="text-lg font-medium text-white">SMS</span>
-          </span>
-          <span className="text-right font-semibold leading-tight text-emerald-400">
-            <span className="block text-base">Obter</span>
-            <span className="text-xs">R$ 0,10/msg</span>
-          </span>
-        </div>
-
-        <div className="rounded-xl border border-white/[0.06] bg-[#34373c] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)]">
-          <span className="flex items-center gap-3">
-            <Cpu className="size-7 text-cyan-400" strokeWidth={1.9} />
-            <span className="text-lg font-medium text-white">IA</span>
-          </span>
-        </div>
-
-        <div className="mt-5 w-fit rounded-lg bg-[#484b50] px-3 py-1.5 text-xs font-semibold text-white">
-          Em breve...
-        </div>
-
-        <div className="flex min-h-[64px] items-center justify-between rounded-xl border border-white/[0.06] bg-[#34373c] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)]">
-          <span className="flex items-center gap-3">
-            <span className="flex size-8 items-center justify-center rounded-full bg-[#dedede] text-xl font-bold text-[#71757b]">
-              G
-            </span>
-            <span className="text-lg font-medium text-[#d6d7d9]">Google</span>
-          </span>
-          <span className="text-right font-semibold leading-tight text-emerald-400">
-            <span className="block text-base">Obter</span>
-            <span className="text-xs">Gratuito</span>
-          </span>
-        </div>
       </div>
     </section>
   );
