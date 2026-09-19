@@ -19,7 +19,7 @@ import {
   User,
   X,
 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { formatPrice } from "@/lib/format";
 import {
   cancelDepositBooking,
