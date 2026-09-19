@@ -2,7 +2,7 @@ import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/lib/toast";
-import { ChevronLeft, ChevronRight, Eye, CalendarX2, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Eye, CalendarX2, Trash2, Clock3 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useBusiness } from "@/lib/business";
 import {
@@ -1076,228 +1076,289 @@ function AgendaPage() {
           if (!value) setEncaixeForm({ ...emptyForm, time: "" });
         }}
       >
-        <DialogContent className="w-[calc(100%-16px)] max-w-[500px] gap-0 rounded-[16px] border border-[#454545] bg-[#343434] p-[24px] text-[#f4f4f4] shadow-[0_24px_70px_rgba(0,0,0,0.55)] [&>button.absolute]:right-5 [&>button.absolute]:top-5 [&>button.absolute]:text-[#d7d7d7] [&>button.absolute]:opacity-80 [&>button.absolute>svg]:size-6">
-          <DialogHeader className="space-y-0 pr-10 text-left">
-            <DialogTitle className="text-[19px] font-medium leading-7 tracking-[-0.02em] text-[#f3f3f3]">
-              Agendar serviço na data: {agendaDateLabel(day)}
-            </DialogTitle>
+        <DialogContent className="professional-dialog max-w-xl overflow-y-auto p-0">
+          <DialogHeader className="professional-dialog-header">
+            <div className="flex items-start gap-3 text-left">
+              <div className="professional-dialog-icon">
+                <Clock3 className="size-[1.05rem]" strokeWidth={1.8} />
+              </div>
+              <div className="min-w-0">
+                <DialogTitle className="text-lg font-semibold tracking-[-0.025em] text-[#f1f2f4]">
+                  Adicionar encaixe
+                </DialogTitle>
+                <p className="mt-1 text-xs leading-relaxed text-[#686b74]">
+                  Agende manualmente em qualquer horário do dia em {agendaDateLabel(day)}.
+                </p>
+              </div>
+            </div>
           </DialogHeader>
 
-          <div className="mt-8 space-y-[18px]">
-            <div className="grid grid-cols-2 gap-[14px]">
-              <div className="space-y-2">
-                <Label
-                  htmlFor="encaixe-time"
-                  className="text-[14px] font-semibold text-[#f3f3f3]"
-                >
-                  Horário
-                </Label>
-                <Input
-                  id="encaixe-time"
-                  type="time"
-                  step={60}
-                  value={encaixeForm.time}
-                  onChange={(event) =>
-                    setEncaixeForm({ ...encaixeForm, time: event.target.value })
-                  }
-                  className="h-[39px] rounded-[7px] border-0 bg-[#505050] px-3 text-[14px] text-[#f4f4f4] placeholder:text-[#9c9c9f] focus-visible:ring-0"
-                />
+          <div className="professional-dialog-body px-4 pb-4 sm:px-5 sm:pb-5">
+            <div className="professional-form-section mt-4 space-y-5">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="professional-section-label" htmlFor="encaixe-time">
+                    Horário
+                  </Label>
+                  <Input
+                    id="encaixe-time"
+                    type="time"
+                    step={60}
+                    value={encaixeForm.time}
+                    onChange={(event) =>
+                      setEncaixeForm({ ...encaixeForm, time: event.target.value })
+                    }
+                    className="professional-input"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="professional-section-label">Funcionário</Label>
+                  <Select
+                    value={encaixeForm.professional_id || "__agenda__"}
+                    onValueChange={(value) =>
+                      setEncaixeForm({
+                        ...encaixeForm,
+                        professional_id: value === "__agenda__" ? "" : value,
+                      })
+                    }
+                  >
+                    <SelectTrigger className="professional-input w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__agenda__">Agenda</SelectItem>
+                      {encaixeProfessionals.map((professional) => (
+                        <SelectItem key={professional.id} value={professional.id}>
+                          {professional.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               <div className="space-y-2">
-                <Label className="text-[14px] font-semibold text-[#f3f3f3]">
-                  Funcionário
-                </Label>
+                <Label className="professional-section-label">Serviço</Label>
                 <Select
-                  value={encaixeForm.professional_id || "__agenda__"}
-                  onValueChange={(value) =>
-                    setEncaixeForm({
-                      ...encaixeForm,
-                      professional_id: value === "__agenda__" ? "" : value,
-                    })
-                  }
+                  value={encaixeForm.service_id}
+                  onValueChange={handleEncaixeServiceChange}
                 >
-                  <SelectTrigger className="h-[39px] rounded-[7px] border-0 bg-[#505050] px-4 text-[14px] font-medium text-[#f4f4f4] shadow-none focus:ring-0">
-                    <SelectValue />
+                  <SelectTrigger className="professional-input w-full">
+                    <SelectValue placeholder="Selecione um serviço" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="__agenda__">Agenda</SelectItem>
-                    {encaixeProfessionals.map((professional) => (
-                      <SelectItem key={professional.id} value={professional.id}>
-                        {professional.name}
+                    {(services ?? []).map((service) => (
+                      <SelectItem key={service.id} value={service.id}>
+                        {service.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <Label className="text-[14px] font-semibold text-[#f3f3f3]">
-                Serviço
-              </Label>
-              <Select
-                value={encaixeForm.service_id}
-                onValueChange={handleEncaixeServiceChange}
-              >
-                <SelectTrigger className="h-[39px] rounded-[7px] border-0 bg-[#505050] px-4 text-[14px] font-semibold uppercase text-[#f4f4f4] shadow-none focus:ring-0">
-                  <SelectValue placeholder="Selecione um serviço" />
-                </SelectTrigger>
-                <SelectContent>
-                  {(services ?? []).map((service) => (
-                    <SelectItem key={service.id} value={service.id}>
-                      {service.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="professional-section-label" htmlFor="encaixe-name">
+                    Nome Cliente
+                  </Label>
+                  <Input
+                    id="encaixe-name"
+                    placeholder="Nome"
+                    value={encaixeForm.customer_name}
+                    onChange={(event) =>
+                      setEncaixeForm({
+                        ...encaixeForm,
+                        customer_name: event.target.value,
+                      })
+                    }
+                    className="professional-input"
+                  />
+                </div>
 
-            <div className="grid grid-cols-2 gap-[14px]">
-              <div className="space-y-2">
-                <Label
-                  htmlFor="encaixe-name"
-                  className="text-[14px] font-semibold text-[#f3f3f3]"
-                >
-                  Nome Cliente
-                </Label>
-                <Input
-                  id="encaixe-name"
-                  placeholder="Nome"
-                  value={encaixeForm.customer_name}
-                  onChange={(event) =>
-                    setEncaixeForm({
-                      ...encaixeForm,
-                      customer_name: event.target.value,
-                    })
-                  }
-                  className="h-[39px] rounded-[7px] border-0 bg-[#505050] px-3 text-[14px] text-[#f4f4f4] placeholder:text-[#9c9c9f] focus-visible:ring-0"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label
-                  htmlFor="encaixe-phone"
-                  className="text-[14px] font-semibold text-[#f3f3f3]"
-                >
-                  Número Cliente
-                </Label>
-                <Input
-                  id="encaixe-phone"
-                  placeholder="(DDD)(9º Digito)0000-0000"
-                  value={encaixeForm.customer_phone}
-                  onChange={(event) =>
-                    setEncaixeForm({
-                      ...encaixeForm,
-                      customer_phone: event.target.value,
-                    })
-                  }
-                  className="h-[39px] rounded-[7px] border-0 bg-[#505050] px-3 text-[14px] text-[#f4f4f4] placeholder:text-[#9c9c9f] focus-visible:ring-0"
-                />
+                <div className="space-y-2">
+                  <Label className="professional-section-label" htmlFor="encaixe-phone">
+                    Número Cliente
+                  </Label>
+                  <Input
+                    id="encaixe-phone"
+                    placeholder="(DDD)(9º Dígito)0000-0000"
+                    value={encaixeForm.customer_phone}
+                    onChange={(event) =>
+                      setEncaixeForm({
+                        ...encaixeForm,
+                        customer_phone: event.target.value,
+                      })
+                    }
+                    className="professional-input"
+                  />
+                </div>
               </div>
             </div>
           </div>
 
-          <Button
-            onClick={() => createEncaixe.mutate()}
-            disabled={
-              !encaixeForm.time ||
-              !encaixeForm.customer_name.trim() ||
-              !encaixeForm.service_id ||
-              createEncaixe.isPending
-            }
-            className="mt-[18px] h-[39px] w-full rounded-[7px] bg-[#080d39] text-[14px] font-medium uppercase text-white shadow-none hover:bg-[#0b1248]"
-          >
-            {createEncaixe.isPending ? "SALVANDO..." : "AGENDAR"}
-          </Button>
+          <DialogFooter className="professional-dialog-footer">
+            <Button
+              variant="outline"
+              className="professional-secondary-button"
+              onClick={() => setEncaixeOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              className="professional-primary-button"
+              onClick={() => createEncaixe.mutate()}
+              disabled={
+                !encaixeForm.time ||
+                !encaixeForm.customer_name.trim() ||
+                !encaixeForm.service_id ||
+                createEncaixe.isPending
+              }
+            >
+              {createEncaixe.isPending ? "Salvando..." : "Agendar"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="w-[calc(100%-16px)] max-w-[496px] gap-0 rounded-[12px] border border-[#3a3a3a] bg-[#303030] p-[22px] text-[#f4f4f4] shadow-[0_24px_70px_rgba(0,0,0,0.5)] sm:rounded-[12px] [&>button.absolute]:right-5 [&>button.absolute]:top-6 [&>button.absolute]:text-[#d7d7d7] [&>button.absolute]:opacity-80 [&>button.absolute>svg]:size-6">
-          <DialogHeader className="space-y-0 pr-10 text-left">
-            <DialogTitle className="text-[18px] font-semibold leading-7 tracking-[-0.02em] text-[#f3f3f3]">
-              Agendar Serviço às {form.time}
-            </DialogTitle>
+      <Dialog
+        open={open}
+        onOpenChange={(value) => {
+          setOpen(value);
+          if (!value) setForm(emptyForm);
+        }}
+      >
+        <DialogContent className="professional-dialog max-w-xl overflow-y-auto p-0">
+          <DialogHeader className="professional-dialog-header">
+            <div className="flex items-start gap-3 text-left">
+              <div className="professional-dialog-icon">
+                <Clock3 className="size-[1.05rem]" strokeWidth={1.8} />
+              </div>
+              <div className="min-w-0">
+                <DialogTitle className="text-lg font-semibold tracking-[-0.025em] text-[#f1f2f4]">
+                  Agendar horário
+                </DialogTitle>
+                <p className="mt-1 text-xs leading-relaxed text-[#686b74]">
+                  Confirme o horário selecionado e preencha os dados do agendamento.
+                </p>
+              </div>
+            </div>
           </DialogHeader>
 
-          <button
-            type="button"
-            onClick={() =>
-              blockSlot.mutate(form.time, {
-                onSuccess: () => setOpen(false),
-              })
-            }
-            disabled={blockSlot.isPending}
-            className="mt-8 flex h-[39px] w-full items-center justify-center rounded-[6px] border border-[#ff002b] bg-transparent px-4 text-[14px] font-semibold text-[#f3f3f3] transition-colors hover:bg-[#ff002b]/5 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <span className="mr-1.5 text-[14px]" aria-hidden="true">🔐</span>
-            {blockSlot.isPending ? "Bloqueando..." : "Bloquear horário"}
-          </button>
+          <div className="professional-dialog-body px-4 pb-4 sm:px-5 sm:pb-5">
+            <div className="professional-form-section mt-4 space-y-5">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="professional-section-label" htmlFor="agenda-time">
+                    Horário
+                  </Label>
+                  <Input
+                    id="agenda-time"
+                    type="time"
+                    value={form.time}
+                    readOnly
+                    className="professional-input cursor-default opacity-90"
+                  />
+                </div>
 
-          <div className="mt-[18px] space-y-[17px]">
-            <div className="space-y-2">
-              <Label className="text-[14px] font-semibold text-[#f3f3f3]">Serviço</Label>
-              <Select value={form.service_id} onValueChange={handleServiceChange}>
-                <SelectTrigger className="h-[39px] rounded-[7px] border-0 bg-[#505050] px-4 text-[14px] font-semibold uppercase text-[#f4f4f4] shadow-none focus:ring-0">
-                  <SelectValue placeholder="Selecione um serviço" />
-                </SelectTrigger>
-                <SelectContent>
-                  {(services ?? []).map((service) => (
-                    <SelectItem key={service.id} value={service.id}>
-                      {service.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid grid-cols-2 gap-[14px]">
-              <div className="space-y-2">
-                <Label htmlFor="aname" className="text-[14px] font-semibold text-[#f3f3f3]">
-                  Nome Cliente
-                </Label>
-                <Input
-                  id="aname"
-                  placeholder="Informe o nome do cliente"
-                  value={form.customer_name}
-                  onChange={(event) => setForm({ ...form, customer_name: event.target.value })}
-                  className="h-[39px] rounded-[7px] border-0 bg-[#505050] px-3 text-[14px] text-[#f4f4f4] placeholder:text-[#9c9c9f] focus-visible:ring-0"
-                />
+                <div className="space-y-2">
+                  <Label className="professional-section-label">Funcionário</Label>
+                  <Select
+                    value={form.professional_id || "__agenda__"}
+                    onValueChange={(value) =>
+                      setForm({
+                        ...form,
+                        professional_id: value === "__agenda__" ? "" : value,
+                      })
+                    }
+                  >
+                    <SelectTrigger className="professional-input w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {!linkedForSelectedService.length && (
+                        <SelectItem value="__agenda__">Agenda</SelectItem>
+                      )}
+                      {eligibleProfessionals.map((professional) => (
+                        <SelectItem key={professional.id} value={professional.id}>
+                          {professional.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="aphone" className="text-[14px] font-semibold text-[#f3f3f3]">
-                  Número do cliente
-                </Label>
-                <Input
-                  id="aphone"
-                  placeholder="(DDD)(9º Digito) 0000-0000"
-                  value={form.customer_phone}
-                  onChange={(event) => setForm({ ...form, customer_phone: event.target.value })}
-                  className="h-[39px] rounded-[7px] border-0 bg-[#505050] px-3 text-[14px] text-[#f4f4f4] placeholder:text-[#9c9c9f] focus-visible:ring-0"
-                />
+                <Label className="professional-section-label">Serviço</Label>
+                <Select value={form.service_id} onValueChange={handleServiceChange}>
+                  <SelectTrigger className="professional-input w-full">
+                    <SelectValue placeholder="Selecione um serviço" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(services ?? []).map((service) => (
+                      <SelectItem key={service.id} value={service.id}>
+                        {service.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="professional-section-label" htmlFor="agenda-name">
+                    Nome Cliente
+                  </Label>
+                  <Input
+                    id="agenda-name"
+                    placeholder="Nome"
+                    value={form.customer_name}
+                    onChange={(event) =>
+                      setForm({ ...form, customer_name: event.target.value })
+                    }
+                    className="professional-input"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="professional-section-label" htmlFor="agenda-phone">
+                    Número Cliente
+                  </Label>
+                  <Input
+                    id="agenda-phone"
+                    placeholder="(DDD)(9º Dígito)0000-0000"
+                    value={form.customer_phone}
+                    onChange={(event) =>
+                      setForm({ ...form, customer_phone: event.target.value })
+                    }
+                    className="professional-input"
+                  />
+                </div>
               </div>
             </div>
-
-            <label className="flex w-fit cursor-pointer items-center gap-1.5 text-[14px] font-semibold text-[#f3f3f3]">
-              <input
-                type="checkbox"
-                checked={form.recurring}
-                onChange={(event) => setForm({ ...form, recurring: event.target.checked })}
-                className="size-[13px] accent-[#0b174a]"
-              />
-              Recorrente
-            </label>
           </div>
 
-          <Button
-            onClick={() => create.mutate()}
-            disabled={!form.customer_name.trim() || !form.service_id || create.isPending}
-            className="mt-[18px] h-[39px] w-full rounded-[7px] bg-[#080d39] text-[14px] font-medium uppercase text-white shadow-none hover:bg-[#0b1248]"
-          >
-            {create.isPending ? "SALVANDO..." : "AGENDAR"}
-          </Button>
+          <DialogFooter className="professional-dialog-footer">
+            <Button
+              variant="outline"
+              className="professional-secondary-button"
+              onClick={() => setOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              className="professional-primary-button"
+              onClick={() => create.mutate()}
+              disabled={
+                !form.customer_name.trim() ||
+                !form.service_id ||
+                create.isPending
+              }
+            >
+              {create.isPending ? "Salvando..." : "Agendar"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
