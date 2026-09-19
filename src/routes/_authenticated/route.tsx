@@ -3,12 +3,21 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { BusinessProvider } from "@/lib/business";
 import { supabase } from "@/integrations/supabase/client";
+import { RuntimeProfiler } from "@/lib/runtime-profiler";
 
 type AppRole = "owner" | "super_admin" | null;
 
 export const Route = createFileRoute("/_authenticated")({
-  component: AuthenticatedLayout,
+  component: ProfiledAuthenticatedLayout,
 });
+
+function ProfiledAuthenticatedLayout() {
+  return (
+    <RuntimeProfiler id="AuthenticatedLayout">
+      <AuthenticatedLayout />
+    </RuntimeProfiler>
+  );
+}
 
 function AuthenticatedLayout() {
   const { user, loading } = useAuth();
