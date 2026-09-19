@@ -593,8 +593,6 @@ function AgendaPage() {
     onError: (error: Error) => toast.error(error.message),
   });
 
-  if (!businessId) return <NoBusiness />;
-
   const shiftDay = (delta: number) => {
     const next = new Date(`${day}T12:00:00-03:00`);
     next.setDate(next.getDate() + delta);
@@ -870,6 +868,8 @@ function AgendaPage() {
     if (!window.confirm(`Excluir o agendamento de ${selected.customer_name}?`)) return;
     remove.mutate(selected.id);
   };
+
+  if (!businessId) return <NoBusiness />;
 
   return (
     <div>
