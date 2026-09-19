@@ -81,7 +81,7 @@ function IntegrationsList({ onOpenWhatsapp }: { onOpenWhatsapp: () => void }) {
             className="integration-gold-row group w-full"
           >
             <span className="flex min-w-0 items-center gap-3">
-              <span className="integration-gold-icon">
+              <span className="integration-gold-icon integration-whatsapp-icon">
                 <MessageCircle className="size-[1.05rem]" strokeWidth={1.8} />
               </span>
               <span className="min-w-0 text-left">
@@ -89,7 +89,7 @@ function IntegrationsList({ onOpenWhatsapp }: { onOpenWhatsapp: () => void }) {
                 <span className="mt-0.5 block text-xs text-[#6d6d76]">Conexão, mensagens e lembretes</span>
               </span>
             </span>
-            <ChevronRight className="size-5 shrink-0 text-[#d5ad2b] transition-transform group-hover:translate-x-1" />
+            <ChevronRight className="size-5 shrink-0 text-[#25D366] transition-transform group-hover:translate-x-1" />
           </button>
         </div>
       </div>
@@ -263,7 +263,7 @@ function WhatsappIntegration({
               className="flex min-w-0 items-center gap-3 text-left"
             >
               <ArrowLeft className="size-4 shrink-0 text-[#8b8b93]" />
-              <span className="integration-gold-icon">
+              <span className="integration-gold-icon integration-whatsapp-icon">
                 <MessageCircle className="size-[1.05rem]" strokeWidth={1.8} />
               </span>
               <span className="min-w-0">
@@ -288,14 +288,20 @@ function WhatsappIntegration({
                 void statusQuery.refetch();
                 if (connected) void statsQuery.refetch();
               }}
-              className="integration-gold-icon !size-10 shrink-0 transition hover:border-[#d8b229]/55 hover:text-[#f4cf4e]"
+              className="integration-gold-icon !size-10 shrink-0 transition hover:border-[#1677ff]/60 hover:text-[#78adff]"
             >
               <RefreshCw className={`size-4 ${statusQuery.isFetching ? "animate-spin" : ""}`} />
             </button>
           </div>
 
           <div className="mb-4 flex flex-wrap items-center gap-2">
-            <span className="rounded-full border border-[#6a5210]/70 bg-[#211b09] px-2.5 py-1 text-[0.68rem] font-semibold text-[#dfb72e]">
+            <span
+              className={`rounded-full border px-2.5 py-1 text-[0.68rem] font-semibold ${
+                connected
+                  ? "border-emerald-400/30 bg-emerald-400/[0.08] text-emerald-300"
+                  : "border-[#1677ff]/30 bg-[#1677ff]/[0.08] text-[#77aaff]"
+              }`}
+            >
               {connected ? "Conectado" : status === "conectando" ? "Conectando" : "Desconectado"}
             </span>
             <span className="rounded-full border border-[#2f2f34] bg-[#151518] px-2.5 py-1 text-[0.68rem] font-medium text-[#777780]">
@@ -325,7 +331,7 @@ function WhatsappIntegration({
             {!connected && (
               <Button
                 type="button"
-                className="integration-gold-button"
+                className="integration-whatsapp-button"
                 onClick={() => connect.mutate()}
                 disabled={connect.isPending}
               >
@@ -465,7 +471,7 @@ function WhatsappIntegration({
               </p>
             </div>
           </div>
-          <span className="rounded-full border border-[#62501a] bg-[#211b09] px-2 py-0.5 text-xs font-semibold text-[#dcb62f]">
+          <span className="rounded-full border border-[#1677ff]/30 bg-[#1677ff]/[0.08] px-2 py-0.5 text-xs font-semibold text-[#76aaff]">
             {pendingCount}
           </span>
         </div>
