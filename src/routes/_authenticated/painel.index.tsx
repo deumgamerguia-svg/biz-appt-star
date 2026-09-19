@@ -795,7 +795,6 @@ function AgendaPage() {
       </div>
 
       <div className="mt-3 overflow-hidden rounded-md border border-border">
-        <div className="h-8 bg-secondary" />
         {!timelineSlots.length ? (
           <div className="px-6 py-10 text-center">
             <p className="text-sm font-medium">Nenhum horário disponível neste dia</p>
