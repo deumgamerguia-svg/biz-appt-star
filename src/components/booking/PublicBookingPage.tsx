@@ -373,6 +373,8 @@ export function PublicBookingPage({ slug }: { slug: string }) {
                   <img
                     src={service.image_url}
                     alt={service.name}
+                    loading="lazy"
+                    decoding="async"
                     className="mx-auto mb-5 max-h-52 w-full rounded-lg object-cover"
                   />
                 ) : null}
@@ -664,6 +666,8 @@ function BusinessHeader({
         <img
           src={logoUrl}
           alt={`Logotipo de ${name}`}
+          decoding="async"
+          fetchPriority="high"
           className="mx-auto max-h-24 max-w-[72%] object-contain"
         />
       ) : (
