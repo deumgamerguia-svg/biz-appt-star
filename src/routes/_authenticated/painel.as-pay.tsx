@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Activity, ArrowDownToLine, ArrowUpRight, CalendarDays, Landmark } from "lucide-react";
+import { Activity, ArrowDownToLine, ArrowUpRight, CircleDollarSign, Clock3, Landmark } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useBusiness } from "@/lib/business";
 import { formatPrice } from "@/lib/format";
@@ -68,10 +68,29 @@ function AsPayPage() {
       />
 
       <div className="report-luminous-card report-effect-strong mx-auto max-w-2xl p-6">
-        <p className="text-xs font-semibold uppercase text-muted-foreground">Saldo disponível</p>
-        <p className="font-display text-3xl font-bold text-primary">{formatPrice(available)}</p>
-        <p className="mt-4 text-xs font-semibold uppercase text-muted-foreground">Saldo pendente</p>
-        <p className="font-display text-3xl font-bold">{formatPrice(pending)}</p>
+        <div className="space-y-5">
+          <div className="flex items-start gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-emerald-500/25 bg-emerald-500/10 text-emerald-400 shadow-[0_0_18px_rgba(16,185,129,0.18)]">
+              <CircleDollarSign className="size-5" aria-hidden="true" />
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase text-muted-foreground">Saldo disponível</p>
+              <p className="font-display text-3xl font-bold text-primary">{formatPrice(available)}</p>
+            </div>
+          </div>
+
+          <div className="h-px w-full bg-white/10" />
+
+          <div className="flex items-start gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-amber-500/25 bg-amber-500/10 text-amber-400 shadow-[0_0_18px_rgba(245,158,11,0.18)]">
+              <Clock3 className="size-5" aria-hidden="true" />
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase text-muted-foreground">Saldo pendente</p>
+              <p className="font-display text-3xl font-bold">{formatPrice(pending)}</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       <p className="mx-auto mt-5 max-w-2xl text-center text-sm text-muted-foreground">
