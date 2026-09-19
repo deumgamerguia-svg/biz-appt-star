@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/lib/toast";
 import { Plus, Trash2, Search, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { RuntimeProfiler } from "@/lib/runtime-profiler";
 import { useBusiness } from "@/lib/business";
 import { daysSince } from "@/lib/format";
 import { PageHeader, NoBusiness, EmptyList } from "@/components/painel/PageHeader";
@@ -29,8 +30,16 @@ export const Route = createFileRoute("/_authenticated/painel/clientes")({
       { property: "og:description", content: "Cadastro de clientes com contato e observações." },
     ],
   }),
-  component: ClientesPage,
+  component: ProfiledClientesPage,
 });
+
+function ProfiledClientesPage() {
+  return (
+    <RuntimeProfiler id="ClientesPage">
+      <ClientesPage />
+    </RuntimeProfiler>
+  );
+}
 
 function ClientesPage() {
   const { businessId } = useBusiness();
@@ -223,6 +232,7 @@ function ClientesPage() {
       {!filtered.length ? (
         <EmptyList text="Nenhum cliente encontrado." />
       ) : (
+        <RuntimeProfiler id="ClientesTable">
         <div className="surface overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-muted/40 text-left text-xs uppercase text-muted-foreground">
@@ -261,6 +271,7 @@ function ClientesPage() {
             Total de clientes: <span className="text-primary">{filtered.length}</span>
           </p>
         </div>
+        </RuntimeProfiler>
       )}
 
     </div>
