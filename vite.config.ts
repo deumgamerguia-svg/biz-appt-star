@@ -5,6 +5,7 @@
 //     React/TanStack dedupe, error logger plugins, and sandbox detection (port/host/strictPort).
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { fileURLToPath } from "node:url";
+import { gzipSync } from "node:zlib";
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 const auditBundle = process.env.BUNDLE_AUDIT === "1";
@@ -14,11 +15,14 @@ const bundleAuditPlugin = {
   generateBundle(_options: unknown, bundle: Record<string, any>) {
     if (!auditBundle) return;
 
-    const chunks = Object.values(bundle)
-      .filter((entry: any) => entry?.type === "chunk")
+    const emittedChunks = Object.values(bundle).filter((entry: any) => entry?.type === "chunk") as any[];
+    const emittedAssets = Object.values(bundle).filter((entry: any) => entry?.type === "asset") as any[];
+
+    const chunks = emittedChunks
       .map((entry: any) => ({
         fileName: entry.fileName,
         bytes: Buffer.byteLength(entry.code ?? "", "utf8"),
+        gzipBytes: gzipSync(entry.code ?? "").byteLength,
         modules: Object.entries(entry.modules ?? {})
           .map(([id, info]: [string, any]) => ({
             id,
@@ -32,13 +36,60 @@ const bundleAuditPlugin = {
 
     console.log("\n[BUNDLE_AUDIT] Largest chunks and module contributors");
     for (const chunk of chunks) {
-      console.log(`[BUNDLE_AUDIT] ${chunk.fileName} ${(chunk.bytes / 1024).toFixed(1)} KiB`);
+      console.log(
+        `[BUNDLE_AUDIT] ${chunk.fileName} ${(chunk.bytes / 1024).toFixed(1)} KiB gzip ${(chunk.gzipBytes / 1024).toFixed(1)} KiB`,
+      );
       for (const mod of chunk.modules) {
         console.log(
           `  ${(mod.renderedLength / 1024).toFixed(1)} KiB  ${mod.id.replace(process.cwd(), ".")}`,
         );
       }
     }
+
+    const byFile = new Map(emittedChunks.map((chunk: any) => [chunk.fileName, chunk]));
+    const closureFor = (root: any) => {
+      const visited = new Set<string>();
+      const visit = (fileName: string) => {
+        if (visited.has(fileName)) return;
+        visited.add(fileName);
+        const chunk: any = byFile.get(fileName);
+        for (const dep of chunk?.imports ?? []) visit(dep);
+      };
+      visit(root.fileName);
+      const selected = [...visited].map((name) => byFile.get(name)).filter(Boolean);
+      return {
+        files: selected.length,
+        bytes: selected.reduce((sum: number, chunk: any) => sum + Buffer.byteLength(chunk.code ?? "", "utf8"), 0),
+        gzipBytes: selected.reduce((sum: number, chunk: any) => sum + gzipSync(chunk.code ?? "").byteLength, 0),
+      };
+    };
+
+    const reportClosure = (label: string, predicate: (chunk: any) => boolean) => {
+      const root = emittedChunks.find(predicate);
+      if (!root) return;
+      const result = closureFor(root);
+      console.log(
+        `[BUNDLE_AUDIT_SUMMARY] ${label}: ${result.files} JS files, ${(result.bytes / 1024).toFixed(1)} KiB raw, ${(result.gzipBytes / 1024).toFixed(1)} KiB gzip`,
+      );
+    };
+
+    reportClosure("client-entry", (chunk: any) => chunk.isEntry);
+    reportClosure("route-auth", (chunk: any) => String(chunk.facadeModuleId ?? "").endsWith("/src/routes/auth.tsx"));
+    reportClosure("route-panel", (chunk: any) => String(chunk.facadeModuleId ?? "").endsWith("/src/routes/_authenticated/painel.index.tsx"));
+    reportClosure("route-public-booking", (chunk: any) => String(chunk.facadeModuleId ?? "").endsWith("/src/routes/agendar.$slug.tsx"));
+
+    const cssAssets = emittedAssets.filter((asset: any) => String(asset.fileName).endsWith(".css"));
+    const cssRaw = cssAssets.reduce((sum: number, asset: any) => {
+      const source = typeof asset.source === "string" ? asset.source : Buffer.from(asset.source ?? []);
+      return sum + Buffer.byteLength(source);
+    }, 0);
+    const cssGzip = cssAssets.reduce((sum: number, asset: any) => {
+      const source = typeof asset.source === "string" ? asset.source : Buffer.from(asset.source ?? []);
+      return sum + gzipSync(source).byteLength;
+    }, 0);
+    console.log(
+      `[BUNDLE_AUDIT_SUMMARY] emitted-css: ${cssAssets.length} files, ${(cssRaw / 1024).toFixed(1)} KiB raw, ${(cssGzip / 1024).toFixed(1)} KiB gzip`,
+    );
   },
 };
 
