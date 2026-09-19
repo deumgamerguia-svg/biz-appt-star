@@ -229,6 +229,7 @@ async function installMocks(context) {
     ({ key, session }) => {
       localStorage.setItem(key, JSON.stringify(session));
       window.__AA_LONG_TASKS__ = [];
+      window.__AA_LONG_FRAMES__ = [];
       try {
         const observer = new PerformanceObserver((list) => {
           for (const entry of list.getEntries()) {
@@ -248,6 +249,28 @@ async function installMocks(context) {
           }
         });
         observer.observe({ type: "longtask", buffered: true });
+      } catch {}
+      try {
+        const frameObserver = new PerformanceObserver((list) => {
+          for (const entry of list.getEntries()) {
+            window.__AA_LONG_FRAMES__.push({
+              startTime: entry.startTime,
+              duration: entry.duration,
+              blockingDuration: entry.blockingDuration ?? 0,
+              renderStart: entry.renderStart ?? 0,
+              styleAndLayoutStart: entry.styleAndLayoutStart ?? 0,
+              scripts: Array.from(entry.scripts ?? []).map((script) => ({
+                duration: script.duration ?? 0,
+                pauseDuration: script.pauseDuration ?? 0,
+                forcedStyleAndLayoutDuration: script.forcedStyleAndLayoutDuration ?? 0,
+                sourceURL: script.sourceURL ?? "",
+                sourceFunctionName: script.sourceFunctionName ?? "",
+                invoker: script.invoker ?? "",
+              })),
+            });
+          }
+        });
+        frameObserver.observe({ type: "long-animation-frame", buffered: true });
       } catch {}
     },
     { key: authStorageKey, session: fakeSession },
@@ -304,32 +327,6 @@ async function installMocks(context) {
   });
 }
 
-function summarizeCpu(profileResult) {
-  const profile = profileResult?.profile;
-  if (!profile?.nodes?.length) return [];
-  const nodes = new Map(profile.nodes.map((node) => [node.id, node]));
-  const totals = new Map();
-  const samples = profile.samples ?? [];
-  const deltas = profile.timeDeltas ?? [];
-
-  for (let index = 0; index < samples.length; index += 1) {
-    const node = nodes.get(samples[index]);
-    if (!node) continue;
-    const frame = node.callFrame ?? {};
-    const fn = frame.functionName || "(anonymous)";
-    if (fn === "(idle)") continue;
-    const url = frame.url || "";
-    const shortUrl = url ? url.split("/").slice(-2).join("/") : "";
-    const key = `${fn} @ ${shortUrl}:${(frame.lineNumber ?? 0) + 1}`;
-    totals.set(key, (totals.get(key) ?? 0) + (deltas[index] ?? 0) / 1000);
-  }
-
-  return [...totals.entries()]
-    .map(([frame, ms]) => ({ frame, ms: Number(ms.toFixed(2)) }))
-    .sort((a, b) => b.ms - a.ms)
-    .slice(0, 12);
-}
-
 async function settle(page, ms = 120) {
   await page.evaluate(
     () =>
@@ -359,31 +356,84 @@ async function readLongTasks(page, startTime) {
   }, startTime);
 }
 
+async function readLongFrames(page, startTime) {
+  return page.evaluate((start) => {
+    const entries = (window.__AA_LONG_FRAMES__ ?? []).filter((entry) => entry.startTime >= start);
+    const scripts = new Map();
+    for (const entry of entries) {
+      for (const script of entry.scripts ?? []) {
+        const key = `${script.sourceFunctionName || "(anonymous)"} @ ${script.sourceURL || "(inline)"}`;
+        const current = scripts.get(key) ?? {
+          frame: key,
+          duration: 0,
+          forcedStyleAndLayoutDuration: 0,
+          invokers: new Set(),
+        };
+        current.duration += script.duration ?? 0;
+        current.forcedStyleAndLayoutDuration += script.forcedStyleAndLayoutDuration ?? 0;
+        if (script.invoker) current.invokers.add(script.invoker);
+        scripts.set(key, current);
+      }
+    }
+    return {
+      count: entries.length,
+      maxMs: entries.length ? Math.max(...entries.map((entry) => entry.duration)) : 0,
+      maxBlockingMs: entries.length
+        ? Math.max(...entries.map((entry) => entry.blockingDuration ?? 0))
+        : 0,
+      topScripts: [...scripts.values()]
+        .map((item) => ({
+          frame: item.frame,
+          duration: Number(item.duration.toFixed(2)),
+          forcedStyleAndLayoutDuration: Number(item.forcedStyleAndLayoutDuration.toFixed(2)),
+          invokers: [...item.invokers].slice(0, 3),
+        }))
+        .sort((a, b) => b.duration - a.duration)
+        .slice(0, 10),
+      entries: entries
+        .sort((a, b) => b.duration - a.duration)
+        .slice(0, 6)
+        .map((entry) => ({
+          startTime: Number(entry.startTime.toFixed(2)),
+          duration: Number(entry.duration.toFixed(2)),
+          blockingDuration: Number((entry.blockingDuration ?? 0).toFixed(2)),
+          scriptCount: entry.scripts?.length ?? 0,
+        })),
+    };
+  }, startTime);
+}
+
 async function measureProd(page, cdp, label, action) {
+  console.log(`[RUNTIME_PROFILE_STEP] start ${label}`);
   const startTime = await page.evaluate(() => performance.now());
-  await cdp.send("Profiler.start");
+  const metricsBefore = await cdp.send("Performance.getMetrics");
+  const before = Object.fromEntries(metricsBefore.metrics.map((metric) => [metric.name, metric.value]));
   const wallStart = performance.now();
   await action();
   await settle(page);
   const wallMs = performance.now() - wallStart;
-  const cpu = await cdp.send("Profiler.stop");
+  const metricsAfter = await cdp.send("Performance.getMetrics");
+  const after = Object.fromEntries(metricsAfter.metrics.map((metric) => [metric.name, metric.value]));
   const longTasks = await readLongTasks(page, startTime);
+  const longFrames = await readLongFrames(page, startTime);
   const domNodes = await page.evaluate(() => document.querySelectorAll("*").length);
-  const metrics = await cdp.send("Performance.getMetrics");
-  const metricMap = Object.fromEntries(metrics.metrics.map((metric) => [metric.name, metric.value]));
-
-  return {
+  const result = {
     label,
     wallMs: Number(wallMs.toFixed(2)),
     domNodes,
     longTasks,
-    topCpu: summarizeCpu(cpu),
-    scriptDurationMs: Number(((metricMap.ScriptDuration ?? 0) * 1000).toFixed(2)),
-    taskDurationMs: Number(((metricMap.TaskDuration ?? 0) * 1000).toFixed(2)),
+    longFrames,
+    scriptDurationMs: Number((((after.ScriptDuration ?? 0) - (before.ScriptDuration ?? 0)) * 1000).toFixed(2)),
+    taskDurationMs: Number((((after.TaskDuration ?? 0) - (before.TaskDuration ?? 0)) * 1000).toFixed(2)),
+    layoutDurationMs: Number((((after.LayoutDuration ?? 0) - (before.LayoutDuration ?? 0)) * 1000).toFixed(2)),
+    recalcStyleDurationMs: Number((((after.RecalcStyleDuration ?? 0) - (before.RecalcStyleDuration ?? 0)) * 1000).toFixed(2)),
   };
+  console.log(`[RUNTIME_PROFILE_STEP] done ${label} ${result.wallMs}ms`);
+  return result;
 }
 
 async function takeReact(page, label) {
+  console.log(`[RUNTIME_PROFILE_STEP] react ${label}`);
   await settle(page, 80);
   const profile = await page.evaluate(() => structuredClone(window.__AA_REACT_PROFILE__ ?? {}));
   const domNodes = await page.evaluate(() => document.querySelectorAll("*").length);
@@ -407,8 +457,6 @@ async function run() {
   const page = await context.newPage();
   const cdp = await context.newCDPSession(page);
   await cdp.send("Performance.enable");
-  await cdp.send("Profiler.enable");
-  await cdp.send("Profiler.setSamplingInterval", { interval: 100 });
 
   const results = [];
 
