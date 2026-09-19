@@ -1274,6 +1274,9 @@ body:has(.owner-panel) .professional-dialog-footer {
   z-index: 3;
   bottom: 0;
   margin-top: 0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
   border-top: 1px solid #24272e;
   background:
     linear-gradient(180deg, rgba(9, 10, 13, 0.9), rgba(9, 10, 13, 0.99));
