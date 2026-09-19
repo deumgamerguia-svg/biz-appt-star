@@ -386,6 +386,8 @@ function WhatsappIntegration({
                     <img
                       src={qrCode}
                       alt="QR Code para conectar o WhatsApp"
+                      loading="lazy"
+                      decoding="async"
                       className="w-56 max-w-full"
                     />
                   </div>
