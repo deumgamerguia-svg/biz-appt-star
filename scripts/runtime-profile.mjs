@@ -2,7 +2,7 @@ import { chromium } from "playwright";
 import { mkdir, writeFile } from "node:fs/promises";
 
 const mode = process.env.PROFILE_MODE ?? "prod";
-// Remeasure after Agenda memoization/lazy dialogs and Relatório formatter reuse.
+// Remeasure after stable Agenda hook order, memoization/lazy dialogs and report formatter reuse.
 const baseURL = process.env.PROFILE_BASE_URL ?? "http://127.0.0.1:4173";
 const projectRef = "qagotnmdqjoodoudcikd";
 const authStorageKey = `sb-${projectRef}-auth-token`;
