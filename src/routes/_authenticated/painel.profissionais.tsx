@@ -344,26 +344,31 @@ function ProfissionaisPage() {
           if (!value) setForm(empty);
         }}
       >
-        <DialogContent className="professional-dialog max-h-[92vh] max-w-2xl overflow-y-auto p-0">
+        <DialogContent className="professional-dialog max-w-xl overflow-y-auto p-0">
           <DialogHeader className="professional-dialog-header">
-            <div>
-              <DialogTitle className="text-lg font-semibold tracking-[-0.025em] text-[#f1f2f4]">
-                {form.id ? "Editar profissional" : "Adicionar profissional"}
-              </DialogTitle>
-              <p className="mt-1 text-xs text-[#686b74]">
-                Configure dados, serviços vinculados e permissões de acesso.
-              </p>
+            <div className="flex items-start gap-3 text-left">
+              <div className="professional-dialog-icon">
+                <UserRound className="size-[1.05rem]" strokeWidth={1.8} />
+              </div>
+              <div className="min-w-0">
+                <DialogTitle className="text-lg font-semibold tracking-[-0.025em] text-[#f1f2f4]">
+                  {form.id ? "Editar profissional" : "Adicionar profissional"}
+                </DialogTitle>
+                <p className="mt-1 text-xs leading-relaxed text-[#686b74]">
+                  Configure dados, serviços vinculados e permissões de acesso.
+                </p>
+              </div>
             </div>
           </DialogHeader>
 
-          <Tabs defaultValue="dados" className="px-4 pb-4 sm:px-5 sm:pb-5">
+          <Tabs defaultValue="dados" className="professional-dialog-body px-4 pb-4 sm:px-5 sm:pb-5">
             <TabsList className="professional-tabs grid w-full grid-cols-3">
               <TabsTrigger value="dados">Dados</TabsTrigger>
               <TabsTrigger value="vinculos">Vínculos</TabsTrigger>
               <TabsTrigger value="permissoes">Permissões</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="dados" className="space-y-5 pt-5">
+            <TabsContent value="dados" className="professional-form-section space-y-5 pt-5">
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field
                   label="Nome completo"
@@ -430,7 +435,7 @@ function ProfissionaisPage() {
               </div>
             </TabsContent>
 
-            <TabsContent value="vinculos" className="space-y-3 pt-5">
+            <TabsContent value="vinculos" className="professional-form-section space-y-3 pt-5">
               <div className="professional-info-box">
                 <Link2 className="size-4 text-[#5d9cff]" />
                 Selecione os serviços realizados por este profissional.
@@ -463,7 +468,7 @@ function ProfissionaisPage() {
               )}
             </TabsContent>
 
-            <TabsContent value="permissoes" className="space-y-3 pt-5">
+            <TabsContent value="permissoes" className="professional-form-section space-y-3 pt-5">
               <div className="professional-info-box">
                 <ShieldCheck className="size-4 text-[#5d9cff]" />
                 Estas permissões controlam o que aparece e o que pode ser alterado no acesso do profissional.
