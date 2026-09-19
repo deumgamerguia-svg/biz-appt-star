@@ -80,57 +80,97 @@ function RelatorioPage() {
   });
 
   const report = useMemo(() => {
-    const appts = (data?.appointments ?? []).filter((a) => a.status !== "bloqueado");
-    const priceOf = (serviceId: string | null) =>
-      data?.services.find((s) => s.id === serviceId)?.price_cents ?? 0;
+    const services = data?.services ?? [];
+    const professionals = data?.professionals ?? [];
+    const appointments = data?.appointments ?? [];
 
-    const done = appts.filter((a) => a.status === "concluido" || a.status === "confirmado");
-    const canceled = appts.filter((a) => a.status === "cancelado");
-    const revenue = done.reduce((sum, a) => sum + priceOf(a.service_id), 0);
-    const deposits = appts
-      .filter((a) => a.deposit_paid_at)
-      .reduce((sum, a) => sum + (a.deposit_cents ?? 0), 0);
-
-    const byService = (data?.services ?? [])
-      .map((s) => ({
-        name: s.name,
-        total: appts.filter((a) => a.service_id === s.id).length,
-        valor: appts.filter((a) => a.service_id === s.id).length * s.price_cents,
-      }))
-      .filter((s) => s.total > 0)
-      .sort((a, b) => b.total - a.total);
-
-    const byProfessional = (data?.professionals ?? [])
-      .map((p) => ({
-        name: p.name,
-        total: appts.filter((a) => a.professional_id === p.id).length,
-      }))
-      .filter((p) => p.total > 0)
-      .sort((a, b) => b.total - a.total);
-
+    const serviceById = new Map(
+      services.map((service) => [service.id, service] as const),
+    );
+    const serviceTotals = new Map<string, number>();
+    const professionalTotals = new Map<string, number>();
     const perDay = new Map<string, number>();
-    for (const a of appts) {
-      const key = new Date(a.starts_at).toLocaleDateString("pt-BR", {
+    const clients = new Set<string>();
+
+    let total = 0;
+    let done = 0;
+    let canceled = 0;
+    let revenue = 0;
+    let deposits = 0;
+
+    for (const appointment of appointments) {
+      if (appointment.status === "bloqueado") continue;
+
+      total += 1;
+      const completed =
+        appointment.status === "concluido" || appointment.status === "confirmado";
+
+      if (completed) {
+        done += 1;
+        if (appointment.service_id) {
+          revenue += serviceById.get(appointment.service_id)?.price_cents ?? 0;
+        }
+      }
+      if (appointment.status === "cancelado") canceled += 1;
+      if (appointment.deposit_paid_at) deposits += appointment.deposit_cents ?? 0;
+
+      if (appointment.service_id) {
+        serviceTotals.set(
+          appointment.service_id,
+          (serviceTotals.get(appointment.service_id) ?? 0) + 1,
+        );
+      }
+      if (appointment.professional_id) {
+        professionalTotals.set(
+          appointment.professional_id,
+          (professionalTotals.get(appointment.professional_id) ?? 0) + 1,
+        );
+      }
+
+      const dayKey = new Date(appointment.starts_at).toLocaleDateString("pt-BR", {
         day: "2-digit",
         month: "2-digit",
       });
-      perDay.set(key, (perDay.get(key) ?? 0) + 1);
+      perDay.set(dayKey, (perDay.get(dayKey) ?? 0) + 1);
+      clients.add(appointment.customer_name.trim().toLowerCase());
     }
-    const chart = [...perDay.entries()].map(([dia, total]) => ({ dia, total }));
 
-    const clients = new Set(appts.map((a) => a.customer_name.trim().toLowerCase()));
+    const byService = services
+      .map((service) => {
+        const serviceTotal = serviceTotals.get(service.id) ?? 0;
+        return {
+          name: service.name,
+          total: serviceTotal,
+          valor: serviceTotal * service.price_cents,
+        };
+      })
+      .filter((service) => service.total > 0)
+      .sort((a, b) => b.total - a.total);
+
+    const byProfessional = professionals
+      .map((professional) => ({
+        name: professional.name,
+        total: professionalTotals.get(professional.id) ?? 0,
+      }))
+      .filter((professional) => professional.total > 0)
+      .sort((a, b) => b.total - a.total);
+
+    const chart = [...perDay.entries()].map(([dia, dayTotal]) => ({
+      dia,
+      total: dayTotal,
+    }));
 
     return {
-      total: appts.length,
-      done: done.length,
-      canceled: canceled.length,
+      total,
+      done,
+      canceled,
       revenue,
       deposits,
       byService,
       byProfessional,
       chart,
       clients: clients.size,
-      ticket: done.length ? Math.round(revenue / done.length) : 0,
+      ticket: done ? Math.round(revenue / done) : 0,
     };
   }, [data]);
 
