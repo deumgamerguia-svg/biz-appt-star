@@ -16,7 +16,6 @@ import { NoBusiness } from "@/components/painel/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -116,6 +115,7 @@ const emptyForm = {
   professional_id: "",
   time: "09:00",
   notes: "",
+  recurring: false,
 };
 
 function AgendaPage() {
@@ -591,22 +591,52 @@ function AgendaPage() {
     return worksToday && linked;
   });
 
+  const defaultProfessionalForService = (serviceId: string) => {
+    const links = (serviceLinks ?? []).filter((link) => link.service_id === serviceId);
+    if (!links.length) return "";
+
+    const linkedIds = new Set(links.map((link) => link.professional_id));
+    return (
+      (professionals ?? []).find(
+        (professional) =>
+          linkedIds.has(professional.id) &&
+          (professional.working_days ?? []).includes(weekdayNumber),
+      )?.id ?? ""
+    );
+  };
+
   const openNewAt = (time: string) => {
-    setForm({ ...emptyForm, time });
+    const defaultService = services?.[0]?.id ?? "";
+    setForm({
+      ...emptyForm,
+      time,
+      service_id: defaultService,
+      professional_id: defaultService ? defaultProfessionalForService(defaultService) : "",
+    });
     setOpen(true);
   };
 
   const handleServiceChange = (serviceId: string) => {
     const links = (serviceLinks ?? []).filter((link) => link.service_id === serviceId);
-    setForm((current) => ({
-      ...current,
-      service_id: serviceId,
-      professional_id:
-        current.professional_id &&
-        (!links.length || links.some((link) => link.professional_id === current.professional_id))
+    const linkedIds = new Set(links.map((link) => link.professional_id));
+
+    setForm((current) => {
+      const currentProfessional = (professionals ?? []).find(
+        (professional) => professional.id === current.professional_id,
+      );
+      const currentStillValid =
+        !!currentProfessional &&
+        (currentProfessional.working_days ?? []).includes(weekdayNumber) &&
+        (!links.length || linkedIds.has(currentProfessional.id));
+
+      return {
+        ...current,
+        service_id: serviceId,
+        professional_id: currentStillValid
           ? current.professional_id
-          : "",
-    }));
+          : defaultProfessionalForService(serviceId),
+      };
+    });
   };
 
   const handleDelete = () => {
@@ -929,106 +959,90 @@ function AgendaPage() {
       </p>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Novo agendamento</DialogTitle>
+        <DialogContent className="w-[calc(100%-16px)] max-w-[496px] gap-0 rounded-[12px] border border-[#3a3a3a] bg-[#303030] p-[22px] text-[#f4f4f4] shadow-[0_24px_70px_rgba(0,0,0,0.5)] sm:rounded-[12px] [&>button.absolute]:right-5 [&>button.absolute]:top-6 [&>button.absolute]:text-[#d7d7d7] [&>button.absolute]:opacity-80 [&>button.absolute>svg]:size-6">
+          <DialogHeader className="space-y-0 pr-10 text-left">
+            <DialogTitle className="text-[18px] font-semibold leading-7 tracking-[-0.02em] text-[#f3f3f3]">
+              Agendar Serviço às {form.time}
+            </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="aname">Cliente</Label>
-                <Input
-                  id="aname"
-                  value={form.customer_name}
-                  onChange={(event) => setForm({ ...form, customer_name: event.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="aphone">Telefone</Label>
-                <Input
-                  id="aphone"
-                  value={form.customer_phone}
-                  onChange={(event) => setForm({ ...form, customer_phone: event.target.value })}
-                />
-              </div>
-            </div>
 
+          <button
+            type="button"
+            onClick={() =>
+              blockSlot.mutate(form.time, {
+                onSuccess: () => setOpen(false),
+              })
+            }
+            disabled={blockSlot.isPending}
+            className="mt-8 flex h-[39px] w-full items-center justify-center rounded-[6px] border border-[#ff002b] bg-transparent px-4 text-[14px] font-semibold text-[#f3f3f3] transition-colors hover:bg-[#ff002b]/5 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <span className="mr-1.5 text-[14px]" aria-hidden="true">🔐</span>
+            {blockSlot.isPending ? "Bloqueando..." : "Bloquear horário"}
+          </button>
+
+          <div className="mt-[18px] space-y-[17px]">
             <div className="space-y-2">
-              <Label>Serviço</Label>
+              <Label className="text-[14px] font-semibold text-[#f3f3f3]">Serviço</Label>
               <Select value={form.service_id} onValueChange={handleServiceChange}>
-                <SelectTrigger>
+                <SelectTrigger className="h-[39px] rounded-[7px] border-0 bg-[#505050] px-4 text-[14px] font-semibold uppercase text-[#f4f4f4] shadow-none focus:ring-0">
                   <SelectValue placeholder="Selecione um serviço" />
                 </SelectTrigger>
                 <SelectContent>
                   {(services ?? []).map((service) => (
                     <SelectItem key={service.id} value={service.id}>
-                      {service.name} · {service.duration_minutes} min
+                      {service.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-[14px]">
               <div className="space-y-2">
-                <Label>Profissional</Label>
-                <Select
-                  value={form.professional_id || undefined}
-                  onValueChange={(value) => setForm({ ...form, professional_id: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue
-                      placeholder={
-                        form.service_id && linkedForSelectedService.length
-                          ? "Selecione o profissional"
-                          : "Opcional"
-                      }
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {eligibleProfessionals.map((professional) => (
-                      <SelectItem key={professional.id} value={professional.id}>
-                        {professional.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {form.service_id && !eligibleProfessionals.length ? (
-                  <p className="text-[11px] text-destructive">
-                    Nenhum profissional habilitado atende neste dia.
-                  </p>
-                ) : null}
+                <Label htmlFor="aname" className="text-[14px] font-semibold text-[#f3f3f3]">
+                  Nome Cliente
+                </Label>
+                <Input
+                  id="aname"
+                  placeholder="Informe o nome do cliente"
+                  value={form.customer_name}
+                  onChange={(event) => setForm({ ...form, customer_name: event.target.value })}
+                  className="h-[39px] rounded-[7px] border-0 bg-[#505050] px-3 text-[14px] text-[#f4f4f4] placeholder:text-[#9c9c9f] focus-visible:ring-0"
+                />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="atime">Horário</Label>
+                <Label htmlFor="aphone" className="text-[14px] font-semibold text-[#f3f3f3]">
+                  Número do cliente
+                </Label>
                 <Input
-                  id="atime"
-                  type="time"
-                  value={form.time}
-                  onChange={(event) => setForm({ ...form, time: event.target.value })}
+                  id="aphone"
+                  placeholder="(DDD)(9º Digito) 0000-0000"
+                  value={form.customer_phone}
+                  onChange={(event) => setForm({ ...form, customer_phone: event.target.value })}
+                  className="h-[39px] rounded-[7px] border-0 bg-[#505050] px-3 text-[14px] text-[#f4f4f4] placeholder:text-[#9c9c9f] focus-visible:ring-0"
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="anotes">Observações</Label>
-              <Textarea
-                id="anotes"
-                value={form.notes}
-                onChange={(event) => setForm({ ...form, notes: event.target.value })}
+            <label className="flex w-fit cursor-pointer items-center gap-1.5 text-[14px] font-semibold text-[#f3f3f3]">
+              <input
+                type="checkbox"
+                checked={form.recurring}
+                onChange={(event) => setForm({ ...form, recurring: event.target.checked })}
+                className="size-[13px] accent-[#0b174a]"
               />
-            </div>
+              Recorrente
+            </label>
           </div>
 
-          <DialogFooter>
-            <Button
-              onClick={() => create.mutate()}
-              disabled={!form.customer_name.trim() || !form.service_id || create.isPending}
-            >
-              {create.isPending ? "Salvando..." : "Agendar"}
-            </Button>
-          </DialogFooter>
+          <Button
+            onClick={() => create.mutate()}
+            disabled={!form.customer_name.trim() || !form.service_id || create.isPending}
+            className="mt-[18px] h-[39px] w-full rounded-[7px] bg-[#080d39] text-[14px] font-medium uppercase text-white shadow-none hover:bg-[#0b1248]"
+          >
+            {create.isPending ? "SALVANDO..." : "AGENDAR"}
+          </Button>
         </DialogContent>
       </Dialog>
 
