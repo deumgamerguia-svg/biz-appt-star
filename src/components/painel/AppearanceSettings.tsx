@@ -160,6 +160,8 @@ export function AppearanceSettings({ businessId }: { businessId: string }) {
             <img
               src={data.logoUrl}
               alt="Logotipo"
+              loading="lazy"
+              decoding="async"
               className="max-h-[76px] max-w-full object-contain"
             />
           ) : (
