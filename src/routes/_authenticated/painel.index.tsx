@@ -641,8 +641,8 @@ function AgendaPage() {
               rx="14"
               ry="14"
               fill="none"
-              stroke="rgba(47,140,255,0.20)"
-              strokeWidth="1"
+              stroke="rgba(36,139,255,0.12)"
+              strokeWidth="0.45"
               vectorEffect="non-scaling-stroke"
             />
             <rect
@@ -653,19 +653,19 @@ function AgendaPage() {
               rx="14"
               ry="14"
               fill="none"
-              stroke="rgba(47,140,255,0.98)"
-              strokeWidth="1"
+              stroke="rgba(55,170,255,1)"
+              strokeWidth="0.55"
               strokeLinecap="round"
               pathLength="100"
               strokeDasharray="9 91"
               vectorEffect="non-scaling-stroke"
-              style={{ filter: "drop-shadow(0 0 2px rgba(47,140,255,0.45))" }}
+              style={{ filter: "drop-shadow(0 0 1.5px rgba(70,190,255,0.95)) drop-shadow(0 0 4px rgba(0,136,255,0.72)) drop-shadow(0 0 8px rgba(0,94,255,0.38))" }}
             >
               <animate
                 attributeName="stroke-dashoffset"
                 from="0"
                 to="-100"
-                dur="3.2s"
+                dur="8s"
                 repeatCount="indefinite"
               />
             </rect>
