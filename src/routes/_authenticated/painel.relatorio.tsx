@@ -2,6 +2,7 @@ import { lazy, Suspense, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { RuntimeProfiler } from "@/lib/runtime-profiler";
 import { useBusiness } from "@/lib/business";
 import { formatPrice } from "@/lib/format";
 import { PageHeader, NoBusiness } from "@/components/painel/PageHeader";
@@ -30,7 +31,7 @@ export const Route = createFileRoute("/_authenticated/painel/relatorio")({
       { property: "og:description", content: "Desempenho e faturamento do negócio." },
     ],
   }),
-  component: RelatorioPage,
+  component: ProfiledRelatorioPage,
 });
 
 const RANGES = [
@@ -38,6 +39,14 @@ const RANGES = [
   { days: 30, label: "30 dias" },
   { days: 90, label: "90 dias" },
 ];
+
+function ProfiledRelatorioPage() {
+  return (
+    <RuntimeProfiler id="RelatorioPage">
+      <RelatorioPage />
+    </RuntimeProfiler>
+  );
+}
 
 function RelatorioPage() {
   const { businessId } = useBusiness();
@@ -179,6 +188,7 @@ function RelatorioPage() {
         />
       </div>
 
+      <RuntimeProfiler id="ReportChartSection">
       <section className="report-luminous-card report-effect-none report-chart-card p-5 sm:p-6">
         <ReportCardTitle icon={ChartNoAxesColumnIncreasing} title="Atendimentos por dia" />
         {report.chart.length ? (
@@ -193,6 +203,7 @@ function RelatorioPage() {
           </p>
         )}
       </section>
+      </RuntimeProfiler>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <ListCard
