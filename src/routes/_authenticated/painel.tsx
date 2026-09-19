@@ -13,7 +13,6 @@ import {
   PieChart,
   Calculator,
   MessageSquareText,
-  DollarSign,
   CircleX,
   Settings2,
   Plus,
@@ -92,12 +91,6 @@ const nav = [
     items: [
       { to: "/painel/as-pay", label: "AS Pay", hint: "Saldo dos sinais", icon: Gem },
       { to: "/painel/caixa", label: "Caixa", hint: "Entradas e saídas", icon: Calculator },
-      {
-        to: "/painel/pagamentos",
-        label: "Pagamentos",
-        hint: "Histórico da assinatura",
-        icon: DollarSign,
-      },
       {
         to: "/painel/relatorio",
         label: "Relatório",
