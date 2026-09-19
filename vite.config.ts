@@ -7,8 +7,47 @@
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
+const auditBundle = process.env.BUNDLE_AUDIT === "1";
+
+const bundleAuditPlugin = {
+  name: "agenda-bundle-audit",
+  generateBundle(_options: unknown, bundle: Record<string, any>) {
+    if (!auditBundle) return;
+
+    const chunks = Object.values(bundle)
+      .filter((entry: any) => entry?.type === "chunk")
+      .map((entry: any) => ({
+        fileName: entry.fileName,
+        bytes: Buffer.byteLength(entry.code ?? "", "utf8"),
+        modules: Object.entries(entry.modules ?? {})
+          .map(([id, info]: [string, any]) => ({
+            id,
+            renderedLength: Number(info?.renderedLength ?? 0),
+          }))
+          .sort((a, b) => b.renderedLength - a.renderedLength)
+          .slice(0, 15),
+      }))
+      .sort((a, b) => b.bytes - a.bytes)
+      .slice(0, 12);
+
+    console.log("\n[BUNDLE_AUDIT] Largest chunks and module contributors");
+    for (const chunk of chunks) {
+      console.log(`[BUNDLE_AUDIT] ${chunk.fileName} ${(chunk.bytes / 1024).toFixed(1)} KiB`);
+      for (const mod of chunk.modules) {
+        console.log(
+          `  ${(mod.renderedLength / 1024).toFixed(1)} KiB  ${mod.id.replace(process.cwd(), ".")}`,
+        );
+      }
+    }
+  },
+};
+
 export default defineConfig({
   vite: {
+    plugins: auditBundle ? [bundleAuditPlugin] : [],
+    build: {
+      manifest: auditBundle,
+    },
     resolve: {
       alias: {
         // Compatibilidade temporária com imports existentes. O arquivo antigo
