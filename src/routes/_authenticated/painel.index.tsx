@@ -1076,10 +1076,10 @@ function AgendaPage() {
           if (!value) setEncaixeForm({ ...emptyForm, time: "" });
         }}
       >
-        <DialogContent className="professional-dialog max-w-xl overflow-y-auto p-0">
-          <DialogHeader className="professional-dialog-header">
+        <DialogContent className="agenda-booking-dialog overflow-y-auto p-0">
+          <DialogHeader className="agenda-booking-dialog-header">
             <div className="flex items-start gap-3 text-left">
-              <div className="professional-dialog-icon">
+              <div className="agenda-booking-dialog-icon">
                 <Clock3 className="size-[1.05rem]" strokeWidth={1.8} />
               </div>
               <div className="min-w-0">
@@ -1093,11 +1093,11 @@ function AgendaPage() {
             </div>
           </DialogHeader>
 
-          <div className="professional-dialog-body px-4 pb-4 sm:px-5 sm:pb-5">
-            <div className="professional-form-section mt-4 space-y-5">
+          <div className="agenda-booking-dialog-body">
+            <div className="agenda-booking-form-section space-y-5">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="professional-section-label" htmlFor="encaixe-time">
+                  <Label className="agenda-booking-label" htmlFor="encaixe-time">
                     Horário
                   </Label>
                   <Input
@@ -1108,12 +1108,12 @@ function AgendaPage() {
                     onChange={(event) =>
                       setEncaixeForm({ ...encaixeForm, time: event.target.value })
                     }
-                    className="professional-input"
+                    className="agenda-booking-input"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="professional-section-label">Funcionário</Label>
+                  <Label className="agenda-booking-label">Funcionário</Label>
                   <Select
                     value={encaixeForm.professional_id || "__agenda__"}
                     onValueChange={(value) =>
@@ -1123,7 +1123,7 @@ function AgendaPage() {
                       })
                     }
                   >
-                    <SelectTrigger className="professional-input w-full">
+                    <SelectTrigger className="agenda-booking-input w-full">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -1139,12 +1139,12 @@ function AgendaPage() {
               </div>
 
               <div className="space-y-2">
-                <Label className="professional-section-label">Serviço</Label>
+                <Label className="agenda-booking-label">Serviço</Label>
                 <Select
                   value={encaixeForm.service_id}
                   onValueChange={handleEncaixeServiceChange}
                 >
-                  <SelectTrigger className="professional-input w-full">
+                  <SelectTrigger className="agenda-booking-input w-full">
                     <SelectValue placeholder="Selecione um serviço" />
                   </SelectTrigger>
                   <SelectContent>
@@ -1159,7 +1159,7 @@ function AgendaPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="professional-section-label" htmlFor="encaixe-name">
+                  <Label className="agenda-booking-label" htmlFor="encaixe-name">
                     Nome Cliente
                   </Label>
                   <Input
@@ -1172,12 +1172,12 @@ function AgendaPage() {
                         customer_name: event.target.value,
                       })
                     }
-                    className="professional-input"
+                    className="agenda-booking-input"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="professional-section-label" htmlFor="encaixe-phone">
+                  <Label className="agenda-booking-label" htmlFor="encaixe-phone">
                     Número Cliente
                   </Label>
                   <Input
@@ -1190,23 +1190,23 @@ function AgendaPage() {
                         customer_phone: event.target.value,
                       })
                     }
-                    className="professional-input"
+                    className="agenda-booking-input"
                   />
                 </div>
               </div>
             </div>
           </div>
 
-          <DialogFooter className="professional-dialog-footer">
+          <DialogFooter className="agenda-booking-dialog-footer">
             <Button
               variant="outline"
-              className="professional-secondary-button"
+              className="agenda-booking-secondary-button"
               onClick={() => setEncaixeOpen(false)}
             >
               Cancelar
             </Button>
             <Button
-              className="professional-primary-button"
+              className="agenda-booking-primary-button"
               onClick={() => createEncaixe.mutate()}
               disabled={
                 !encaixeForm.time ||
@@ -1228,10 +1228,10 @@ function AgendaPage() {
           if (!value) setForm(emptyForm);
         }}
       >
-        <DialogContent className="professional-dialog max-w-xl overflow-y-auto p-0">
-          <DialogHeader className="professional-dialog-header">
+        <DialogContent className="agenda-booking-dialog overflow-y-auto p-0">
+          <DialogHeader className="agenda-booking-dialog-header">
             <div className="flex items-start gap-3 text-left">
-              <div className="professional-dialog-icon">
+              <div className="agenda-booking-dialog-icon">
                 <Clock3 className="size-[1.05rem]" strokeWidth={1.8} />
               </div>
               <div className="min-w-0">
@@ -1245,11 +1245,11 @@ function AgendaPage() {
             </div>
           </DialogHeader>
 
-          <div className="professional-dialog-body px-4 pb-4 sm:px-5 sm:pb-5">
-            <div className="professional-form-section mt-4 space-y-5">
+          <div className="agenda-booking-dialog-body">
+            <div className="agenda-booking-form-section space-y-5">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="professional-section-label" htmlFor="agenda-time">
+                  <Label className="agenda-booking-label" htmlFor="agenda-time">
                     Horário
                   </Label>
                   <Input
@@ -1257,12 +1257,12 @@ function AgendaPage() {
                     type="time"
                     value={form.time}
                     readOnly
-                    className="professional-input cursor-default opacity-90"
+                    className="agenda-booking-input cursor-default opacity-90"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="professional-section-label">Funcionário</Label>
+                  <Label className="agenda-booking-label">Funcionário</Label>
                   <Select
                     value={form.professional_id || "__agenda__"}
                     onValueChange={(value) =>
@@ -1272,7 +1272,7 @@ function AgendaPage() {
                       })
                     }
                   >
-                    <SelectTrigger className="professional-input w-full">
+                    <SelectTrigger className="agenda-booking-input w-full">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -1290,9 +1290,9 @@ function AgendaPage() {
               </div>
 
               <div className="space-y-2">
-                <Label className="professional-section-label">Serviço</Label>
+                <Label className="agenda-booking-label">Serviço</Label>
                 <Select value={form.service_id} onValueChange={handleServiceChange}>
-                  <SelectTrigger className="professional-input w-full">
+                  <SelectTrigger className="agenda-booking-input w-full">
                     <SelectValue placeholder="Selecione um serviço" />
                   </SelectTrigger>
                   <SelectContent>
@@ -1307,7 +1307,7 @@ function AgendaPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="professional-section-label" htmlFor="agenda-name">
+                  <Label className="agenda-booking-label" htmlFor="agenda-name">
                     Nome Cliente
                   </Label>
                   <Input
@@ -1317,12 +1317,12 @@ function AgendaPage() {
                     onChange={(event) =>
                       setForm({ ...form, customer_name: event.target.value })
                     }
-                    className="professional-input"
+                    className="agenda-booking-input"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="professional-section-label" htmlFor="agenda-phone">
+                  <Label className="agenda-booking-label" htmlFor="agenda-phone">
                     Número Cliente
                   </Label>
                   <Input
@@ -1332,23 +1332,23 @@ function AgendaPage() {
                     onChange={(event) =>
                       setForm({ ...form, customer_phone: event.target.value })
                     }
-                    className="professional-input"
+                    className="agenda-booking-input"
                   />
                 </div>
               </div>
             </div>
           </div>
 
-          <DialogFooter className="professional-dialog-footer">
+          <DialogFooter className="agenda-booking-dialog-footer">
             <Button
               variant="outline"
-              className="professional-secondary-button"
+              className="agenda-booking-secondary-button"
               onClick={() => setOpen(false)}
             >
               Cancelar
             </Button>
             <Button
-              className="professional-primary-button"
+              className="agenda-booking-primary-button"
               onClick={() => create.mutate()}
               disabled={
                 !form.customer_name.trim() ||
