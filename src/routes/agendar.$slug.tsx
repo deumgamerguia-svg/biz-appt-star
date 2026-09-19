@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { BookingThemeBridge } from "@/components/booking/BookingThemeBridge";
 
 const PublicBookingPage = lazy(() =>
   import("@/components/booking/PublicBookingPage").then((module) => ({
@@ -30,8 +31,11 @@ export const Route = createFileRoute("/agendar/$slug")({
 function PublicBookingRoute() {
   const { slug } = Route.useParams();
   return (
-    <Suspense fallback={<div className="min-h-screen bg-background" />}>
-      <PublicBookingPage slug={slug} />
-    </Suspense>
+    <>
+      <BookingThemeBridge />
+      <Suspense fallback={<div className="min-h-screen bg-background" />}>
+        <PublicBookingPage slug={slug} />
+      </Suspense>
+    </>
   );
 }
