@@ -51,6 +51,8 @@ export function BookingThemeBridge() {
         const serviceHoverBorder = appearance.service_hover_border;
         const modalBackground = appearance.modal_background;
         const modalText = appearance.modal_text;
+        const modalHoverBackground = appearance.modal_hover_background;
+        const modalHoverText = appearance.modal_hover_text;
         const modalActiveBackground = appearance.modal_active_background;
         const modalActiveText = appearance.modal_active_text;
         const modalBorder = appearance.modal_border;
@@ -106,6 +108,10 @@ export function BookingThemeBridge() {
             background:${agendaBackground};
             border-color:${agendaBorder};
             color:${agendaText};
+          }
+          body[data-booking-theme="true"] [role="dialog"] button.border:hover {
+            background:${modalHoverBackground} !important;
+            color:${modalHoverText} !important;
           }
           body[data-booking-theme="true"] [role="dialog"] button[class*="bg-primary"] {
             background:${modalActiveBackground} !important;
