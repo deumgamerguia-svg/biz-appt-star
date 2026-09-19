@@ -5,7 +5,6 @@ import { useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
   BellRing,
-  Bookmark,
   CheckCheck,
   ChevronRight,
   Loader2,
