@@ -272,10 +272,10 @@
   --report-line-opacity: 0;
   --report-blue-shadow-alpha: 0;
   --report-border-color: rgba(255, 255, 255, 0.095);
-  --report-icon-border: rgba(255, 255, 255, 0.1);
-  --report-icon-color: #858b95;
-  --report-icon-background: rgba(255, 255, 255, 0.025);
-  --report-icon-glow: transparent;
+  --report-icon-border: rgba(51, 125, 255, 0.29);
+  --report-icon-color: #69a2ff;
+  --report-icon-background: rgba(22, 119, 255, 0.09);
+  --report-icon-glow: rgba(22, 119, 255, 0.08);
   position: relative;
   isolation: isolate;
   overflow: hidden;
@@ -295,10 +295,6 @@
   --report-line-opacity: 1;
   --report-blue-shadow-alpha: 0.85;
   --report-border-color: rgba(118, 145, 181, 0.16);
-  --report-icon-border: rgba(51, 125, 255, 0.29);
-  --report-icon-color: #69a2ff;
-  --report-icon-background: rgba(22, 119, 255, 0.09);
-  --report-icon-glow: rgba(22, 119, 255, 0.08);
 }
 .owner-panel .report-effect-medium {
   --report-glow-alpha: 0.085;
@@ -306,10 +302,6 @@
   --report-line-opacity: 0.52;
   --report-blue-shadow-alpha: 0.38;
   --report-border-color: rgba(100, 128, 164, 0.135);
-  --report-icon-border: rgba(51, 125, 255, 0.19);
-  --report-icon-color: #7198d5;
-  --report-icon-background: rgba(22, 119, 255, 0.055);
-  --report-icon-glow: rgba(22, 119, 255, 0.035);
 }
 .owner-panel .report-effect-subtle {
   --report-glow-alpha: 0.035;
@@ -317,9 +309,6 @@
   --report-line-opacity: 0.2;
   --report-blue-shadow-alpha: 0.12;
   --report-border-color: rgba(91, 111, 139, 0.115);
-  --report-icon-border: rgba(70, 111, 173, 0.13);
-  --report-icon-color: #77879f;
-  --report-icon-background: rgba(32, 76, 143, 0.035);
 }
 .owner-panel .report-luminous-card::before {
   content: "";
