@@ -670,6 +670,49 @@ function AgendaPage() {
               animation: date-border-beam-spin 6s linear infinite;
               will-change: --date-border-angle;
             }
+
+            @property --encaixe-border-angle {
+              syntax: "<angle>";
+              initial-value: 0deg;
+              inherits: false;
+            }
+
+            @keyframes encaixe-border-beam-spin {
+              to {
+                --encaixe-border-angle: 360deg;
+              }
+            }
+
+            .encaixe-border-beam {
+              padding: 1px;
+              background:
+                conic-gradient(
+                  from var(--encaixe-border-angle),
+                  transparent 0deg,
+                  transparent 270deg,
+                  rgba(255, 213, 79, 0.015) 282deg,
+                  rgba(255, 213, 79, 0.055) 296deg,
+                  rgba(255, 213, 79, 0.13) 309deg,
+                  rgba(255, 213, 79, 0.28) 321deg,
+                  rgba(255, 213, 79, 0.52) 331deg,
+                  rgb(255, 213, 79) 338deg,
+                  rgba(255, 213, 79, 0.62) 342deg,
+                  rgba(255, 213, 79, 0.24) 348deg,
+                  rgba(255, 213, 79, 0.07) 354deg,
+                  transparent 359deg,
+                  transparent 360deg
+                );
+              -webkit-mask:
+                linear-gradient(#000 0 0) content-box,
+                linear-gradient(#000 0 0);
+              -webkit-mask-composite: xor;
+              mask-composite: exclude;
+              filter:
+                drop-shadow(0 0 1px rgba(255, 213, 79, 0.55))
+                drop-shadow(0 0 3px rgba(219, 161, 37, 0.22));
+              animation: encaixe-border-beam-spin 6s linear infinite;
+              will-change: --encaixe-border-angle;
+            }
           `}</style>
           <span
             aria-hidden="true"
@@ -704,9 +747,13 @@ function AgendaPage() {
         type="button"
         onClick={() => openNewAt(freeSlots[0] ?? baseSlots[0] ?? "09:00")}
         disabled={!baseSlots.length}
-        className="group mt-2 ml-12 flex h-[42px] w-44 items-center justify-center rounded-[15px] border-[0.75px] border-[#6d5519]/70 bg-[radial-gradient(circle_at_22%_28%,rgba(224,175,45,0.18)_0%,rgba(128,92,20,0.08)_34%,transparent_66%),linear-gradient(100deg,#0c0b08_0%,#0b0b0a_60%,#0d0c09_100%)] px-4 text-[0.82rem] font-medium tracking-[-0.01em] text-[#f5f5f5] shadow-[inset_0_1px_0_rgba(255,222,129,0.035),0_0_18px_rgba(210,157,32,0.025)] transition-all duration-200 hover:border-[#8b6a1d]/75 hover:bg-[radial-gradient(circle_at_22%_28%,rgba(224,175,45,0.22)_0%,rgba(128,92,20,0.10)_34%,transparent_66%),linear-gradient(100deg,#0d0c09_0%,#0b0b0a_60%,#0d0c09_100%)] hover:shadow-[inset_0_1px_0_rgba(255,222,129,0.05),0_0_20px_rgba(210,157,32,0.035)] disabled:cursor-not-allowed disabled:opacity-50"
+        className="group relative isolate mt-2 ml-12 flex h-[42px] w-44 items-center justify-center rounded-[15px] border-[0.75px] border-[#6d5519]/70 bg-[radial-gradient(circle_at_22%_28%,rgba(224,175,45,0.18)_0%,rgba(128,92,20,0.08)_34%,transparent_66%),linear-gradient(100deg,#0c0b08_0%,#0b0b0a_60%,#0d0c09_100%)] px-4 text-[0.82rem] font-medium tracking-[-0.01em] text-[#f5f5f5] shadow-[inset_0_1px_0_rgba(255,222,129,0.035),0_0_18px_rgba(210,157,32,0.025)] transition-all duration-200 hover:border-[#8b6a1d]/75 hover:bg-[radial-gradient(circle_at_22%_28%,rgba(224,175,45,0.22)_0%,rgba(128,92,20,0.10)_34%,transparent_66%),linear-gradient(100deg,#0d0c09_0%,#0b0b0a_60%,#0d0c09_100%)] hover:shadow-[inset_0_1px_0_rgba(255,222,129,0.05),0_0_20px_rgba(210,157,32,0.035)] disabled:cursor-not-allowed disabled:opacity-50"
       >
-        Encaixe
+        <span
+          aria-hidden="true"
+          className="encaixe-border-beam pointer-events-none absolute inset-[-1px] z-20 rounded-[15px]"
+        />
+        <span className="relative z-10">Encaixe</span>
       </button>
 
       <div className="mt-8 flex items-center gap-3">
