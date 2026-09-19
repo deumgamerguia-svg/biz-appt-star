@@ -26,4 +26,4 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Build + bundle audit
-        run: BUNDLE_AUDIT=1 bun run build
+        run: BUNDLE_AUDIT=1 npm run build
