@@ -106,9 +106,9 @@
   }
 }
 
-/* Logo da sidebar — enquadramento levemente mais à esquerda. */
+/* Logo da sidebar — enquadramento mais à esquerda. */
 .owner-panel aside > a[href="/painel"] > img {
-  transform: translateX(-8px);
+  transform: translateX(-13px);
 }
 
 /* Sidebar — oculta somente a barra visual de rolagem, mantendo o scroll funcional. */
