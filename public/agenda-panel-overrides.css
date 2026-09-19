@@ -108,7 +108,7 @@
 
 /* Logo da sidebar — microajuste final de enquadramento. */
 .owner-panel aside > a[href="/painel"] > img {
-  transform: translateX(-12px);
+  transform: translateX(-11px);
 }
 
 /* Sidebar — oculta somente a barra visual de rolagem, mantendo o scroll funcional. */
