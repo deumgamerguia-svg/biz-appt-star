@@ -480,6 +480,93 @@
 @keyframes owner-route-enter { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes owner-loader-in { from { opacity: 0; } to { opacity: 1; } }
 
+/* Agenda animated borders moved out of React render to avoid reparsing static CSS. */
+@property --date-border-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes date-border-beam-spin {
+  to {
+    --date-border-angle: 360deg;
+  }
+}
+
+.date-border-beam {
+  padding: 1px;
+  background:
+    conic-gradient(
+      from var(--date-border-angle),
+      transparent 0deg,
+      transparent 270deg,
+      rgba(95, 151, 251, 0.015) 282deg,
+      rgba(95, 151, 251, 0.055) 296deg,
+      rgba(95, 151, 251, 0.13) 309deg,
+      rgba(95, 151, 251, 0.28) 321deg,
+      rgba(95, 151, 251, 0.52) 331deg,
+      rgb(95, 151, 251) 338deg,
+      rgba(95, 151, 251, 0.62) 342deg,
+      rgba(95, 151, 251, 0.24) 348deg,
+      rgba(95, 151, 251, 0.07) 354deg,
+      transparent 359deg,
+      transparent 360deg
+    );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  filter:
+    drop-shadow(0 0 1px rgba(95, 151, 251, 0.52))
+    drop-shadow(0 0 3px rgba(55, 118, 235, 0.20));
+  animation: date-border-beam-spin 6s linear infinite;
+  will-change: --date-border-angle;
+}
+
+@property --encaixe-border-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes encaixe-border-beam-spin {
+  to {
+    --encaixe-border-angle: 360deg;
+  }
+}
+
+.encaixe-border-beam {
+  padding: 1px;
+  background:
+    conic-gradient(
+      from var(--encaixe-border-angle),
+      transparent 0deg,
+      transparent 270deg,
+      rgba(255, 213, 79, 0.015) 282deg,
+      rgba(255, 213, 79, 0.055) 296deg,
+      rgba(255, 213, 79, 0.13) 309deg,
+      rgba(255, 213, 79, 0.28) 321deg,
+      rgba(255, 213, 79, 0.52) 331deg,
+      rgb(255, 213, 79) 338deg,
+      rgba(255, 213, 79, 0.62) 342deg,
+      rgba(255, 213, 79, 0.24) 348deg,
+      rgba(255, 213, 79, 0.07) 354deg,
+      transparent 359deg,
+      transparent 360deg
+    );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  filter:
+    drop-shadow(0 0 1px rgba(255, 213, 79, 0.55))
+    drop-shadow(0 0 3px rgba(219, 161, 37, 0.22));
+  animation: encaixe-border-beam-spin 6s linear infinite;
+  will-change: --encaixe-border-angle;
+}
+
 .owner-panel main, .owner-panel [data-slot="card"] { animation-duration: 180ms; }
 
 @media (prefers-reduced-motion: reduce) {
