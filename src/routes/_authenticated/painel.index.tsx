@@ -1101,6 +1101,7 @@ function AgendaPage() {
       </p>
 
       <RuntimeProfiler id="AgendaBookingDialogs">
+      {encaixeOpen && (
       <Dialog
         open={encaixeOpen}
         onOpenChange={(value) => {
@@ -1252,7 +1253,9 @@ function AgendaPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      )}
 
+      {open && (
       <Dialog
         open={open}
         onOpenChange={(value) => {
@@ -1393,9 +1396,11 @@ function AgendaPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      )}
 
       </RuntimeProfiler>
 
+      {selected && (
       <Dialog open={!!selected} onOpenChange={(value) => !value && setDetail(null)}>
         <DialogContent>
           <DialogHeader>
@@ -1447,6 +1452,7 @@ function AgendaPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      )}
     </div>
   );
 }
