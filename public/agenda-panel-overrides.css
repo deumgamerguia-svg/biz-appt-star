@@ -125,7 +125,7 @@
   display: none;
 }
 
-/* Sidebar — fundo 15 pontos percentuais mais transparente (85% -> 70%). */
+/* Sidebar — transparência reforçada sem alterar o layout. */
 .owner-panel aside {
-  background-color: rgba(5, 6, 7, 0.70);
+  background-color: rgba(5, 6, 7, 0.48);
 }
