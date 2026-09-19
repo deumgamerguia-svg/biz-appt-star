@@ -71,7 +71,7 @@ function AsPayPage() {
         <div className="space-y-5">
           <div className="flex items-start gap-3">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-emerald-500/25 bg-emerald-500/10 text-emerald-400 shadow-[0_0_18px_rgba(16,185,129,0.18)]">
-              <CircleDollarSign className="size-5" aria-hidden="true" />
+              <CircleDollarSign className="size-4" aria-hidden="true" />
             </div>
             <div>
               <p className="text-xs font-semibold uppercase text-muted-foreground">Saldo disponível</p>
@@ -83,7 +83,7 @@ function AsPayPage() {
 
           <div className="flex items-start gap-3">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-amber-500/25 bg-amber-500/10 text-amber-400 shadow-[0_0_18px_rgba(245,158,11,0.18)]">
-              <Clock3 className="size-5" aria-hidden="true" />
+              <Clock3 className="size-4" aria-hidden="true" />
             </div>
             <div>
               <p className="text-xs font-semibold uppercase text-muted-foreground">Saldo pendente</p>
