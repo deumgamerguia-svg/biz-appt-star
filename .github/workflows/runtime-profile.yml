@@ -1,0 +1,76 @@
+name: Runtime performance profile
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  runtime-profile:
+    if: contains(github.event.head_commit.message, '[runtime-profile]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install project dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Install Playwright driver
+        run: npm install --no-save --package-lock=false playwright@1.55.0
+
+      - name: Verify Chrome
+        run: google-chrome --version
+
+      - name: Build profiling production
+        run: VITE_RUNTIME_PROFILE=1 npm run build
+
+      - name: Profile production interactions with Chrome
+        shell: bash
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/agenda-preview.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
+          for i in {1..60}; do
+            if curl -fsS http://127.0.0.1:4173/auth >/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          PROFILE_MODE=prod node scripts/runtime-profile.mjs
+          kill $SERVER_PID 2>/dev/null || true
+          wait $SERVER_PID 2>/dev/null || true
+          trap - EXIT
+
+      - name: Profile React commits in development build
+        shell: bash
+        run: |
+          VITE_RUNTIME_PROFILE=1 npm run dev -- --host 127.0.0.1 --port 4173 > /tmp/agenda-dev.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
+          for i in {1..60}; do
+            if curl -fsS http://127.0.0.1:4173/auth >/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          PROFILE_MODE=react node scripts/runtime-profile.mjs
+          kill $SERVER_PID 2>/dev/null || true
+          wait $SERVER_PID 2>/dev/null || true
+          trap - EXIT
+
+      - name: Upload runtime profile results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: runtime-profile-results
+          path: runtime-profile-results/
+          if-no-files-found: warn
