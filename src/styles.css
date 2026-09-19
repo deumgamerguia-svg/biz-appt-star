@@ -278,11 +278,12 @@
 .owner-route-progress { position: fixed; z-index: 60; top: 0; left: 0; width: 100%; height: 2px; pointer-events: none; opacity: 0; transform: scaleX(0); transform-origin: left; background: var(--color-primary); box-shadow: 0 0 12px color-mix(in oklab, var(--color-primary) 75%, transparent); }
 .owner-route-progress.is-visible { opacity: 1; animation: owner-route-progress 320ms ease-out both; }
 .owner-route-content { min-height: 12rem; }
-.owner-route-content.is-transitioning { visibility: hidden; pointer-events: none; }
-.owner-route-loader { position: absolute; z-index: 40; inset: 0; min-height: calc(100vh - 8rem); display: grid; place-items: center; border-radius: 0; background: #050607; backdrop-filter: none; animation: owner-loader-in 90ms ease-out both; }
+.owner-route-content.is-transitioning { visibility: hidden !important; opacity: 0 !important; pointer-events: none; }
+.owner-route-loader { position: absolute; z-index: 80; inset: 0; min-height: calc(100vh - 8rem); display: grid; place-items: center; overflow: hidden; border-radius: 0; background: #050607; opacity: 1; }
+.owner-route-loader::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle at 50% 42%, rgba(22,119,255,0.08), transparent 28%); }
+.owner-route-loader-inner { position: relative; z-index: 1; display: flex; align-items: center; gap: 0.65rem; color: #7f8793; font-size: 0.76rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
 
 @keyframes owner-route-progress { 0% { transform: scaleX(0); } 70% { transform: scaleX(0.82); } 100% { transform: scaleX(1); opacity: 0; } }
-@keyframes owner-loader-in { from { opacity: 0; } to { opacity: 1; } }
 
 .owner-panel main, .owner-panel [data-slot="card"] { animation-duration: 180ms; }
 
