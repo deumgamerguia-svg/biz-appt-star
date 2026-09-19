@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, MessageCircle, QrCode, RefreshCw, Unplug } from "lucide-react";
+import { Loader2, MessageCircle, QrCode, RefreshCw, Send, Unplug } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -93,10 +93,10 @@ function WhatsappPage() {
         subtitle={`Mensagens automáticas para os clientes de ${business?.name ?? "seu negócio"}`}
       />
 
-      <Card>
-        <CardHeader>
+      <Card className="report-luminous-card report-effect-strong">
+        <CardHeader className="relative z-10">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <MessageCircle className="size-5 text-primary" />
+            <span className="report-icon-box shrink-0"><MessageCircle className="size-[1.05rem]" strokeWidth={1.8} aria-hidden="true" /></span>
             Status:{" "}
             {statusQuery.isLoading ? (
               <span className="text-muted-foreground">verificando…</span>
@@ -109,7 +109,7 @@ function WhatsappPage() {
             )}
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="relative z-10 space-y-4">
           {connected ? (
             <>
               <p className="text-sm text-muted-foreground">
@@ -186,11 +186,14 @@ function WhatsappPage() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Mensagem enviada ao cliente</CardTitle>
+      <Card className="report-luminous-card report-effect-medium">
+        <CardHeader className="relative z-10">
+          <CardTitle className="flex items-center gap-3 text-base">
+            <span className="report-icon-box shrink-0"><Send className="size-[1.05rem]" strokeWidth={1.8} aria-hidden="true" /></span>
+            Mensagem enviada ao cliente
+          </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="relative z-10">
           <p className="text-sm text-muted-foreground">
             O texto enviado na confirmação usa o modelo configurado na página{" "}
             <strong>Lembretes</strong>, com os campos {"{nome}"}, {"{servico}"},{" "}
