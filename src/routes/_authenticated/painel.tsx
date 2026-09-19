@@ -365,7 +365,7 @@ function PainelLayout() {
           />
         </Link>
 
-        <div className="relative z-10 shrink-0 border-b border-[#25282c] px-1 py-3">
+        <div className="relative z-50 shrink-0 border-b border-[#25282c] px-1 py-3">
           <div className="flex items-center rounded-xl px-1 py-1 transition-colors hover:bg-white/[0.025]">
             <button
               type="button"
@@ -405,7 +405,7 @@ function PainelLayout() {
           </div>
 
           {accountOpen && (
-            <div className="absolute left-0 right-0 top-[calc(100%+0.6rem)] z-40 rounded-2xl border border-[#272a2f] bg-[#050607] p-3.5 shadow-[0_18px_55px_rgba(0,0,0,0.72)] animate-in fade-in slide-in-from-top-2 duration-150">
+            <div className="absolute left-0 right-0 top-[calc(100%+0.6rem)] z-[60] isolate rounded-2xl border border-[#272a2f] bg-[#050607] p-3.5 shadow-[0_18px_55px_rgba(0,0,0,0.82)] animate-in fade-in slide-in-from-top-2 duration-150" style={{ backgroundColor: "#050607" }}>
               <div className="flex items-center gap-3 border-b border-[#22252a] pb-3">
                 <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-[#f2f3f5] text-[12px] font-semibold text-[#111318] shadow-[inset_0_0_0_1px_rgba(0,0,0,0.06)]">
                   {accountInitial}
