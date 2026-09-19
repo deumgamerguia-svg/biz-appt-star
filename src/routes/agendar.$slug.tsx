@@ -1,5 +1,11 @@
+import { lazy, Suspense } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { PublicBookingPage } from "@/components/booking/PublicBookingPage";
+
+const PublicBookingPage = lazy(() =>
+  import("@/components/booking/PublicBookingPage").then((module) => ({
+    default: module.PublicBookingPage,
+  })),
+);
 
 export const Route = createFileRoute("/agendar/$slug")({
   head: ({ params }) => ({
@@ -23,5 +29,9 @@ export const Route = createFileRoute("/agendar/$slug")({
 
 function PublicBookingRoute() {
   const { slug } = Route.useParams();
-  return <PublicBookingPage slug={slug} />;
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-background" />}>
+      <PublicBookingPage slug={slug} />
+    </Suspense>
+  );
 }

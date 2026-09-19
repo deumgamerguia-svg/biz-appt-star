@@ -174,6 +174,32 @@ function formatAccountPhone(phone?: string | null) {
   return phone || "Não informado";
 }
 
+function PanelGreeting({ name }: { name: string }) {
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(new Date()), 60_000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="min-w-0">
+      <p className="truncate text-[14px] font-semibold leading-[16px] tracking-[-0.012em] text-[#e6e6e6]">
+        {greetingFor(now)},{" "}
+        <span
+          key={name}
+          className="inline-block font-bold text-[#1f6df9] animate-in fade-in slide-in-from-bottom-1 duration-500"
+        >
+          {name}
+        </span>
+      </p>
+      <p className="mt-[5px] truncate text-[10px] font-medium uppercase leading-[12px] tracking-[0.09em] text-[#6a6a73]">
+        {panelDate(now)}
+      </p>
+    </div>
+  );
+}
+
 function WhatsappBadge() {
   const { businessId } = useBusiness();
   const { data } = useQuery({
@@ -213,7 +239,6 @@ function PainelLayout() {
   const [open, setOpen] = useState(false);
   const [transitioning, setTransitioning] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
-  const [now, setNow] = useState(() => new Date());
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const [configOpen, setConfigOpen] = useState(() => pathname.startsWith("/painel/configuracoes"));
 
@@ -235,23 +260,18 @@ function PainelLayout() {
     queryKey: ["sidebar-account-subscription", businessId],
     enabled: !!businessId,
     queryFn: async () => {
-      const currentMonth = new Date().toISOString().slice(0, 7);
+      const referenceMonth = `${new Date().toISOString().slice(0, 7)}-01`;
       const { data, error } = await supabase
         .from("subscription_payments")
         .select("status, reference_month, paid_at")
         .eq("business_id", businessId!)
-        .order("reference_month", { ascending: false });
+        .eq("reference_month", referenceMonth)
+        .maybeSingle();
       if (error) throw error;
-      return (
-        (data ?? []).find((payment) => payment.reference_month?.slice(0, 7) === currentMonth) ?? null
-      );
+      return data ?? null;
     },
+    staleTime: 60_000,
   });
-
-  useEffect(() => {
-    const timer = window.setInterval(() => setNow(new Date()), 60000);
-    return () => window.clearInterval(timer);
-  }, []);
 
   useEffect(() => {
     if (pathname.startsWith("/painel/configuracoes")) setConfigOpen(true);
@@ -530,20 +550,7 @@ function PainelLayout() {
             >
               <Menu className="size-5" />
             </Button>
-            <div className="min-w-0">
-              <p className="truncate text-[14px] font-semibold leading-[16px] tracking-[-0.012em] text-[#e6e6e6]">
-                {greetingFor(now)},{" "}
-                <span
-                  key={greetingName}
-                  className="inline-block font-bold text-[#1f6df9] animate-in fade-in slide-in-from-bottom-1 duration-500"
-                >
-                  {greetingName}
-                </span>
-              </p>
-              <p className="mt-[5px] truncate text-[10px] font-medium uppercase leading-[12px] tracking-[0.09em] text-[#6a6a73]">
-                {panelDate(now)}
-              </p>
-            </div>
+            <PanelGreeting name={greetingName} />
           </div>
           <WhatsappBadge />
           <Button

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -12,11 +12,16 @@ import {
   type Panel1Preferences as Preferences,
 } from "@/lib/panel1-config";
 import { PageHeader, NoBusiness } from "@/components/painel/PageHeader";
-import { AppearanceSettings } from "@/components/painel/AppearanceSettings";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+
+const AppearanceSettings = lazy(() =>
+  import("@/components/painel/AppearanceSettings").then((module) => ({
+    default: module.AppearanceSettings,
+  })),
+);
 
 export const Route = createFileRoute("/_authenticated/painel/configuracoes")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -116,7 +121,9 @@ function ConfiguracoesPage() {
         }
       />
       {secao === "aparencia" ? (
-        <AppearanceSettings businessId={businessId} />
+        <Suspense fallback={null}>
+          <AppearanceSettings businessId={businessId} />
+        </Suspense>
       ) : (
         <PreferencesSettings businessId={businessId} />
       )}

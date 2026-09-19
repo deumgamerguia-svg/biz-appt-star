@@ -1,20 +1,15 @@
-import { useMemo, useState } from "react";
+import { lazy, Suspense, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { useBusiness } from "@/lib/business";
 import { formatPrice } from "@/lib/format";
 import { PageHeader, NoBusiness } from "@/components/painel/PageHeader";
 import { Button } from "@/components/ui/button";
+
+const ReportChart = lazy(() =>
+  import("@/components/painel/ReportChart").then((module) => ({ default: module.ReportChart })),
+);
 
 export const Route = createFileRoute("/_authenticated/painel/relatorio")({
   head: () => ({
@@ -168,21 +163,9 @@ function RelatorioPage() {
         <h2 className="mb-4 text-sm font-semibold">Atendimentos por dia</h2>
         {report.chart.length ? (
           <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={report.chart}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="dia" fontSize={12} stroke="var(--muted-foreground)" />
-                <YAxis allowDecimals={false} fontSize={12} stroke="var(--muted-foreground)" />
-                <Tooltip
-                  contentStyle={{
-                    background: "var(--card)",
-                    border: "1px solid var(--border)",
-                    borderRadius: 8,
-                  }}
-                />
-                <Bar dataKey="total" fill="var(--primary)" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <Suspense fallback={null}>
+              <ReportChart data={report.chart} />
+            </Suspense>
           </div>
         ) : (
           <p className="py-10 text-center text-sm text-muted-foreground">

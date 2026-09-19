@@ -1,4 +1,12 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -50,6 +58,7 @@ export function BusinessProvider({ children }: { children: ReactNode }) {
       if (error) throw error;
       return (data ?? []) as Business[];
     },
+    staleTime: 60_000,
   });
 
   const businesses = useMemo(() => data ?? [], [data]);
@@ -69,22 +78,35 @@ export function BusinessProvider({ children }: { children: ReactNode }) {
     });
   }, [businesses]);
 
-  const setBusinessId = (id: string) => {
-    if (!businesses.some((business) => business.id === id)) return;
-    window.localStorage.setItem(STORAGE_KEY, id);
-    setBusinessIdState(id);
-  };
-
-  const value: BusinessState = {
-    businesses,
-    businessId,
-    business: businesses.find((business) => business.id === businessId) ?? null,
-    setBusinessId,
-    loading: isLoading,
-    refresh: () => {
-      void queryClient.invalidateQueries({ queryKey: ["businesses"] });
+  const setBusinessId = useCallback(
+    (id: string) => {
+      if (!businesses.some((business) => business.id === id)) return;
+      window.localStorage.setItem(STORAGE_KEY, id);
+      setBusinessIdState(id);
     },
-  };
+    [businesses],
+  );
+
+  const business = useMemo(
+    () => businesses.find((item) => item.id === businessId) ?? null,
+    [businesses, businessId],
+  );
+
+  const refresh = useCallback(() => {
+    void queryClient.invalidateQueries({ queryKey: ["businesses"] });
+  }, [queryClient]);
+
+  const value = useMemo<BusinessState>(
+    () => ({
+      businesses,
+      businessId,
+      business,
+      setBusinessId,
+      loading: isLoading,
+      refresh,
+    }),
+    [businesses, businessId, business, setBusinessId, isLoading, refresh],
+  );
 
   return <BusinessContext.Provider value={value}>{children}</BusinessContext.Provider>;
 }
