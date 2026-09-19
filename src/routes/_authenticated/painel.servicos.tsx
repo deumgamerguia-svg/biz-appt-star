@@ -2,12 +2,22 @@ import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ImagePlus, Pencil, Plus, Trash2 } from "lucide-react";
+import {
+  BadgeCheck,
+  Clock3,
+  ImagePlus,
+  Layers3,
+  Link2,
+  Pencil,
+  Plus,
+  Scissors,
+  Trash2,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useBusiness } from "@/lib/business";
 import { formatPrice } from "@/lib/format";
 import { LOGO_BUCKET } from "@/lib/logo";
-import { PageHeader, NoBusiness, EmptyList } from "@/components/painel/PageHeader";
+import { NoBusiness } from "@/components/painel/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,7 +30,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_authenticated/painel/servicos")({
@@ -228,6 +237,11 @@ function ServicosPage() {
     setOpen(true);
   };
 
+  const openCreate = () => {
+    setForm(empty);
+    setOpen(true);
+  };
+
   const setProfessional = (professionalId: string, checked: boolean) => {
     setForm((current) => ({
       ...current,
@@ -240,8 +254,8 @@ function ServicosPage() {
   const upload = async (file?: File) => {
     if (!file || !businessId) return;
     setUploading(true);
-    const path = `${businessId}/services/${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9.]/g, "-")}`;
-    const { error } = await supabase.storage.from(LOGO_BUCKET).upload(path, file, {
+    const storagePath = `${businessId}/services/${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9.]/g, "-")}`;
+    const { error } = await supabase.storage.from(LOGO_BUCKET).upload(storagePath, file, {
       upsert: false,
     });
     setUploading(false);
@@ -249,218 +263,341 @@ function ServicosPage() {
       toast.error(error.message);
       return;
     }
-    setForm((current) => ({ ...current, imagePath: path }));
+    setForm((current) => ({ ...current, imagePath: storagePath }));
   };
 
   if (!businessId) return <NoBusiness />;
 
+  const total = services?.length ?? 0;
+  const active = services?.filter((service) => service.active).length ?? 0;
+  const combos = services?.filter((service) => service.is_combo).length ?? 0;
+  const linkCount = links?.length ?? 0;
+
   return (
-    <div>
-      <PageHeader
-        title="Serviços"
-        subtitle="Configure como cada serviço aparece para o cliente."
-        action={
-          <Dialog
-            open={open}
-            onOpenChange={(value) => {
-              setOpen(value);
-              if (!value) setForm(empty);
-            }}
-          >
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="size-4" /> Novo serviço
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-h-[92vh] max-w-2xl overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>{form.id ? "Editar serviço" : "Cadastrar serviço"}</DialogTitle>
-              </DialogHeader>
-
-              <Tabs defaultValue="dados">
-                <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="dados">Dados</TabsTrigger>
-                  <TabsTrigger value="vinculos">Vínculos</TabsTrigger>
-                  <TabsTrigger value="imagem">Imagem</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="dados" className="space-y-4 pt-4">
-                  <div className="space-y-2">
-                    <Label>Nome do serviço</Label>
-                    <Input
-                      value={form.name}
-                      onChange={(event) => setForm({ ...form, name: event.target.value })}
-                      placeholder="Corte masculino"
-                    />
-                  </div>
-                  <div className="grid gap-4 sm:grid-cols-3">
-                    <Field
-                      label="Valor (R$)"
-                      value={form.price}
-                      onChange={(price) => setForm({ ...form, price })}
-                    />
-                    <Field
-                      label="Tempo (min)"
-                      value={form.duration}
-                      type="number"
-                      onChange={(duration) => setForm({ ...form, duration })}
-                    />
-                    <Field
-                      label="Sinal (R$)"
-                      value={form.deposit}
-                      onChange={(deposit) => setForm({ ...form, deposit })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Descrição</Label>
-                    <Textarea
-                      className="min-h-28"
-                      value={form.description}
-                      onChange={(event) => setForm({ ...form, description: event.target.value })}
-                    />
-                  </div>
-                  <Toggle
-                    label="Este serviço é um combo"
-                    checked={form.isCombo}
-                    onChange={(isCombo) => setForm({ ...form, isCombo })}
-                  />
-                  <div className="grid gap-3 sm:grid-cols-3">
-                    <Toggle
-                      label="Mostrar serviço"
-                      checked={form.showService}
-                      onChange={(showService) => setForm({ ...form, showService })}
-                    />
-                    <Toggle
-                      label="Mostrar valor"
-                      checked={form.showPrice}
-                      onChange={(showPrice) => setForm({ ...form, showPrice })}
-                    />
-                    <Toggle
-                      label="Mostrar duração"
-                      checked={form.showDuration}
-                      onChange={(showDuration) => setForm({ ...form, showDuration })}
-                    />
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="vinculos" className="space-y-3 pt-4">
-                  <div>
-                    <p className="text-sm font-semibold">Profissionais vinculados</p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      Selecione quem pode executar este serviço. Esses vínculos são usados na agenda e no agendamento do cliente.
-                    </p>
-                  </div>
-
-                  {!professionals?.length ? (
-                    <div className="rounded-md border border-border p-4 text-sm text-muted-foreground">
-                      Nenhum profissional ativo cadastrado. Cadastre profissionais primeiro para criar vínculos.
-                    </div>
-                  ) : (
-                    <div className="overflow-hidden rounded-md border border-border">
-                      <div className="grid grid-cols-[1fr_90px] border-b border-border bg-muted/30 px-3 py-2 text-sm font-semibold">
-                        <span>Profissional</span>
-                        <span className="text-center">Vinculado</span>
-                      </div>
-                      {professionals.map((professional) => (
-                        <div
-                          key={professional.id}
-                          className="grid grid-cols-[1fr_90px] items-center border-b border-border px-3 py-2.5 last:border-b-0"
-                        >
-                          <div>
-                            <span className="block text-sm font-medium">{professional.name}</span>
-                            {professional.role ? (
-                              <span className="block text-xs text-muted-foreground">
-                                {professional.role}
-                              </span>
-                            ) : null}
-                          </div>
-                          <div className="flex justify-center">
-                            <Switch
-                              checked={form.professionalIds.includes(professional.id)}
-                              onCheckedChange={(checked) =>
-                                setProfessional(professional.id, checked)
-                              }
-                              aria-label={`Vincular ${professional.name}`}
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="imagem" className="pt-4">
-                  <label className="flex min-h-48 cursor-pointer flex-col items-center justify-center rounded-md border border-dashed border-border bg-muted/20 p-6 text-center">
-                    <ImagePlus className="mb-3 size-8 text-primary" />
-                    <span className="font-semibold">
-                      {form.imagePath ? "Imagem selecionada" : "Adicionar imagem do serviço"}
-                    </span>
-                    <span className="mt-1 text-xs text-muted-foreground">
-                      Ela aparece somente nos detalhes do serviço.
-                    </span>
-                    <input
-                      className="sr-only"
-                      type="file"
-                      accept="image/*"
-                      onChange={(event) => void upload(event.target.files?.[0])}
-                    />
-                  </label>
-                </TabsContent>
-              </Tabs>
-
-              <DialogFooter>
-                <Button
-                  onClick={() => save.mutate()}
-                  disabled={!form.name.trim() || save.isPending || uploading}
-                >
-                  {uploading ? "Enviando..." : save.isPending ? "Salvando..." : "Salvar serviço"}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        }
-      />
-
-      {!services?.length ? (
-        <EmptyList text="Nenhum serviço cadastrado." />
-      ) : (
-        <ul className="space-y-3">
-          {services.map((service) => (
-            <li key={service.id} className="surface flex flex-wrap items-center gap-4 p-4">
-              <div className="flex-1">
-                <p className="font-semibold">{service.name}</p>
-                <p className="text-sm text-muted-foreground">
-                  {service.duration_minutes} min · {formatPrice(service.price_cents)}
-                  {service.is_combo ? " · combo" : ""}
+    <div className="services-premium mx-auto w-full max-w-5xl space-y-3">
+      <section className="professional-main-card">
+        <div className="relative z-10">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div className="professional-icon-box">
+                <Scissors className="size-[1.05rem]" strokeWidth={1.8} />
+              </div>
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h1 className="text-[1.35rem] font-semibold tracking-[-0.035em] text-[#f3f4f6]">
+                    Serviços
+                  </h1>
+                  <span className="professional-badge">Catálogo e valores</span>
+                </div>
+                <p className="mt-1 max-w-xl text-xs leading-relaxed text-[#6d7079]">
+                  Configure serviços, preços, duração, sinal, profissionais vinculados e como cada opção aparece para o cliente.
                 </p>
               </div>
-              <label className="flex items-center gap-2 text-xs text-muted-foreground">
-                Ativo
-                <Switch
-                  checked={service.active}
-                  onCheckedChange={(active) => toggle.mutate({ id: service.id, active })}
+            </div>
+
+            <Button className="professional-primary-button" onClick={openCreate}>
+              <Plus className="size-4" />
+              Novo serviço
+            </Button>
+          </div>
+
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <MetricCard icon={Scissors} label="Serviços" value={String(total)} />
+            <MetricCard icon={BadgeCheck} label="Ativos" value={String(active)} />
+            <MetricCard icon={Layers3} label="Combos" value={String(combos)} />
+            <MetricCard icon={Link2} label="Vínculos" value={String(linkCount)} />
+          </div>
+        </div>
+      </section>
+
+      <section className="professional-list-panel">
+        <div className="professional-segmented-header">
+          <button type="button" className="is-active">Serviços</button>
+          <button type="button" disabled>Catálogo</button>
+        </div>
+
+        <div className="relative z-10 border-b border-[#25272d] px-4 py-4 sm:px-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="professional-icon-box !size-9">
+                <Scissors className="size-4" />
+              </div>
+              <div>
+                <h2 className="text-[0.98rem] font-semibold text-[#eef0f4]">
+                  Serviços cadastrados
+                </h2>
+                <p className="mt-0.5 text-xs text-[#62656e]">
+                  Gerencie preços, duração, sinal e profissionais vinculados.
+                </p>
+              </div>
+            </div>
+            <Button className="professional-primary-button" onClick={openCreate}>
+              <Plus className="size-4" />
+              Cadastrar serviço
+            </Button>
+          </div>
+        </div>
+
+        {!services?.length ? (
+          <div className="professional-empty-state">
+            <div className="professional-icon-box !size-14">
+              <Scissors className="size-6" />
+            </div>
+            <h3>Nenhum serviço cadastrado</h3>
+            <p>
+              Adicione o primeiro serviço para configurar preço, duração, sinal, profissionais e exibição para o cliente.
+            </p>
+            <Button className="professional-primary-button mt-5" onClick={openCreate}>
+              <Plus className="size-4" />
+              Criar primeiro serviço
+            </Button>
+          </div>
+        ) : (
+          <div className="relative z-10 divide-y divide-[#22252b]">
+            {services.map((service) => (
+              <div key={service.id} className="professional-person-row">
+                <div className="professional-avatar">
+                  <Scissors className="size-4" strokeWidth={1.8} />
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="truncate text-sm font-semibold text-[#eef0f3]">
+                      {service.name}
+                    </p>
+                    {service.is_combo && <span className="professional-badge">Combo</span>}
+                  </div>
+                  <p className="mt-1 text-xs text-[#686b74]">
+                    {service.duration_minutes} min · {formatPrice(service.price_cents)} · {(links ?? []).filter((link) => link.service_id === service.id).length} vínculo(s)
+                  </p>
+                </div>
+
+                <label className="flex items-center gap-2 text-xs font-medium text-[#70737b]">
+                  Ativo
+                  <Switch
+                    checked={service.active}
+                    onCheckedChange={(isActive) => toggle.mutate({ id: service.id, active: isActive })}
+                  />
+                </label>
+
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="professional-icon-action"
+                  onClick={() => edit(service)}
+                  aria-label={`Editar ${service.name}`}
+                >
+                  <Pencil className="size-4" />
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="professional-icon-action hover:!text-red-400"
+                  onClick={() => remove.mutate(service.id)}
+                  aria-label={`Remover ${service.name}`}
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <Dialog
+        open={open}
+        onOpenChange={(value) => {
+          setOpen(value);
+          if (!value) setForm(empty);
+        }}
+      >
+        <DialogContent className="professional-dialog max-w-xl overflow-y-auto p-0">
+          <DialogHeader className="professional-dialog-header">
+            <div className="flex items-start gap-3 text-left">
+              <div className="professional-dialog-icon">
+                <Scissors className="size-[1.05rem]" strokeWidth={1.8} />
+              </div>
+              <div className="min-w-0">
+                <DialogTitle className="text-lg font-semibold tracking-[-0.025em] text-[#f1f2f4]">
+                  {form.id ? "Editar serviço" : "Adicionar serviço"}
+                </DialogTitle>
+                <p className="mt-1 text-xs leading-relaxed text-[#686b74]">
+                  Configure dados, vínculos, exibição e imagem do serviço.
+                </p>
+              </div>
+            </div>
+          </DialogHeader>
+
+          <Tabs defaultValue="dados" className="professional-dialog-body px-4 pb-4 sm:px-5 sm:pb-5">
+            <TabsList className="professional-tabs grid w-full grid-cols-3">
+              <TabsTrigger value="dados">Dados</TabsTrigger>
+              <TabsTrigger value="vinculos">Vínculos</TabsTrigger>
+              <TabsTrigger value="imagem">Imagem</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="dados" className="professional-form-section space-y-5 pt-5">
+              <Field
+                label="Nome do serviço"
+                value={form.name}
+                onChange={(name) => setForm({ ...form, name })}
+                placeholder="Corte masculino"
+              />
+
+              <div className="grid gap-4 sm:grid-cols-3">
+                <Field
+                  label="Valor (R$)"
+                  value={form.price}
+                  onChange={(price) => setForm({ ...form, price })}
+                />
+                <Field
+                  label="Tempo (min)"
+                  value={form.duration}
+                  type="number"
+                  onChange={(duration) => setForm({ ...form, duration })}
+                />
+                <Field
+                  label="Sinal (R$)"
+                  value={form.deposit}
+                  onChange={(deposit) => setForm({ ...form, deposit })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="professional-section-label">Descrição</Label>
+                <Textarea
+                  className="professional-input min-h-24 resize-none py-3"
+                  value={form.description}
+                  onChange={(event) => setForm({ ...form, description: event.target.value })}
+                />
+              </div>
+
+              <Toggle
+                label="Este serviço é um combo"
+                checked={form.isCombo}
+                onChange={(isCombo) => setForm({ ...form, isCombo })}
+              />
+
+              <div className="grid gap-3 sm:grid-cols-3">
+                <Toggle
+                  label="Mostrar serviço"
+                  checked={form.showService}
+                  onChange={(showService) => setForm({ ...form, showService })}
+                />
+                <Toggle
+                  label="Mostrar valor"
+                  checked={form.showPrice}
+                  onChange={(showPrice) => setForm({ ...form, showPrice })}
+                />
+                <Toggle
+                  label="Mostrar duração"
+                  checked={form.showDuration}
+                  onChange={(showDuration) => setForm({ ...form, showDuration })}
+                />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="vinculos" className="professional-form-section space-y-3 pt-5">
+              <div className="professional-info-box">
+                <Link2 className="size-4 text-[#5d9cff]" />
+                Selecione os profissionais que podem executar este serviço.
+              </div>
+
+              {!professionals?.length ? (
+                <p className="professional-empty-inline">
+                  Nenhum profissional ativo cadastrado. Cadastre profissionais primeiro para criar vínculos.
+                </p>
+              ) : (
+                professionals.map((professional) => (
+                  <label key={professional.id} className="professional-choice-row">
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-medium text-[#d8dbe1]">
+                        {professional.name}
+                      </span>
+                      {professional.role ? (
+                        <span className="mt-0.5 block truncate text-xs text-[#62656e]">
+                          {professional.role}
+                        </span>
+                      ) : null}
+                    </span>
+                    <Switch
+                      checked={form.professionalIds.includes(professional.id)}
+                      onCheckedChange={(checked) => setProfessional(professional.id, checked)}
+                      aria-label={`Vincular ${professional.name}`}
+                    />
+                  </label>
+                ))
+              )}
+            </TabsContent>
+
+            <TabsContent value="imagem" className="professional-form-section pt-5">
+              <label className="service-image-dropzone">
+                <div className="professional-dialog-icon !size-14">
+                  <ImagePlus className="size-6" />
+                </div>
+                <span className="mt-4 text-sm font-semibold text-[#e4e7ec]">
+                  {form.imagePath ? "Imagem selecionada" : "Adicionar imagem do serviço"}
+                </span>
+                <span className="mt-1 max-w-sm text-center text-xs leading-relaxed text-[#646771]">
+                  A imagem aparece nos detalhes do serviço para o cliente.
+                </span>
+                <span className="mt-4 inline-flex items-center rounded-lg border border-[#2f83ff]/35 bg-[#1677ff]/[0.08] px-3 py-2 text-xs font-semibold text-[#70a8ff]">
+                  {uploading ? "Enviando..." : "Selecionar imagem"}
+                </span>
+                <input
+                  className="sr-only"
+                  type="file"
+                  accept="image/*"
+                  onChange={(event) => void upload(event.target.files?.[0])}
                 />
               </label>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => edit(service)}
-                aria-label={`Editar ${service.name}`}
-              >
-                <Pencil className="size-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => remove.mutate(service.id)}
-                aria-label={`Remover ${service.name}`}
-              >
-                <Trash2 className="size-4 text-destructive" />
-              </Button>
-            </li>
-          ))}
-        </ul>
-      )}
+            </TabsContent>
+          </Tabs>
+
+          <DialogFooter className="professional-dialog-footer">
+            <Button
+              variant="outline"
+              className="professional-secondary-button"
+              onClick={() => setOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              className="professional-primary-button"
+              onClick={() => save.mutate()}
+              disabled={!form.name.trim() || save.isPending || uploading}
+            >
+              {uploading
+                ? "Enviando..."
+                : save.isPending
+                  ? "Salvando..."
+                  : form.id
+                    ? "Salvar alterações"
+                    : "Criar serviço"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+function MetricCard({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: typeof Scissors;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="professional-stat-card">
+      <div className="professional-icon-box !size-9">
+        <Icon className="size-4" strokeWidth={1.8} />
+      </div>
+      <p>{label}</p>
+      <strong>{value}</strong>
     </div>
   );
 }
@@ -470,16 +607,24 @@ function Field({
   value,
   onChange,
   type = "text",
+  placeholder,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   type?: string;
+  placeholder?: string;
 }) {
   return (
     <div className="space-y-2">
-      <Label>{label}</Label>
-      <Input type={type} value={value} onChange={(event) => onChange(event.target.value)} />
+      <Label className="professional-section-label">{label}</Label>
+      <Input
+        className="professional-input"
+        type={type}
+        value={value}
+        placeholder={placeholder}
+        onChange={(event) => onChange(event.target.value)}
+      />
     </div>
   );
 }
@@ -494,8 +639,8 @@ function Toggle({
   onChange: (value: boolean) => void;
 }) {
   return (
-    <label className="flex items-center justify-between gap-3 rounded-md border border-border p-3 text-sm">
-      <span>{label}</span>
+    <label className="professional-choice-row">
+      <span className="text-sm font-medium text-[#d8dbe1]">{label}</span>
       <Switch checked={checked} onCheckedChange={onChange} />
     </label>
   );
