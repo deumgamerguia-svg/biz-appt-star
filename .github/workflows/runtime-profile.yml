@@ -31,12 +31,12 @@ jobs:
         run: google-chrome --version
 
       - name: Build profiling production
-        run: VITE_RUNTIME_PROFILE=1 npm run build
+        run: NITRO_PRESET=node-server VITE_RUNTIME_PROFILE=1 npm run build
 
       - name: Profile production interactions with Chrome
         shell: bash
         run: |
-          npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/agenda-preview.log 2>&1 &
+          NITRO_HOST=127.0.0.1 NITRO_PORT=4173 node .output/server/index.mjs > /tmp/agenda-preview.log 2>&1 &
           SERVER_PID=$!
           trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
           READY=0
