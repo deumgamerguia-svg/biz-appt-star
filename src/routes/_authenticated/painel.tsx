@@ -11,7 +11,6 @@ import {
   BellRing,
   Gem,
   PieChart,
-  Calculator,
   MessageSquareText,
   CircleX,
   Settings2,
@@ -90,7 +89,6 @@ const nav = [
     title: "Financeiro",
     items: [
       { to: "/painel/as-pay", label: "AS Pay", hint: "Saldo dos sinais", icon: Gem },
-      { to: "/painel/caixa", label: "Caixa", hint: "Entradas e saídas", icon: Calculator },
       {
         to: "/painel/relatorio",
         label: "Relatório",
