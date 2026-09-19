@@ -588,5 +588,5 @@ async function run() {
 
 run().catch((error) => {
   console.error("[RUNTIME_PROFILE_ERROR]", error);
-  process.exitCode = 1;
+  process.exit(1);
 });
