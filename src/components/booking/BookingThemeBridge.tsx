@@ -65,8 +65,6 @@ export function BookingThemeBridge() {
         root.style.setProperty("--card-foreground", serviceText);
         root.style.setProperty("--border", serviceBorder);
         root.style.setProperty("--input", serviceBorder);
-        root.style.setProperty("--muted", agendaBackground);
-        root.style.setProperty("--muted-foreground", agendaText);
         root.style.setProperty("--popover", modalBackground);
         root.style.setProperty("--popover-foreground", modalText);
 
@@ -94,26 +92,59 @@ export function BookingThemeBridge() {
         }
 
         style.textContent = `
-          body[data-booking-theme="true"] main button.rounded-lg.border:hover {
+          body[data-booking-theme="true"] [data-booking-page="true"] {
+            color:${pageText} !important;
+          }
+
+          body[data-booking-theme="true"] [data-booking-page="true"] .text-muted-foreground {
+            color:${pageText} !important;
+            opacity:0.72;
+          }
+
+          body[data-booking-theme="true"] [data-booking-service-card="true"] {
+            background:${serviceBackground} !important;
+            color:${serviceText} !important;
+            border-color:${serviceBorder} !important;
+          }
+
+          body[data-booking-theme="true"] [data-booking-service-card="true"] * {
+            color:inherit !important;
+          }
+
+          body[data-booking-theme="true"] [data-booking-service-card="true"]:hover {
             background:${serviceHoverBackground} !important;
             color:${serviceHoverText} !important;
             border-color:${serviceHoverBorder} !important;
           }
-          body[data-booking-theme="true"] [role="dialog"] {
+
+          body[data-booking-theme="true"] [data-booking-modal="true"] {
             background:${modalBackground} !important;
             color:${modalText} !important;
             border-color:${modalBorder} !important;
           }
-          body[data-booking-theme="true"] [role="dialog"] button.border {
-            background:${agendaBackground};
-            border-color:${agendaBorder};
-            color:${agendaText};
+
+          body[data-booking-theme="true"] [data-booking-modal="true"] .text-muted-foreground {
+            color:${modalText} !important;
+            opacity:0.72;
           }
-          body[data-booking-theme="true"] [role="dialog"] button.border:hover {
+
+          body[data-booking-theme="true"] [data-booking-agenda-option="true"] {
+            background:${agendaBackground} !important;
+            color:${agendaText} !important;
+            border-color:${agendaBorder} !important;
+          }
+
+          body[data-booking-theme="true"] [data-booking-agenda-option="true"] * {
+            color:inherit !important;
+          }
+
+          body[data-booking-theme="true"] [data-booking-agenda-option="true"]:hover:not([data-active="true"]) {
             background:${modalHoverBackground} !important;
             color:${modalHoverText} !important;
+            border-color:${modalBorder} !important;
           }
-          body[data-booking-theme="true"] [role="dialog"] button[class*="bg-primary"] {
+
+          body[data-booking-theme="true"] [data-booking-agenda-option="true"][data-active="true"] {
             background:${modalActiveBackground} !important;
             color:${modalActiveText} !important;
             border-color:${modalActiveText} !important;
