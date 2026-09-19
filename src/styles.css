@@ -276,12 +276,12 @@
 .owner-panel .owner-nav-item { min-height: 3.45rem; }
 
 .owner-route-progress { position: fixed; z-index: 60; top: 0; left: 0; width: 100%; height: 2px; pointer-events: none; opacity: 0; transform: scaleX(0); transform-origin: left; background: var(--color-primary); box-shadow: 0 0 12px color-mix(in oklab, var(--color-primary) 75%, transparent); }
-.owner-route-progress.is-visible { opacity: 1; animation: owner-route-progress 360ms ease-out both; }
-.owner-route-content { animation: owner-route-enter 220ms cubic-bezier(0.22, 1, 0.36, 1) both; }
-.owner-route-loader { position: absolute; z-index: 20; inset: 1rem; min-height: 12rem; display: grid; place-items: center; border-radius: var(--radius-lg); background: color-mix(in oklab, var(--color-background) 88%, transparent); backdrop-filter: blur(4px); animation: owner-loader-in 120ms ease-out both; }
+.owner-route-progress.is-visible { opacity: 1; animation: owner-route-progress 320ms ease-out both; }
+.owner-route-content { min-height: 12rem; }
+.owner-route-content.is-transitioning { visibility: hidden; pointer-events: none; }
+.owner-route-loader { position: absolute; z-index: 40; inset: 0; min-height: calc(100vh - 8rem); display: grid; place-items: center; border-radius: 0; background: #050607; backdrop-filter: none; animation: owner-loader-in 90ms ease-out both; }
 
 @keyframes owner-route-progress { 0% { transform: scaleX(0); } 70% { transform: scaleX(0.82); } 100% { transform: scaleX(1); opacity: 0; } }
-@keyframes owner-route-enter { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes owner-loader-in { from { opacity: 0; } to { opacity: 1; } }
 
 .owner-panel main, .owner-panel [data-slot="card"] { animation-duration: 180ms; }

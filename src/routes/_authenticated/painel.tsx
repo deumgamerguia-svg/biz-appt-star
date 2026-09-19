@@ -26,7 +26,7 @@ import {
   SlidersHorizontal,
   Paintbrush,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useBusiness } from "@/lib/business";
@@ -240,6 +240,8 @@ function PainelLayout() {
   const [transitioning, setTransitioning] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const locationHref = useRouterState({ select: (state) => state.location.href });
+  const transitionOriginRef = useRef(locationHref);
   const [configOpen, setConfigOpen] = useState(() => pathname.startsWith("/painel/configuracoes"));
 
   const { data: greetingProfile } = useQuery({
@@ -279,10 +281,16 @@ function PainelLayout() {
   }, [pathname]);
 
   useEffect(() => {
-    if (!transitioning) return;
-    const timer = window.setTimeout(() => setTransitioning(false), 360);
+    if (!transitioning || locationHref === transitionOriginRef.current) return;
+    const timer = window.setTimeout(() => setTransitioning(false), 90);
     return () => window.clearTimeout(timer);
-  }, [pathname, transitioning]);
+  }, [locationHref, transitioning]);
+
+  useEffect(() => {
+    if (!transitioning) return;
+    const fallback = window.setTimeout(() => setTransitioning(false), 850);
+    return () => window.clearTimeout(fallback);
+  }, [transitioning]);
 
   useEffect(() => {
     if (!accountOpen) return;
@@ -296,6 +304,7 @@ function PainelLayout() {
   const beginNavigation = () => {
     setOpen(false);
     setAccountOpen(false);
+    transitionOriginRef.current = locationHref;
     setTransitioning(true);
   };
 
@@ -569,7 +578,7 @@ function PainelLayout() {
               <LoaderCircle className="size-6 animate-spin text-[#1677ff]" />
             </div>
           )}
-          <div key={pathname} className="owner-route-content">
+          <div className={`owner-route-content ${transitioning ? "is-transitioning" : ""}`}>
             <Outlet />
           </div>
         </main>
