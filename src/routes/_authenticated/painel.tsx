@@ -30,6 +30,7 @@ import { useBusiness } from "@/lib/business";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import brandLogo from "@/assets/agenda-agora-logo.png.asset.json";
+import { RuntimeProfiler } from "@/lib/runtime-profiler";
 
 export const Route = createFileRoute("/_authenticated/painel")({
   head: () => ({
@@ -43,8 +44,16 @@ export const Route = createFileRoute("/_authenticated/painel")({
       { property: "og:description", content: "Gerencie a agenda do seu negócio." },
     ],
   }),
-  component: PainelLayout,
+  component: ProfiledPainelLayout,
 });
+
+function ProfiledPainelLayout() {
+  return (
+    <RuntimeProfiler id="PainelLayout">
+      <PainelLayout />
+    </RuntimeProfiler>
+  );
+}
 
 const nav = [
   {
@@ -324,6 +333,7 @@ function PainelLayout() {
         } fixed inset-0 z-40 h-auto w-auto rounded-none bg-[#050607]/75 p-0 backdrop-blur-[2px] transition-opacity hover:bg-[#050607]/75 lg:hidden`}
       />
 
+      <RuntimeProfiler id="Sidebar">
       <aside
         className={`${
           open ? "translate-x-0" : "-translate-x-full"
@@ -522,12 +532,14 @@ function PainelLayout() {
           ))}
         </nav>
       </aside>
+      </RuntimeProfiler>
 
       <div className="relative z-10 min-w-0 flex-1">
         <div
           aria-hidden="true"
           className={`owner-route-progress ${transitioning ? "is-visible" : ""}`}
         />
+        <RuntimeProfiler id="Header">
         <header className="sticky top-0 z-30 grid min-h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-b border-[#25282c] bg-[#050607]/90 px-3 py-3 shadow-[0_10px_35px_rgba(0,0,0,0.16)] backdrop-blur-xl sm:px-6">
           <div className="flex min-w-0 items-center gap-2.5">
             <Button
@@ -551,6 +563,7 @@ function PainelLayout() {
             <Bell className="size-5" />
           </Button>
         </header>
+        </RuntimeProfiler>
 
         <main className="relative mx-auto w-full max-w-7xl p-4 sm:p-7 lg:p-8">
           {transitioning && (
@@ -558,9 +571,11 @@ function PainelLayout() {
               <LoaderCircle className="size-6 animate-spin text-[#1677ff]" />
             </div>
           )}
-          <div key={pathname} className="owner-route-content">
-            <Outlet />
-          </div>
+          <RuntimeProfiler id="RouteOutlet">
+            <div key={pathname} className="owner-route-content">
+              <Outlet />
+            </div>
+          </RuntimeProfiler>
         </main>
       </div>
     </div>
