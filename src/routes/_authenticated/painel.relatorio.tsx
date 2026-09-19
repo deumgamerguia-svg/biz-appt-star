@@ -40,6 +40,11 @@ const RANGES = [
   { days: 90, label: "90 dias" },
 ];
 
+const REPORT_DAY_FORMATTER = new Intl.DateTimeFormat("pt-BR", {
+  day: "2-digit",
+  month: "2-digit",
+});
+
 function ProfiledRelatorioPage() {
   return (
     <RuntimeProfiler id="RelatorioPage">
@@ -127,10 +132,7 @@ function RelatorioPage() {
         );
       }
 
-      const dayKey = new Date(appointment.starts_at).toLocaleDateString("pt-BR", {
-        day: "2-digit",
-        month: "2-digit",
-      });
+      const dayKey = REPORT_DAY_FORMATTER.format(new Date(appointment.starts_at));
       perDay.set(dayKey, (perDay.get(dayKey) ?? 0) + 1);
       clients.add(appointment.customer_name.trim().toLowerCase());
     }
