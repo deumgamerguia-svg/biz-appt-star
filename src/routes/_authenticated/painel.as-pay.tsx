@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Activity, ArrowDownToLine, ArrowUpRight, CircleDollarSign, Clock3, Landmark } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { RuntimeProfiler } from "@/lib/runtime-profiler";
 import { useBusiness } from "@/lib/business";
 import { formatPrice } from "@/lib/format";
 import { PageHeader, NoBusiness } from "@/components/painel/PageHeader";
@@ -15,8 +16,16 @@ export const Route = createFileRoute("/_authenticated/painel/as-pay")({
       { property: "og:description", content: "Saldo dos sinais pagos pelos clientes." },
     ],
   }),
-  component: AsPayPage,
+  component: ProfiledAsPayPage,
 });
+
+function ProfiledAsPayPage() {
+  return (
+    <RuntimeProfiler id="AsPayPage">
+      <AsPayPage />
+    </RuntimeProfiler>
+  );
+}
 
 function AsPayPage() {
   const { businessId, business } = useBusiness();
