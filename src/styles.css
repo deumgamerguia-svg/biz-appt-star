@@ -1517,7 +1517,7 @@ body:has(.owner-panel) .bloqueio-type-option.is-selected {
 
 .owner-panel main .owner-route-content > div:has(input[type="date"]) > div:has(> input[type="date"]) {
   display: grid;
-  grid-template-columns: 52px minmax(0, 1fr) 52px;
+  grid-template-columns: 50.4px minmax(0, 1fr) 50.4px;
   width: calc(100% - 16px);
   max-width: none;
   margin-inline: auto;
@@ -1525,23 +1525,23 @@ body:has(.owner-panel) .bloqueio-type-option.is-selected {
 }
 
 .owner-panel main .owner-route-content > div:has(input[type="date"]) > div:has(> input[type="date"]) > button {
-  width: 52px;
-  height: 52px;
+  width: 50.4px;
+  height: 50.4px;
 }
 
 .owner-panel main .owner-route-content > div:has(input[type="date"]) > div:has(> input[type="date"]) > input[type="date"] {
   width: 100%;
-  height: 52px;
+  height: 50.4px;
   max-width: none;
 }
 
 .owner-panel main .owner-route-content > div:has(input[type="date"]) > button[type="button"] {
   display: flex;
-  width: 11rem;
-  max-width: 11rem;
-  height: 13.76px;
-  min-height: 0;
-  margin: 8px 0 0 3rem;
+  width: 100%;
+  max-width: none;
+  height: 50.4px;
+  min-height: 50.4px;
+  margin: 8px 0 0;
   padding: 0 1rem;
   font-size: 0.82rem;
 }
@@ -1553,7 +1553,7 @@ body:has(.owner-panel) .bloqueio-type-option.is-selected {
 
 @media (max-width: 639px) {
   .owner-panel main .owner-route-content > div:has(input[type="date"]) > div:has(> input[type="date"]) {
-    grid-template-columns: 54px minmax(0, 1fr) 54px;
+    grid-template-columns: 50.4px minmax(0, 1fr) 50.4px;
     width: calc(100% - 16px);
     max-width: none;
     margin-left: auto;
@@ -1561,20 +1561,20 @@ body:has(.owner-panel) .bloqueio-type-option.is-selected {
   }
 
   .owner-panel main .owner-route-content > div:has(input[type="date"]) > div:has(> input[type="date"]) > button {
-    width: 54px;
-    height: 54px;
+    width: 50.4px;
+    height: 50.4px;
   }
 
   .owner-panel main .owner-route-content > div:has(input[type="date"]) > div:has(> input[type="date"]) > input[type="date"] {
-    height: 54px;
+    height: 50.4px;
   }
 
   .owner-panel main .owner-route-content > div:has(input[type="date"]) > button[type="button"] {
-    width: 11rem;
-    max-width: 11rem;
-    height: 13.76px;
-    min-height: 0;
-    margin-left: 3rem;
+    width: 100%;
+    max-width: none;
+    height: 50.4px;
+    min-height: 50.4px;
+    margin-left: 0;
     margin-right: 0;
   }
 }
