@@ -247,11 +247,12 @@ function Metric({
 
 function PerformanceChart({ data }: { data: PerformanceDay[] }) {
   const maxValue = Math.max(...data.map((day) => day.value), 1);
-  const baseline = 154;
+  const baseline = 150;
   const points = data.map((day, index) => ({
     ...day,
-    x: 12 + index * 112.65,
-    y: baseline - (day.value / maxValue) * 124,
+    // Keep each point centered over its matching weekday label.
+    x: 50 + index * 100,
+    y: baseline - (day.value / maxValue) * 120,
   }));
   const line = points.map((point) => `${point.x},${point.y}`).join(" ");
   const area = `M ${points[0]!.x} ${baseline} L ${points
@@ -267,8 +268,8 @@ function PerformanceChart({ data }: { data: PerformanceDay[] }) {
             <stop offset="100%" stopColor="#1677ff" stopOpacity="0" />
           </linearGradient>
         </defs>
-        {[28, 70, 112, 154].map((y) => (
-          <line key={y} x1="12" x2="688" y1={y} y2={y} className="as-pay-grid-line" />
+        {[24, 66, 108, 150].map((y) => (
+          <line key={y} x1="50" x2="650" y1={y} y2={y} className="as-pay-grid-line" />
         ))}
         <path d={area} fill="url(#as-pay-area)" />
         <polyline points={line} className="as-pay-chart-line" />
