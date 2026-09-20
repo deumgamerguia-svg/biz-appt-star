@@ -1530,6 +1530,7 @@ body:has(.owner-panel) .bloqueio-type-option.is-selected {
 }
 
 .owner-panel main .owner-route-content > div:has(input[type="date"]) > div:has(> input[type="date"]) > input[type="date"] {
+  position: relative;
   width: 100%;
   height: 50.4px;
   max-width: none;
@@ -1539,7 +1540,10 @@ body:has(.owner-panel) .bloqueio-type-option.is-selected {
 
 .owner-panel main .owner-route-content > div:has(input[type="date"]) > div:has(> input[type="date"]) > input[type="date"]::-webkit-calendar-picker-indicator {
   position: absolute;
-  right: 0.75rem;
+  top: 50%;
+  right: 0.65rem;
+  transform: translateY(-50%);
+  display: block;
   width: 1.15rem;
   height: 1.15rem;
   margin: 0;
