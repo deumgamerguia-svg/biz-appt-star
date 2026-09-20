@@ -253,7 +253,8 @@ function PainelLayout() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [transitioning, setTransitioning] = useState(false);
-  const [accountOpen, setAccountOpen] = useState(false);\n  const [supportOpen, setSupportOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [supportOpen, setSupportOpen] = useState(false);
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const [configOpen, setConfigOpen] = useState(() => pathname.startsWith("/painel/configuracoes"));
 
