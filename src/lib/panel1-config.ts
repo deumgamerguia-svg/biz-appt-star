@@ -20,7 +20,6 @@ export type Panel1Appearance = {
 
 export type Panel1Preferences = {
   minimum_notice_hours: number;
-  numbered_command: boolean;
   listing_time_minutes: number;
   notify_clients: boolean;
   reminder_hours_before: number;
@@ -28,10 +27,8 @@ export type Panel1Preferences = {
   extra_reminder_template: string;
   timezone: string;
   list_dates_days: number;
-  social_links: boolean;
   cancellations_enabled: boolean;
   cancellation_notice_minutes: number;
-  marketing: boolean;
   reschedule_enabled: boolean;
   reschedule_notice_minutes: number;
   greeting: string;
@@ -69,7 +66,6 @@ export const DEFAULT_PANEL1_APPEARANCE: Panel1Appearance = {
 
 export const DEFAULT_PANEL1_PREFERENCES: Panel1Preferences = {
   minimum_notice_hours: 2,
-  numbered_command: false,
   listing_time_minutes: 30,
   notify_clients: true,
   reminder_hours_before: 10,
@@ -77,10 +73,8 @@ export const DEFAULT_PANEL1_PREFERENCES: Panel1Preferences = {
   extra_reminder_template: DEFAULT_EXTRA_REMINDER_TEMPLATE,
   timezone: "America/Sao_Paulo",
   list_dates_days: 15,
-  social_links: true,
   cancellations_enabled: true,
   cancellation_notice_minutes: 0,
-  marketing: false,
   reschedule_enabled: false,
   reschedule_notice_minutes: 0,
   greeting: "Agende seu horário",
@@ -155,10 +149,6 @@ export function normalizePanel1Config(value: unknown): Panel1Config {
       0,
       720,
     ),
-    numbered_command: boolValue(
-      rawPreferences["numbered_command"],
-      DEFAULT_PANEL1_PREFERENCES.numbered_command,
-    ),
     listing_time_minutes: allowedListingMinutes.has(rawListing)
       ? rawListing
       : DEFAULT_PANEL1_PREFERENCES.listing_time_minutes,
@@ -196,10 +186,6 @@ export function normalizePanel1Config(value: unknown): Panel1Config {
         365,
       ),
     ),
-    social_links: boolValue(
-      rawPreferences["social_links"],
-      DEFAULT_PANEL1_PREFERENCES.social_links,
-    ),
     cancellations_enabled: boolValue(
       rawPreferences["cancellations_enabled"],
       DEFAULT_PANEL1_PREFERENCES.cancellations_enabled,
@@ -212,7 +198,6 @@ export function normalizePanel1Config(value: unknown): Panel1Config {
         1440,
       ),
     ),
-    marketing: boolValue(rawPreferences["marketing"], DEFAULT_PANEL1_PREFERENCES.marketing),
     reschedule_enabled: boolValue(
       rawPreferences["reschedule_enabled"],
       DEFAULT_PANEL1_PREFERENCES.reschedule_enabled,

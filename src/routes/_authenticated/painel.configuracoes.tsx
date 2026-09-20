@@ -46,14 +46,11 @@ const DEFAULT_EXTRA_TEMPLATE = DEFAULT_EXTRA_REMINDER_TEMPLATE;
 
 const preferenceItems = [
   ["available", "Horários Disponíveis"],
-  ["command", "Comanda Enumerada"],
   ["listing", "Tempo de Listagem"],
   ["notify", "Avisar Clientes"],
   ["timezone", "Fuso Horário"],
   ["dates", "Listar datas"],
-  ["social", "Links Sociais"],
   ["cancel", "Cancelamentos"],
-  ["marketing", "Marketing"],
   ["reschedule", "Remarcar"],
   ["greeting", "Saudação"],
 ] as const;
@@ -313,7 +310,7 @@ function PreferencesSettings({ businessId }: { businessId: string }) {
           <nav aria-label="Preferências do agendamento">
             <p className="px-3 pb-3 text-sm font-medium text-[#8b929d]">Agenda</p>
             <div className="space-y-1">
-              {preferenceItems.slice(0, 6).map(([key, label]) => (
+              {preferenceItems.slice(0, 5).map(([key, label]) => (
                 <PreferenceButton
                   key={key}
                   active={selected === key}
@@ -326,7 +323,7 @@ function PreferencesSettings({ businessId }: { businessId: string }) {
 
             <p className="mt-8 px-3 pb-3 text-sm font-medium text-[#8b929d]">Empresa e clientes</p>
             <div className="space-y-1">
-              {preferenceItems.slice(6).map(([key, label]) => (
+              {preferenceItems.slice(5).map(([key, label]) => (
                 <PreferenceButton
                   key={key}
                   active={selected === key}
@@ -366,24 +363,6 @@ function PreferencesSettings({ businessId }: { businessId: string }) {
                     [4, "4 Horas"],
                     [12, "12 Horas"],
                     [24, "24 Horas"],
-                  ]}
-                />
-              </SettingBlock>
-            )}
-
-            {selected === "command" && (
-              <SettingBlock
-                title="Comanda Enumerada"
-                description="Defina se os agendamentos devem receber uma numeração sequencial."
-              >
-                <NativeSelect
-                  value={prefs.numbered_command ? "ativada" : "desativada"}
-                  onChange={(value) =>
-                    setPrefs({ ...prefs, numbered_command: value === "ativada" })
-                  }
-                  options={[
-                    ["desativada", "Desativada"],
-                    ["ativada", "Ativada"],
                   ]}
                 />
               </SettingBlock>
@@ -524,22 +503,6 @@ function PreferencesSettings({ businessId }: { businessId: string }) {
               </SettingBlock>
             )}
 
-            {selected === "social" && (
-              <SettingBlock
-                title="Links Sociais"
-                description="Escolha se os links sociais do negócio aparecem para os clientes."
-              >
-                <NativeSelect
-                  value={prefs.social_links ? "visiveis" : "ocultos"}
-                  onChange={(value) => setPrefs({ ...prefs, social_links: value === "visiveis" })}
-                  options={[
-                    ["visiveis", "Visíveis"],
-                    ["ocultos", "Ocultos"],
-                  ]}
-                />
-              </SettingBlock>
-            )}
-
             {selected === "cancel" && (
               <div>
                 <h2 className="text-2xl font-medium tracking-[-0.025em] text-[#f4f5f7]">
@@ -578,22 +541,6 @@ function PreferencesSettings({ businessId }: { businessId: string }) {
                   </label>
                 </div>
               </div>
-            )}
-
-            {selected === "marketing" && (
-              <SettingBlock
-                title="Marketing"
-                description="Controle a autorização para comunicações e campanhas com seus clientes."
-              >
-                <NativeSelect
-                  value={prefs.marketing ? "ativado" : "desativado"}
-                  onChange={(value) => setPrefs({ ...prefs, marketing: value === "ativado" })}
-                  options={[
-                    ["desativado", "Desativado"],
-                    ["ativado", "Ativado"],
-                  ]}
-                />
-              </SettingBlock>
             )}
 
             {selected === "reschedule" && (
