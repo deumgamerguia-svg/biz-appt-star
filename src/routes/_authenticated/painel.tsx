@@ -624,7 +624,11 @@ function PainelLayout() {
             </div>
           )}
           <RuntimeProfiler id="RouteOutlet">
-            <div key={pathname} className="owner-route-content">
+            <div
+              key={pathname}
+              className="owner-route-content"
+              style={pathname.startsWith("/painel/configuracoes") ? { animation: "none" } : undefined}
+            >
               <Outlet />
             </div>
           </RuntimeProfiler>

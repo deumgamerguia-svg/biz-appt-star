@@ -299,8 +299,10 @@ function PreferencesSettings({ businessId }: { businessId: string }) {
 
       <div className="grid min-h-[620px] lg:grid-cols-[260px_minmax(0,1fr)]">
         <aside
-          className={`fixed inset-y-0 left-0 z-[60] w-[260px] overflow-y-auto border-r border-[#303238] bg-[#151619] px-3 pb-6 pt-4 shadow-2xl transition-transform duration-200 lg:static lg:z-auto lg:w-auto lg:translate-x-0 lg:shadow-none ${
-            menuOpen ? "translate-x-0" : "-translate-x-full"
+          className={`fixed inset-y-0 left-0 z-[60] w-[260px] overflow-y-auto border-r border-[#303238] bg-[#151619] px-3 pb-6 pt-4 shadow-2xl transition-[transform,visibility] duration-200 lg:static lg:z-auto lg:w-auto lg:translate-x-0 lg:visible lg:pointer-events-auto lg:shadow-none ${
+            menuOpen
+              ? "visible translate-x-0 pointer-events-auto"
+              : "invisible -translate-x-full pointer-events-none"
           }`}
         >
           <h1 className="px-3 pb-8 !text-[1.75rem] font-normal tracking-[-0.035em] text-[#f5f6f8]">
