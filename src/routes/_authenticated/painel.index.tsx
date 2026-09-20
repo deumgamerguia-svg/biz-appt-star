@@ -1066,7 +1066,7 @@ function AgendaPage() {
                     <button
                       type="button"
                       onClick={() => setDetail(appointment.id)}
-                      className={`grid w-full grid-cols-[4.25rem_minmax(0,1fr)_minmax(10rem,1.35fr)_4.5rem] items-center gap-x-3 rounded-md border-b border-background px-3 py-2 text-left transition-opacity hover:opacity-90 ${tone}`}
+                      className={`grid w-full grid-cols-[4.25rem_minmax(0,1fr)_minmax(10rem,1.35fr)_4.5rem] items-center gap-x-3 rounded-md border-b border-background px-3 py-2.5 text-left transition-opacity hover:opacity-90 ${tone}`}
                     >
                       <span className="text-[13px] font-bold leading-none">
                         {timeFromIso(appointment.starts_at)}
