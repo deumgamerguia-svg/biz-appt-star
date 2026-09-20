@@ -904,16 +904,17 @@ function AgendaPage() {
 
   return (
     <div>
-      <div className="flex items-center gap-2">
+      <div className="flex h-[50.4px] w-full items-center gap-2">
         <Button
           variant="outline"
           size="icon"
           onClick={() => shiftDay(-1)}
           aria-label="Dia anterior"
+          className="h-[50.4px] w-[50.4px] shrink-0"
         >
           <ChevronLeft className="size-4" />
         </Button>
-        <div className="relative h-[13.76px] w-44 flex-none rounded-md">
+        <div className="relative h-[50.4px] min-w-0 flex-1 rounded-md">
 
           <span
             aria-hidden="true"
@@ -921,7 +922,7 @@ function AgendaPage() {
           />
           <Input
             type="date"
-            className="relative z-10 h-[13.76px] min-h-0 w-44 border-[#262626] bg-[#06090d] px-3 py-0 text-[0.82rem] shadow-none"
+            className="relative z-10 h-[50.4px] min-h-[50.4px] w-full border-[#262626] bg-[#06090d] px-3 py-0 text-[0.82rem] shadow-none"
             value={day}
             onChange={(event) => setDay(event.target.value)}
             aria-label="Data da agenda"
@@ -932,6 +933,7 @@ function AgendaPage() {
           size="icon"
           onClick={() => shiftDay(1)}
           aria-label="Próximo dia"
+          className="h-[50.4px] w-[50.4px] shrink-0"
         >
           <ChevronRight className="size-4" />
         </Button>
@@ -948,7 +950,7 @@ function AgendaPage() {
         type="button"
         onClick={openEncaixe}
         disabled={!services?.length}
-        className="group relative isolate mt-2 ml-12 flex h-[13.76px] w-44 items-center justify-center rounded-[15px] border-[0.75px] border-[#6d5519]/70 bg-[radial-gradient(circle_at_22%_28%,rgba(224,175,45,0.18)_0%,rgba(128,92,20,0.08)_34%,transparent_66%),linear-gradient(100deg,#0c0b08_0%,#0b0b0a_60%,#0d0c09_100%)] px-4 text-[0.82rem] font-medium tracking-[-0.01em] text-[#f5f5f5] shadow-[inset_0_1px_0_rgba(255,222,129,0.035),0_0_18px_rgba(210,157,32,0.025)] transition-all duration-200 hover:border-[#8b6a1d]/75 hover:bg-[radial-gradient(circle_at_22%_28%,rgba(224,175,45,0.22)_0%,rgba(128,92,20,0.10)_34%,transparent_66%),linear-gradient(100deg,#0d0c09_0%,#0b0b0a_60%,#0d0c09_100%)] hover:shadow-[inset_0_1px_0_rgba(255,222,129,0.05),0_0_20px_rgba(210,157,32,0.035)] disabled:cursor-not-allowed disabled:opacity-50"
+        className="group relative isolate mt-2 flex h-[50.4px] w-full items-center justify-center rounded-[15px] border-[0.75px] border-[#6d5519]/70 bg-[radial-gradient(circle_at_22%_28%,rgba(224,175,45,0.18)_0%,rgba(128,92,20,0.08)_34%,transparent_66%),linear-gradient(100deg,#0c0b08_0%,#0b0b0a_60%,#0d0c09_100%)] px-4 text-[0.82rem] font-medium tracking-[-0.01em] text-[#f5f5f5] shadow-[inset_0_1px_0_rgba(255,222,129,0.035),0_0_18px_rgba(210,157,32,0.025)] transition-all duration-200 hover:border-[#8b6a1d]/75 hover:bg-[radial-gradient(circle_at_22%_28%,rgba(224,175,45,0.22)_0%,rgba(128,92,20,0.10)_34%,transparent_66%),linear-gradient(100deg,#0d0c09_0%,#0b0b0a_60%,#0d0c09_100%)] hover:shadow-[inset_0_1px_0_rgba(255,222,129,0.05),0_0_20px_rgba(210,157,32,0.035)] disabled:cursor-not-allowed disabled:opacity-50"
       >
         <span
           aria-hidden="true"
