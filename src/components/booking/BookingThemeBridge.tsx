@@ -18,9 +18,9 @@ export function BookingThemeBridge() {
     const root = document.documentElement;
     const body = document.body;
     const style = document.createElement("style");
-    style.dataset.bookingTheme = "true";
+    style.dataset['bookingTheme'] = "true";
     document.head.appendChild(style);
-    body.dataset.bookingTheme = "true";
+    body.dataset['bookingTheme'] = "true";
 
     const variableNames = [
       "--foreground",
@@ -76,7 +76,7 @@ export function BookingThemeBridge() {
             const logoArea = main?.firstElementChild;
             if (!main || !logoArea) return;
             greetingElement = document.createElement("p");
-            greetingElement.dataset.bookingGreeting = "true";
+            greetingElement.dataset['bookingGreeting'] = "true";
             greetingElement.textContent = greeting;
             greetingElement.style.textAlign = "center";
             greetingElement.style.margin = "0 auto 1.5rem";
@@ -160,7 +160,7 @@ export function BookingThemeBridge() {
       cancelled = true;
       greetingElement?.remove();
       style.remove();
-      delete body.dataset.bookingTheme;
+      delete body.dataset['bookingTheme'];
       for (const [name, value] of previous) {
         if (value) root.style.setProperty(name, value);
         else root.style.removeProperty(name);

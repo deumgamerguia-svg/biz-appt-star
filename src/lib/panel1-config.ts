@@ -126,8 +126,8 @@ export function defaultPanel1Config(): Panel1Config {
 
 export function normalizePanel1Config(value: unknown): Panel1Config {
   const root = object(value);
-  const rawAppearance = object(root.appearance);
-  const rawPreferences = object(root.preferences);
+  const rawAppearance = object(root['appearance']);
+  const rawPreferences = object(root['preferences']);
   const appearance = { ...DEFAULT_PANEL1_APPEARANCE };
 
   for (const key of Object.keys(appearance) as Array<keyof Panel1Appearance>) {
@@ -136,7 +136,7 @@ export function normalizePanel1Config(value: unknown): Panel1Config {
 
   const rawListing = Math.round(
     numberValue(
-      rawPreferences.listing_time_minutes,
+      rawPreferences['listing_time_minutes'],
       DEFAULT_PANEL1_PREFERENCES.listing_time_minutes,
       10,
       390,
@@ -145,7 +145,7 @@ export function normalizePanel1Config(value: unknown): Panel1Config {
 
   const preferences: Panel1Preferences = {
     minimum_notice_hours: numberValue(
-      rawPreferences.minimum_notice_hours,
+      rawPreferences['minimum_notice_hours'],
       DEFAULT_PANEL1_PREFERENCES.minimum_notice_hours,
       0,
       720,
@@ -154,12 +154,12 @@ export function normalizePanel1Config(value: unknown): Panel1Config {
       ? rawListing
       : DEFAULT_PANEL1_PREFERENCES.listing_time_minutes,
     notify_clients: boolValue(
-      rawPreferences.notify_clients,
+      rawPreferences['notify_clients'],
       DEFAULT_PANEL1_PREFERENCES.notify_clients,
     ),
     reminder_hours_before: Math.round(
       numberValue(
-        rawPreferences.reminder_hours_before,
+        rawPreferences['reminder_hours_before'],
         DEFAULT_PANEL1_PREFERENCES.reminder_hours_before,
         1,
         168,
@@ -167,56 +167,56 @@ export function normalizePanel1Config(value: unknown): Panel1Config {
     ),
     extra_reminder_minutes: Math.round(
       numberValue(
-        rawPreferences.extra_reminder_minutes,
+        rawPreferences['extra_reminder_minutes'],
         DEFAULT_PANEL1_PREFERENCES.extra_reminder_minutes,
         0,
         1440,
       ),
     ),
     extra_reminder_template: stringValue(
-      rawPreferences.extra_reminder_template,
+      rawPreferences['extra_reminder_template'],
       DEFAULT_PANEL1_PREFERENCES.extra_reminder_template,
       800,
     ),
     timezone: stringValue(
-      rawPreferences.timezone,
+      rawPreferences['timezone'],
       DEFAULT_PANEL1_PREFERENCES.timezone,
       80,
     ),
     list_dates_days: Math.floor(
       numberValue(
-        rawPreferences.list_dates_days,
+        rawPreferences['list_dates_days'],
         DEFAULT_PANEL1_PREFERENCES.list_dates_days,
         7,
         365,
       ),
     ),
     cancellations_enabled: boolValue(
-      rawPreferences.cancellations_enabled,
+      rawPreferences['cancellations_enabled'],
       DEFAULT_PANEL1_PREFERENCES.cancellations_enabled,
     ),
     cancellation_notice_minutes: Math.floor(
       numberValue(
-        rawPreferences.cancellation_notice_minutes,
+        rawPreferences['cancellation_notice_minutes'],
         DEFAULT_PANEL1_PREFERENCES.cancellation_notice_minutes,
         0,
         1440,
       ),
     ),
     reschedule_enabled: boolValue(
-      rawPreferences.reschedule_enabled,
+      rawPreferences['reschedule_enabled'],
       DEFAULT_PANEL1_PREFERENCES.reschedule_enabled,
     ),
     reschedule_notice_minutes: Math.floor(
       numberValue(
-        rawPreferences.reschedule_notice_minutes,
+        rawPreferences['reschedule_notice_minutes'],
         DEFAULT_PANEL1_PREFERENCES.reschedule_notice_minutes,
         0,
         1440,
       ),
     ),
     greeting: stringValue(
-      rawPreferences.greeting,
+      rawPreferences['greeting'],
       DEFAULT_PANEL1_PREFERENCES.greeting,
       80,
     ),
@@ -226,6 +226,6 @@ export function normalizePanel1Config(value: unknown): Panel1Config {
     version: 1,
     appearance,
     preferences,
-    updated_at: typeof root.updated_at === "string" ? root.updated_at : null,
+    updated_at: typeof root['updated_at'] === "string" ? root['updated_at'] : null,
   };
 }

@@ -254,7 +254,7 @@ function PerformanceChart({ data }: { data: PerformanceDay[] }) {
     y: baseline - (day.value / maxValue) * 124,
   }));
   const line = points.map((point) => `${point.x},${point.y}`).join(" ");
-  const area = `M ${points[0].x} ${baseline} L ${points
+  const area = `M ${points[0]!.x} ${baseline} L ${points
     .map((point) => `${point.x} ${point.y}`)
     .join(" L ")} L ${points.at(-1)!.x} ${baseline} Z`;
 

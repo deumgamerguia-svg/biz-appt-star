@@ -15,7 +15,7 @@ declare global {
   }
 }
 
-const enabled = import.meta.env.VITE_RUNTIME_PROFILE === "1";
+const enabled = import.meta.env['VITE_RUNTIME_PROFILE'] === "1";
 
 function recordRender(
   id: string,

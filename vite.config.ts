@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 import { gzipSync } from "node:zlib";
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
-const auditBundle = process.env.BUNDLE_AUDIT === "1";
+const auditBundle = process.env['BUNDLE_AUDIT'] === "1";
 
 const bundleAuditPlugin = {
   name: "agenda-bundle-audit",

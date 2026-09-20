@@ -73,7 +73,7 @@ const QUICK_BLOCK_REASON = "Bloqueio rápido pela agenda";
 
 function minutesOf(time: string) {
   const [hour, minute] = time.slice(0, 5).split(":").map(Number);
-  return hour * 60 + minute;
+  return (hour ?? 0) * 60 + (minute ?? 0);
 }
 
 function timeOf(totalMinutes: number) {

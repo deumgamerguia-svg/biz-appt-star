@@ -96,8 +96,8 @@ function SubscriptionAccountPage() {
   });
 
   const accountName =
-    profile?.full_name?.trim() ||
-    (typeof user?.user_metadata?.full_name === "string" ? user.user_metadata.full_name : "") ||
+    profile?.['full_name']?.trim() ||
+    (typeof user?.user_metadata?.['full_name'] === "string" ? user.user_metadata['full_name'] : "") ||
     business?.name ||
     "Usuário";
   const accountEmail = profile?.email || user?.email || "E-mail não informado";
