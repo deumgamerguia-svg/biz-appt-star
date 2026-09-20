@@ -136,6 +136,30 @@ const emptyForm = {
   recurring: false,
 };
 
+function PixMark({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      className={className}
+      fill="none"
+    >
+      <path
+        d="M8.08 5.18 11.1 2.16a1.27 1.27 0 0 1 1.8 0l3.02 3.02a2.54 2.54 0 0 0 1.8.75h1.19l2.93 2.93a1.27 1.27 0 0 1 0 1.8l-3.02 3.02a2.54 2.54 0 0 0-.75 1.8v1.19l-2.93 2.93a1.27 1.27 0 0 1-1.8 0l-3.02-3.02a2.54 2.54 0 0 0-1.8-.75H7.33L4.4 12.9a1.27 1.27 0 0 1 0-1.8l3.02-3.02a2.54 2.54 0 0 0 .75-1.8v-1.1Z"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinejoin="round"
+      />
+      <path
+        d="m8.35 8.42 2.77 2.77a1.25 1.25 0 0 0 1.76 0l2.77-2.77m-7.3 7.16 2.77-2.77a1.25 1.25 0 0 1 1.76 0l2.77 2.77"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 function ProfiledAgendaPage() {
   return (
     <RuntimeProfiler id="AgendaPage">
@@ -990,7 +1014,7 @@ function AgendaPage() {
               if (!items.length && block) {
                 return (
                   <li key={slot}>
-                    <div className="flex h-12 w-full items-center gap-4 rounded-md border-b border-background bg-slot-blocked px-4 py-2.5 text-slot-blocked-foreground">
+                    <div className="flex h-14 w-full items-center gap-4 rounded-md border-b border-background bg-slot-blocked px-4 py-2.5 text-slot-blocked-foreground">
                       <span className="w-14 font-bold">{slot}</span>
                       <span className="flex-1 text-center text-sm font-medium">
                         Horário bloqueado
@@ -1025,7 +1049,7 @@ function AgendaPage() {
                     <button
                       type="button"
                       onClick={() => openNewAt(slot)}
-                      className="flex h-12 w-full items-center gap-4 rounded-md border-b border-background bg-slot-free px-4 py-2.5 text-left text-slot-free-foreground transition-opacity hover:opacity-90"
+                      className="flex h-14 w-full items-center gap-4 rounded-md border-b border-background bg-slot-free px-4 py-2.5 text-left text-slot-free-foreground transition-opacity hover:opacity-90"
                     >
                       <span className="w-14 font-medium">{slot}</span>
                       <span className="flex-1 text-center text-xs font-medium uppercase tracking-wide opacity-70">
@@ -1066,7 +1090,7 @@ function AgendaPage() {
                     <button
                       type="button"
                       onClick={() => setDetail(appointment.id)}
-                      className={`grid h-12 w-full grid-cols-[4.25rem_minmax(0,1fr)_minmax(10rem,1.35fr)_4.5rem] items-center gap-x-3 rounded-md border-b border-background px-3 py-2.5 text-left transition-opacity hover:opacity-90 ${tone}`}
+                      className={`grid h-14 w-full grid-cols-[4.25rem_minmax(0,1fr)_minmax(10rem,1.35fr)_4.5rem] items-center gap-x-3 rounded-md border-b border-background px-3 py-2.5 text-left transition-opacity hover:opacity-90 ${tone}`}
                     >
                       <span className="text-[13px] font-bold leading-none">
                         {timeFromIso(appointment.starts_at)}
@@ -1092,10 +1116,15 @@ function AgendaPage() {
                         <span />
                       )}
 
-                      <span className="text-right text-[11px] font-medium leading-none">
-                        {!blocked
-                          ? AGENDA_SIGNAL_FORMATTER.format(signal / 100)
-                          : ""}
+                      <span className="flex min-h-8 flex-col items-end justify-center text-right">
+                        {!blocked && appointment.deposit_paid_at && signal > 0 ? (
+                          <>
+                            <PixMark className="mb-0.5 size-3.5" />
+                            <span className="text-[11px] font-medium leading-none">
+                              {AGENDA_SIGNAL_FORMATTER.format(signal / 100)}
+                            </span>
+                          </>
+                        ) : null}
                       </span>
                     </button>
                   </li>
