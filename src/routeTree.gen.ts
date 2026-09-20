@@ -12,11 +12,13 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as MasterLoginRouteImport } from './routes/master-login'
 import { Route as AuthenticatedMasterRouteImport } from './routes/_authenticated/master'
 import { Route as AuthenticatedPainelRouteImport } from './routes/_authenticated/painel'
 import { Route as AgendarSlugRouteImport } from './routes/agendar.$slug'
 import { Route as AuthenticatedPainelIndexRouteImport } from './routes/_authenticated/painel.index'
 import { Route as AuthenticatedPainelAsPayRouteImport } from './routes/_authenticated/painel.as-pay'
+import { Route as AuthenticatedPainelAssinaturaRouteImport } from './routes/_authenticated/painel.assinatura'
 import { Route as AuthenticatedPainelBloqueiosRouteImport } from './routes/_authenticated/painel.bloqueios'
 import { Route as AuthenticatedPainelCaixaRouteImport } from './routes/_authenticated/painel.caixa'
 import { Route as AuthenticatedPainelClientesRouteImport } from './routes/_authenticated/painel.clientes'
@@ -49,6 +51,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MasterLoginRoute = MasterLoginRouteImport.update({
+  id: '/master-login',
+  path: '/master-login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedMasterRoute = AuthenticatedMasterRouteImport.update({
   id: '/master',
   path: '/master',
@@ -74,6 +81,12 @@ const AuthenticatedPainelAsPayRoute =
   AuthenticatedPainelAsPayRouteImport.update({
     id: '/as-pay',
     path: '/as-pay',
+    getParentRoute: () => AuthenticatedPainelRoute,
+  } as any)
+const AuthenticatedPainelAssinaturaRoute =
+  AuthenticatedPainelAssinaturaRouteImport.update({
+    id: '/assinatura',
+    path: '/assinatura',
     getParentRoute: () => AuthenticatedPainelRoute,
   } as any)
 const AuthenticatedPainelBloqueiosRoute =
@@ -182,10 +195,12 @@ const ApiPublicHooksWhatsappRemindersRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/master-login': typeof MasterLoginRoute
   '/master': typeof AuthenticatedMasterRoute
   '/painel': typeof AuthenticatedPainelRouteWithChildren
   '/agendar/$slug': typeof AgendarSlugRoute
   '/painel/as-pay': typeof AuthenticatedPainelAsPayRoute
+  '/painel/assinatura': typeof AuthenticatedPainelAssinaturaRoute
   '/painel/bloqueios': typeof AuthenticatedPainelBloqueiosRoute
   '/painel/caixa': typeof AuthenticatedPainelCaixaRoute
   '/painel/clientes': typeof AuthenticatedPainelClientesRoute
@@ -208,9 +223,11 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/master-login': typeof MasterLoginRoute
   '/master': typeof AuthenticatedMasterRoute
   '/agendar/$slug': typeof AgendarSlugRoute
   '/painel/as-pay': typeof AuthenticatedPainelAsPayRoute
+  '/painel/assinatura': typeof AuthenticatedPainelAssinaturaRoute
   '/painel/bloqueios': typeof AuthenticatedPainelBloqueiosRoute
   '/painel/caixa': typeof AuthenticatedPainelCaixaRoute
   '/painel/clientes': typeof AuthenticatedPainelClientesRoute
@@ -235,10 +252,12 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/master-login': typeof MasterLoginRoute
   '/_authenticated/master': typeof AuthenticatedMasterRoute
   '/_authenticated/painel': typeof AuthenticatedPainelRouteWithChildren
   '/agendar/$slug': typeof AgendarSlugRoute
   '/_authenticated/painel/as-pay': typeof AuthenticatedPainelAsPayRoute
+  '/_authenticated/painel/assinatura': typeof AuthenticatedPainelAssinaturaRoute
   '/_authenticated/painel/bloqueios': typeof AuthenticatedPainelBloqueiosRoute
   '/_authenticated/painel/caixa': typeof AuthenticatedPainelCaixaRoute
   '/_authenticated/painel/clientes': typeof AuthenticatedPainelClientesRoute
@@ -263,10 +282,12 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/master-login'
     | '/master'
     | '/painel'
     | '/agendar/$slug'
     | '/painel/as-pay'
+    | '/painel/assinatura'
     | '/painel/bloqueios'
     | '/painel/caixa'
     | '/painel/clientes'
@@ -289,9 +310,11 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/master-login'
     | '/master'
     | '/agendar/$slug'
     | '/painel/as-pay'
+    | '/painel/assinatura'
     | '/painel/bloqueios'
     | '/painel/caixa'
     | '/painel/clientes'
@@ -315,10 +338,12 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/master-login'
     | '/_authenticated/master'
     | '/_authenticated/painel'
     | '/agendar/$slug'
     | '/_authenticated/painel/as-pay'
+    | '/_authenticated/painel/assinatura'
     | '/_authenticated/painel/bloqueios'
     | '/_authenticated/painel/caixa'
     | '/_authenticated/painel/clientes'
@@ -343,6 +368,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  MasterLoginRoute: typeof MasterLoginRoute
   AgendarSlugRoute: typeof AgendarSlugRoute
   ApiPublicMercadopagoWebhookRoute: typeof ApiPublicMercadopagoWebhookRoute
   ApiPublicHooksWhatsappRemindersRoute: typeof ApiPublicHooksWhatsappRemindersRoute
@@ -369,6 +395,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/master-login': {
+      id: '/master-login'
+      path: '/master-login'
+      fullPath: '/master-login'
+      preLoaderRoute: typeof MasterLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/master': {
@@ -404,6 +437,13 @@ declare module '@tanstack/react-router' {
       path: '/as-pay'
       fullPath: '/painel/as-pay'
       preLoaderRoute: typeof AuthenticatedPainelAsPayRouteImport
+      parentRoute: typeof AuthenticatedPainelRoute
+    }
+    '/_authenticated/painel/assinatura': {
+      id: '/_authenticated/painel/assinatura'
+      path: '/assinatura'
+      fullPath: '/painel/assinatura'
+      preLoaderRoute: typeof AuthenticatedPainelAssinaturaRouteImport
       parentRoute: typeof AuthenticatedPainelRoute
     }
     '/_authenticated/painel/bloqueios': {
@@ -530,6 +570,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedPainelRouteChildren {
   AuthenticatedPainelAsPayRoute: typeof AuthenticatedPainelAsPayRoute
+  AuthenticatedPainelAssinaturaRoute: typeof AuthenticatedPainelAssinaturaRoute
   AuthenticatedPainelBloqueiosRoute: typeof AuthenticatedPainelBloqueiosRoute
   AuthenticatedPainelCaixaRoute: typeof AuthenticatedPainelCaixaRoute
   AuthenticatedPainelClientesRoute: typeof AuthenticatedPainelClientesRoute
@@ -550,6 +591,7 @@ interface AuthenticatedPainelRouteChildren {
 
 const AuthenticatedPainelRouteChildren: AuthenticatedPainelRouteChildren = {
   AuthenticatedPainelAsPayRoute: AuthenticatedPainelAsPayRoute,
+  AuthenticatedPainelAssinaturaRoute: AuthenticatedPainelAssinaturaRoute,
   AuthenticatedPainelBloqueiosRoute: AuthenticatedPainelBloqueiosRoute,
   AuthenticatedPainelCaixaRoute: AuthenticatedPainelCaixaRoute,
   AuthenticatedPainelClientesRoute: AuthenticatedPainelClientesRoute,
@@ -588,6 +630,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  MasterLoginRoute: MasterLoginRoute,
   AgendarSlugRoute: AgendarSlugRoute,
   ApiPublicMercadopagoWebhookRoute: ApiPublicMercadopagoWebhookRoute,
   ApiPublicHooksWhatsappRemindersRoute: ApiPublicHooksWhatsappRemindersRoute,

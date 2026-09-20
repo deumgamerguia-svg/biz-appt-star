@@ -25,7 +25,7 @@ const AppearanceSettings = lazy(() =>
 
 export const Route = createFileRoute("/_authenticated/painel/configuracoes")({
   validateSearch: (search: Record<string, unknown>) => ({
-    secao: search.secao === "aparencia" ? "aparencia" : "preferencias",
+    secao: search['secao'] === "aparencia" ? "aparencia" : "preferencias",
   }),
   head: () => ({
     meta: [
@@ -150,10 +150,10 @@ function PreferencesSettings({ businessId }: { businessId: string }) {
       return {
         preferences: config.preferences,
         reminder_enabled:
-          typeof business?.reminder_enabled === "boolean" ? business.reminder_enabled : undefined,
+          typeof business?.['reminder_enabled'] === "boolean" ? business['reminder_enabled'] : undefined,
         reminder_hours_before:
-          typeof business?.reminder_hours_before === "number"
-            ? business.reminder_hours_before
+          typeof business?.['reminder_hours_before'] === "number"
+            ? business['reminder_hours_before']
             : undefined,
       };
     },
@@ -331,7 +331,7 @@ function PreferencesSettings({ businessId }: { businessId: string }) {
                   />
                   <div className="mt-3 flex flex-wrap gap-2">
                     {[["Saudação", "{Saudacao}"], ["Horário", "{Horario}"], ["Cliente", "{Cliente}"], ["Data", "{Data}"]].map(([label, token]) => (
-                      <button key={token} type="button" onClick={() => insertExtraToken(token)} className="rounded-lg border border-[#2a2d32] bg-[#202226] px-4 py-2 text-xs font-medium text-[#b8bec7] transition-colors hover:border-[#1677ff]/40 hover:text-white">
+                      <button key={token} type="button" onClick={() => insertExtraToken(token!)} className="rounded-lg border border-[#2a2d32] bg-[#202226] px-4 py-2 text-xs font-medium text-[#b8bec7] transition-colors hover:border-[#1677ff]/40 hover:text-white">
                         {label}
                       </button>
                     ))}

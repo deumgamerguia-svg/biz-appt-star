@@ -22,7 +22,7 @@ function toIso(date: string, time: string) {
 
 function minutesOf(value: string) {
   const [hour, minute] = value.slice(0, 5).split(":").map(Number);
-  return hour * 60 + minute;
+  return (hour ?? 0) * 60 + (minute ?? 0);
 }
 
 function hhmm(total: number) {
