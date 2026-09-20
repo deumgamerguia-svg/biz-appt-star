@@ -32,7 +32,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-// GitHub sync marker for connected builder
+// GitHub sync marker for connected builder — button refresh
 export const Route = createFileRoute("/_authenticated/painel/")({
   head: () => ({
     meta: [
