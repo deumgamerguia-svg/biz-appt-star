@@ -311,9 +311,9 @@ function PreferencesSettings({ businessId }: { businessId: string }) {
 
       <div className="grid min-h-[620px] lg:grid-cols-[260px_minmax(0,1fr)]">
         <aside
-          className={`fixed inset-y-0 left-0 z-[60] w-[260px] overflow-y-auto border-r border-[#18345d] bg-[radial-gradient(ellipse_120%_48%_at_0%_0%,rgba(22,119,255,0.30)_0%,rgba(22,119,255,0.12)_38%,transparent_72%),linear-gradient(180deg,#090d14_0%,#07090d_48%,#050607_100%)] px-3 pb-6 pt-4 shadow-[18px_0_55px_rgba(0,0,0,0.52),4px_0_28px_rgba(22,119,255,0.10)] backdrop-blur-xl transition-[transform,visibility,box-shadow] duration-300 ease-out lg:static lg:z-auto lg:w-auto lg:translate-x-0 lg:visible lg:pointer-events-auto lg:shadow-[inset_-1px_0_0_rgba(93,168,255,0.08)] ${
+          className={`preferences-mini-sidebar fixed inset-y-0 left-0 z-[60] w-[260px] overflow-y-auto border-r border-[#18345d] bg-[radial-gradient(ellipse_120%_48%_at_0%_0%,rgba(22,119,255,0.30)_0%,rgba(22,119,255,0.12)_38%,transparent_72%),linear-gradient(180deg,#090d14_0%,#07090d_48%,#050607_100%)] px-3 pb-6 pt-4 shadow-[18px_0_55px_rgba(0,0,0,0.52),4px_0_28px_rgba(22,119,255,0.10)] backdrop-blur-xl transition-[transform,visibility,box-shadow] duration-300 ease-out lg:static lg:z-auto lg:w-auto lg:translate-x-0 lg:visible lg:pointer-events-auto lg:shadow-[inset_-1px_0_0_rgba(93,168,255,0.08)] ${
             menuOpen
-              ? "visible translate-x-0 pointer-events-auto"
+              ? "preferences-mini-sidebar-open visible translate-x-0 pointer-events-auto"
               : "invisible -translate-x-full pointer-events-none"
           }`}
         >
@@ -328,6 +328,10 @@ function PreferencesSettings({ businessId }: { businessId: string }) {
           <div
             aria-hidden="true"
             className="pointer-events-none absolute inset-x-5 top-0 h-px bg-gradient-to-r from-[#5da8ff]/70 via-[#1677ff]/25 to-transparent"
+          />
+          <div
+            aria-hidden="true"
+            className="preferences-sidebar-beam pointer-events-none absolute -right-px top-0 h-24 w-px bg-gradient-to-b from-transparent via-[#75b2ff] to-transparent shadow-[0_0_14px_rgba(93,168,255,0.9)]"
           />
 
           <div className="relative z-10">
@@ -691,18 +695,24 @@ function PreferenceButton({
     <button
       type="button"
       onClick={onClick}
-      className={`group relative flex w-full items-center gap-3 overflow-hidden rounded-xl border px-3 py-2.5 text-left text-sm transition-all duration-200 ease-out ${active ? "translate-x-1 border-[#2f83ff]/30 bg-[linear-gradient(90deg,rgba(22,119,255,0.18),rgba(22,119,255,0.07))] font-semibold text-white shadow-[inset_0_1px_0_rgba(112,168,255,0.08),0_8px_24px_rgba(0,0,0,0.16),0_0_22px_rgba(22,119,255,0.07)]" : "border-transparent text-[#939ba7] hover:translate-x-1 hover:border-[#1677ff]/15 hover:bg-[#1677ff]/[0.065] hover:text-[#edf4ff]"}`}
+      className={`preferences-menu-button group relative flex w-full items-center gap-3 overflow-hidden rounded-xl border px-3 py-2.5 text-left text-sm transition-all duration-200 ease-out ${active ? "preferences-menu-button-active translate-x-1 border-[#2f83ff]/30 bg-[linear-gradient(90deg,rgba(22,119,255,0.18),rgba(22,119,255,0.07))] font-semibold text-white shadow-[inset_0_1px_0_rgba(112,168,255,0.08),0_8px_24px_rgba(0,0,0,0.16),0_0_22px_rgba(22,119,255,0.07)]" : "border-transparent text-[#939ba7] hover:translate-x-1 hover:border-[#1677ff]/15 hover:bg-[#1677ff]/[0.065] hover:text-[#edf4ff]"}`}
     >
       {active && (
-        <span className="absolute inset-y-2 left-0 w-[3px] rounded-r-full bg-[#3b8cff] shadow-[0_0_12px_rgba(59,140,255,0.9)]" />
+        <span
+          aria-hidden="true"
+          className="preferences-menu-click-flash pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-[#5da8ff]/20 to-transparent"
+        />
+      )}
+      {active && (
+        <span className="absolute inset-y-2 left-0 z-10 w-[3px] rounded-r-full bg-[#3b8cff] shadow-[0_0_12px_rgba(59,140,255,0.9)]" />
       )}
       <Icon
-        className={`size-[17px] shrink-0 transition-all duration-200 ${active ? "text-[#69a8ff] drop-shadow-[0_0_5px_rgba(22,119,255,0.65)]" : "text-[#596474] group-hover:text-[#5da8ff]"}`}
+        className={`relative z-10 size-[17px] shrink-0 transition-all duration-200 ${active ? "text-[#69a8ff] drop-shadow-[0_0_5px_rgba(22,119,255,0.65)]" : "text-[#596474] group-hover:text-[#5da8ff]"}`}
         strokeWidth={1.8}
       />
-      <span className="min-w-0 truncate">{children}</span>
+      <span className="relative z-10 min-w-0 truncate">{children}</span>
       {active && (
-        <span className="ml-auto size-1.5 shrink-0 rounded-full bg-[#5da8ff] shadow-[0_0_9px_rgba(93,168,255,0.95)] motion-safe:animate-pulse" />
+        <span className="relative z-10 ml-auto size-1.5 shrink-0 rounded-full bg-[#5da8ff] shadow-[0_0_9px_rgba(93,168,255,0.95)] motion-safe:animate-pulse" />
       )}
     </button>
   );

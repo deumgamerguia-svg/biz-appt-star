@@ -618,6 +618,40 @@ body:has(.owner-panel) {
 .owner-route-content { animation: owner-route-enter 220ms cubic-bezier(0.22, 1, 0.36, 1) both; }
 .owner-route-loader { position: absolute; z-index: 20; inset: 1rem; min-height: 12rem; display: grid; place-items: center; border-radius: var(--radius-lg); background: color-mix(in oklab, var(--color-background) 88%, transparent); backdrop-filter: blur(4px); animation: owner-loader-in 120ms ease-out both; }
 
+@keyframes preferences-sidebar-enter {
+  0% { transform: translateX(-100%); opacity: 0.7; }
+  68% { transform: translateX(7px); opacity: 1; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes preferences-sidebar-beam {
+  0%, 100% { transform: translateY(-110%); opacity: 0; }
+  16% { opacity: 0.9; }
+  58% { opacity: 0.65; }
+  82% { transform: translateY(620px); opacity: 0; }
+}
+
+@keyframes preferences-button-select {
+  0% { transform: translateX(0) scale(0.96); filter: brightness(1.35); }
+  55% { transform: translateX(6px) scale(1.015); filter: brightness(1.18); }
+  100% { transform: translateX(4px) scale(1); filter: brightness(1); }
+}
+
+@keyframes preferences-click-flash {
+  0% { transform: translateX(-115%); opacity: 0; }
+  25% { opacity: 1; }
+  100% { transform: translateX(115%); opacity: 0; }
+}
+
+.preferences-sidebar-beam { animation: preferences-sidebar-beam 4.2s ease-in-out infinite; }
+.preferences-menu-button-active { animation: preferences-button-select 340ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+.preferences-menu-click-flash { animation: preferences-click-flash 520ms ease-out both; }
+.preferences-menu-button:active { transform: translateX(4px) scale(0.95) !important; filter: brightness(1.3); }
+
+@media (max-width: 1023px) {
+  .preferences-mini-sidebar-open { animation: preferences-sidebar-enter 380ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+}
+
 @keyframes owner-route-progress { 0% { transform: scaleX(0); } 70% { transform: scaleX(0.82); } 100% { transform: scaleX(1); opacity: 0; } }
 @keyframes owner-route-enter { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes owner-loader-in { from { opacity: 0; } to { opacity: 1; } }
