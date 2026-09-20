@@ -326,7 +326,7 @@ function PainelLayout() {
   const accountPhone = formatAccountPhone(business?.phone);
 
   return (
-    <div className="owner-panel relative min-h-screen overflow-x-hidden bg-[#050607] text-[#f3f4f6] lg:flex">
+    <div className="owner-panel relative min-h-screen min-h-[100dvh] overflow-x-hidden bg-[#050607] text-[#f3f4f6] lg:flex">
       <div
         aria-hidden="true"
         className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(circle_at_0%_20%,rgba(15,48,86,0.42),transparent_38%),radial-gradient(circle_at_100%_100%,rgba(0,70,150,0.16),transparent_34%)]"

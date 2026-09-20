@@ -215,6 +215,17 @@
   b, strong { font-weight: 600; }
 }
 
+html:has(.owner-panel),
+body:has(.owner-panel) {
+  min-height: 100%;
+  background: #050607;
+  overscroll-behavior-y: none;
+}
+
+body:has(.owner-panel) {
+  min-height: 100dvh;
+}
+
 .owner-panel {
   --radius: 0.5rem;
   --background: oklch(0 0 0);
