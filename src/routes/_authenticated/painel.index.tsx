@@ -913,7 +913,7 @@ function AgendaPage() {
         >
           <ChevronLeft className="size-4" />
         </Button>
-        <div className="relative min-w-0 flex-1 rounded-md">
+        <div className="relative h-[13.76px] w-44 flex-none rounded-md">
 
           <span
             aria-hidden="true"
@@ -921,7 +921,7 @@ function AgendaPage() {
           />
           <Input
             type="date"
-            className="relative z-10 w-full border-[#262626] bg-[#06090d] shadow-none"
+            className="relative z-10 h-[13.76px] min-h-0 w-44 border-[#262626] bg-[#06090d] px-3 py-0 text-[0.82rem] shadow-none"
             value={day}
             onChange={(event) => setDay(event.target.value)}
             aria-label="Data da agenda"
