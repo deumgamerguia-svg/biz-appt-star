@@ -105,6 +105,10 @@ const AGENDA_WEEKDAY_FORMATTER = new Intl.DateTimeFormat("pt-BR", {
   weekday: "long",
   timeZone: "America/Sao_Paulo",
 });
+const AGENDA_SIGNAL_FORMATTER = new Intl.NumberFormat("pt-BR", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
 
 function timeFromIso(iso: string) {
   return AGENDA_TIME_FORMATTER.format(new Date(iso));
@@ -345,7 +349,7 @@ function AgendaPage() {
 
   const create = useMutation({
     mutationFn: async () => {
-      const { startsAt, endsAt, customerName } = validateAppointment();
+      const { service, startsAt, endsAt, customerName } = validateAppointment();
       const { error } = await supabase.from("appointments").insert({
         business_id: businessId!,
         service_id: form.service_id,
@@ -354,6 +358,7 @@ function AgendaPage() {
         customer_phone: form.customer_phone.trim() || null,
         starts_at: startsAt,
         ends_at: endsAt,
+        deposit_cents: service.deposit_cents ?? 0,
         notes: form.notes.trim() || null,
         status: "agendado",
       });
@@ -404,6 +409,7 @@ function AgendaPage() {
     // expediente, dia de trabalho ou bloqueios da grade.
     const startsAt = toAgendaIso(day, encaixeForm.time);
     return {
+      service,
       startsAt,
       endsAt: addMinutesIso(startsAt, service.duration_minutes),
       customerName,
@@ -412,7 +418,7 @@ function AgendaPage() {
 
   const createEncaixe = useMutation({
     mutationFn: async () => {
-      const { startsAt, endsAt, customerName } = validateEncaixe();
+      const { service, startsAt, endsAt, customerName } = validateEncaixe();
       const { error } = await supabase.from("appointments").insert({
         business_id: businessId!,
         service_id: encaixeForm.service_id,
@@ -421,6 +427,7 @@ function AgendaPage() {
         customer_phone: encaixeForm.customer_phone.trim() || null,
         starts_at: startsAt,
         ends_at: endsAt,
+        deposit_cents: service.deposit_cents ?? 0,
         notes: null,
         status: "agendado",
       });
@@ -1052,38 +1059,43 @@ function AgendaPage() {
                       : "bg-slot-booked text-slot-booked-foreground";
                 const price =
                   (appointment.services as { price_cents: number } | null)?.price_cents ?? 0;
+                const signal = appointment.deposit_cents ?? 0;
 
                 return (
                   <li key={appointment.id}>
                     <button
                       type="button"
                       onClick={() => setDetail(appointment.id)}
-                      className={`flex w-full items-center gap-4 rounded-md border-b border-background px-4 py-2.5 text-left transition-opacity hover:opacity-90 ${tone}`}
+                      className={`grid w-full grid-cols-[4.25rem_minmax(0,1fr)_minmax(10rem,1.35fr)_4.5rem] items-center gap-x-3 rounded-md border-b border-background px-3 py-2 text-left transition-opacity hover:opacity-90 ${tone}`}
                     >
-                      <span className="w-14 font-bold">{timeFromIso(appointment.starts_at)}</span>
-                      <span className="flex-1 text-center text-sm">
-                        <span className="block font-medium">
+                      <span className="text-[13px] font-bold leading-none">
+                        {timeFromIso(appointment.starts_at)}
+                      </span>
+
+                      <span className="min-w-0 text-center leading-[1.15]">
+                        <span className="block truncate text-[12px] font-medium">
                           {blocked ? "Horário bloqueado" : appointment.customer_name}
                         </span>
                         {!blocked && appointment.customer_phone && (
-                          <span className="block text-xs opacity-80">
+                          <span className="mt-0.5 block truncate text-[11px] font-normal opacity-80">
                             {appointment.customer_phone}
                           </span>
                         )}
-                        {!blocked && appointment.professionals && (
-                          <span className="block text-[11px] opacity-70">
-                            {(appointment.professionals as { name: string }).name}
-                          </span>
-                        )}
                       </span>
-                      {!blocked && (
-                        <span className="hidden text-xs font-medium uppercase sm:block">
+
+                      {!blocked ? (
+                        <span className="min-w-0 truncate text-center text-[11px] font-medium uppercase leading-tight">
                           {(appointment.services as { name: string } | null)?.name ?? "Serviço"}
-                          {price > 0 ? ` - ${formatPrice(price)}` : ""}
+                          {price > 0 ? ` - ${formatPrice(price)}` : " - R$ 0,00"}
                         </span>
+                      ) : (
+                        <span />
                       )}
-                      <span className="w-16 text-right text-xs">
-                        {paid ? formatPrice(price) : ""}
+
+                      <span className="text-right text-[11px] font-medium leading-none">
+                        {!blocked
+                          ? AGENDA_SIGNAL_FORMATTER.format(signal / 100)
+                          : ""}
                       </span>
                     </button>
                   </li>
