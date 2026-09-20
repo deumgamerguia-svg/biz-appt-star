@@ -1,7 +1,19 @@
 import { lazy, Suspense, useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Menu } from "lucide-react";
+import {
+  BellRing,
+  CalendarClock,
+  CalendarDays,
+  CalendarX2,
+  Clock3,
+  Globe2,
+  Menu,
+  MessageSquareText,
+  Settings2,
+  Timer,
+  type LucideIcon,
+} from "lucide-react";
 import { toast } from "@/lib/toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -45,14 +57,14 @@ const DEFAULT_PREFERENCES: Preferences = { ...DEFAULT_PANEL1_PREFERENCES };
 const DEFAULT_EXTRA_TEMPLATE = DEFAULT_EXTRA_REMINDER_TEMPLATE;
 
 const preferenceItems = [
-  ["available", "Horários Disponíveis"],
-  ["listing", "Tempo de Listagem"],
-  ["notify", "Avisar Clientes"],
-  ["timezone", "Fuso Horário"],
-  ["dates", "Listar datas"],
-  ["cancel", "Cancelamentos"],
-  ["reschedule", "Remarcar"],
-  ["greeting", "Saudação"],
+  ["available", "Horários Disponíveis", Clock3],
+  ["listing", "Tempo de Listagem", Timer],
+  ["notify", "Avisar Clientes", BellRing],
+  ["timezone", "Fuso Horário", Globe2],
+  ["dates", "Listar datas", CalendarDays],
+  ["cancel", "Cancelamentos", CalendarX2],
+  ["reschedule", "Remarcar", CalendarClock],
+  ["greeting", "Saudação", MessageSquareText],
 ] as const;
 
 type PreferenceKey = (typeof preferenceItems)[number][0];
@@ -299,50 +311,83 @@ function PreferencesSettings({ businessId }: { businessId: string }) {
 
       <div className="grid min-h-[620px] lg:grid-cols-[260px_minmax(0,1fr)]">
         <aside
-          className={`fixed inset-y-0 left-0 z-[60] w-[260px] overflow-y-auto border-r border-[#303238] bg-[#151619] px-3 pb-6 pt-4 shadow-2xl transition-[transform,visibility] duration-200 lg:static lg:z-auto lg:w-auto lg:translate-x-0 lg:visible lg:pointer-events-auto lg:shadow-none ${
+          className={`fixed inset-y-0 left-0 z-[60] w-[260px] overflow-y-auto border-r border-[#18345d] bg-[radial-gradient(ellipse_120%_48%_at_0%_0%,rgba(22,119,255,0.30)_0%,rgba(22,119,255,0.12)_38%,transparent_72%),linear-gradient(180deg,#090d14_0%,#07090d_48%,#050607_100%)] px-3 pb-6 pt-4 shadow-[18px_0_55px_rgba(0,0,0,0.52),4px_0_28px_rgba(22,119,255,0.10)] backdrop-blur-xl transition-[transform,visibility,box-shadow] duration-300 ease-out lg:static lg:z-auto lg:w-auto lg:translate-x-0 lg:visible lg:pointer-events-auto lg:shadow-[inset_-1px_0_0_rgba(93,168,255,0.08)] ${
             menuOpen
               ? "visible translate-x-0 pointer-events-auto"
               : "invisible -translate-x-full pointer-events-none"
           }`}
         >
-          <h1 className="px-3 pb-8 !text-[1.75rem] font-normal tracking-[-0.035em] text-[#f5f6f8]">
-            Configurações
-          </h1>
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -left-20 -top-24 size-72 rounded-full bg-[#1677ff]/20 blur-[75px] motion-safe:animate-pulse"
+          />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute left-0 top-0 h-64 w-px bg-gradient-to-b from-[#76b2ff] via-[#1677ff]/60 to-transparent shadow-[0_0_16px_rgba(22,119,255,0.75)]"
+          />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-5 top-0 h-px bg-gradient-to-r from-[#5da8ff]/70 via-[#1677ff]/25 to-transparent"
+          />
 
-          <nav aria-label="Preferências do agendamento">
-            <p className="px-3 pb-3 text-sm font-medium text-[#8b929d]">Agenda</p>
-            <div className="space-y-1">
-              {preferenceItems.slice(0, 5).map(([key, label]) => (
-                <PreferenceButton
-                  key={key}
-                  active={selected === key}
-                  onClick={() => selectPreference(key)}
-                >
-                  {label}
-                </PreferenceButton>
-              ))}
+          <div className="relative z-10">
+            <div className="flex items-center gap-3 px-3 pb-7 pt-1">
+              <span className="flex size-9 items-center justify-center rounded-xl border border-[#367bdc]/25 bg-[#1677ff]/10 text-[#69a8ff] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_22px_rgba(22,119,255,0.14)]">
+                <Settings2 className="size-[18px]" strokeWidth={1.8} />
+              </span>
+              <div>
+                <h1 className="!text-[1.35rem] font-medium tracking-[-0.03em] text-[#f5f7fb]">
+                  Configurações
+                </h1>
+                <p className="mt-0.5 text-[10px] font-medium uppercase tracking-[0.13em] text-[#5d7da9]">
+                  Preferências
+                </p>
+              </div>
             </div>
 
-            <p className="mt-8 px-3 pb-3 text-sm font-medium text-[#8b929d]">Empresa e clientes</p>
-            <div className="space-y-1">
-              {preferenceItems.slice(5).map(([key, label]) => (
-                <PreferenceButton
-                  key={key}
-                  active={selected === key}
-                  onClick={() => selectPreference(key)}
-                >
-                  {label}
-                </PreferenceButton>
-              ))}
-            </div>
-          </nav>
+            <nav aria-label="Preferências do agendamento">
+              <p className="flex items-center gap-2 px-3 pb-3 text-[10px] font-semibold uppercase tracking-[0.15em] text-[#536b8c]">
+                <span className="size-1 rounded-full bg-[#1677ff] shadow-[0_0_8px_#1677ff]" />
+                Agenda
+              </p>
+              <div className="space-y-1.5">
+                {preferenceItems.slice(0, 5).map(([key, label, Icon]) => (
+                  <PreferenceButton
+                    key={key}
+                    icon={Icon}
+                    active={selected === key}
+                    onClick={() => selectPreference(key)}
+                  >
+                    {label}
+                  </PreferenceButton>
+                ))}
+              </div>
+
+              <p className="mt-8 flex items-center gap-2 px-3 pb-3 text-[10px] font-semibold uppercase tracking-[0.15em] text-[#536b8c]">
+                <span className="size-1 rounded-full bg-[#1677ff] shadow-[0_0_8px_#1677ff]" />
+                Empresa e clientes
+              </p>
+              <div className="space-y-1.5">
+                {preferenceItems.slice(5).map(([key, label, Icon]) => (
+                  <PreferenceButton
+                    key={key}
+                    icon={Icon}
+                    active={selected === key}
+                    onClick={() => selectPreference(key)}
+                  >
+                    {label}
+                  </PreferenceButton>
+                ))}
+              </div>
+            </nav>
+          </div>
         </aside>
 
         <section className="min-w-0 p-4 sm:p-8 lg:p-10">
           <div className="mx-auto max-w-2xl">
             <button
               type="button"
-              className="mb-5 inline-flex size-10 items-center justify-center rounded-lg border border-[#303238] bg-[#17191d] text-[#f4f5f7] transition-colors hover:border-[#4a4d54] hover:bg-[#202226] lg:hidden"
+              className="mb-5 inline-flex size-10 items-center justify-center rounded-xl border border-[#367bdc]/35 bg-[#1677ff]/10 text-[#79b1ff] shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_0_20px_rgba(22,119,255,0.12)] transition-all duration-200 hover:border-[#5da8ff]/55 hover:bg-[#1677ff]/15 hover:text-white hover:shadow-[0_0_24px_rgba(22,119,255,0.18)] lg:hidden"
               aria-label="Abrir menu de preferências"
               aria-expanded={menuOpen}
               onClick={() => setMenuOpen(true)}
@@ -431,7 +476,10 @@ function PreferencesSettings({ businessId }: { businessId: string }) {
                     className="mt-2 min-h-[270px] resize-y rounded-xl border-[#2a2d32] bg-[#17191d] px-4 py-4 text-sm leading-6 text-[#f4f5f7]"
                     value={prefs.extra_reminder_template}
                     onChange={(e) =>
-                      setPrefs({ ...prefs, extra_reminder_template: e.target.value.slice(0, 800) })
+                      setPrefs({
+                        ...prefs,
+                        extra_reminder_template: e.target.value.slice(0, 800),
+                      })
                     }
                     maxLength={800}
                   />
@@ -629,10 +677,12 @@ function PreferencesSettings({ businessId }: { businessId: string }) {
 }
 
 function PreferenceButton({
+  icon: Icon,
   active,
   onClick,
   children,
 }: {
+  icon: LucideIcon;
   active: boolean;
   onClick: () => void;
   children: React.ReactNode;
@@ -641,9 +691,19 @@ function PreferenceButton({
     <button
       type="button"
       onClick={onClick}
-      className={`w-full rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${active ? "bg-[#55575c] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.035)]" : "text-[#f0f1f3] hover:bg-white/[0.055]"}`}
+      className={`group relative flex w-full items-center gap-3 overflow-hidden rounded-xl border px-3 py-2.5 text-left text-sm transition-all duration-200 ease-out ${active ? "translate-x-1 border-[#2f83ff]/30 bg-[linear-gradient(90deg,rgba(22,119,255,0.18),rgba(22,119,255,0.07))] font-semibold text-white shadow-[inset_0_1px_0_rgba(112,168,255,0.08),0_8px_24px_rgba(0,0,0,0.16),0_0_22px_rgba(22,119,255,0.07)]" : "border-transparent text-[#939ba7] hover:translate-x-1 hover:border-[#1677ff]/15 hover:bg-[#1677ff]/[0.065] hover:text-[#edf4ff]"}`}
     >
-      {children}
+      {active && (
+        <span className="absolute inset-y-2 left-0 w-[3px] rounded-r-full bg-[#3b8cff] shadow-[0_0_12px_rgba(59,140,255,0.9)]" />
+      )}
+      <Icon
+        className={`size-[17px] shrink-0 transition-all duration-200 ${active ? "text-[#69a8ff] drop-shadow-[0_0_5px_rgba(22,119,255,0.65)]" : "text-[#596474] group-hover:text-[#5da8ff]"}`}
+        strokeWidth={1.8}
+      />
+      <span className="min-w-0 truncate">{children}</span>
+      {active && (
+        <span className="ml-auto size-1.5 shrink-0 rounded-full bg-[#5da8ff] shadow-[0_0_9px_rgba(93,168,255,0.95)] motion-safe:animate-pulse" />
+      )}
     </button>
   );
 }
