@@ -40,11 +40,11 @@ function NegociosPage() {
         title="Negócio"
         subtitle="Controle as informações e o link que aparecem no Painel 1 do cliente."
         action={
-          <div className="flex flex-wrap gap-2">
-            <Button variant="outline" asChild><Link to="/painel/servicos">Serviços</Link></Button>
-            <Button variant="outline" asChild><Link to="/painel/profissionais">Profissionais</Link></Button>
-            <Button variant="outline" asChild><Link to="/painel/funcionamento">Funcionamento</Link></Button>
-            <Button variant="outline" asChild><Link to="/painel/configuracoes" search={{ secao: "aparencia" }}>Visual do Painel 1</Link></Button>
+          <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap">
+            <Button className="w-full sm:w-auto" variant="outline" asChild><Link to="/painel/servicos">Serviços</Link></Button>
+            <Button className="w-full sm:w-auto" variant="outline" asChild><Link to="/painel/profissionais">Profissionais</Link></Button>
+            <Button className="w-full sm:w-auto" variant="outline" asChild><Link to="/painel/funcionamento">Funcionamento</Link></Button>
+            <Button className="w-full sm:w-auto" variant="outline" asChild><Link to="/painel/configuracoes" search={{ secao: "aparencia" }}>Visual do Painel 1</Link></Button>
           </div>
         }
       />
