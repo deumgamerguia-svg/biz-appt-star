@@ -383,7 +383,7 @@ function CustomerTableRow({
   onRemove,
 }: {
   customer: CustomerRow;
-  lastVisit?: string;
+  lastVisit?: string | undefined;
   onRemove: (id: string) => void;
 }) {
   const days = lastVisit === undefined ? null : daysSince(lastVisit);
