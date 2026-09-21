@@ -348,7 +348,7 @@ body:has(.owner-panel) {
 }
 .owner-panel .as-pay-chart-line {
   fill: none;
-  stroke: #1677ff;
+  stroke: var(--panel-accent, #1677ff);
   stroke-width: 3;
   vector-effect: non-scaling-stroke;
   stroke-dasharray: 1600;
@@ -357,7 +357,7 @@ body:has(.owner-panel) {
 }
 .owner-panel .as-pay-chart-point {
   fill: #080b10;
-  stroke: #5da8ff;
+  stroke: var(--panel-accent-bright, #5da8ff);
   stroke-width: 3;
   vector-effect: non-scaling-stroke;
   opacity: 0;
@@ -466,11 +466,11 @@ body:has(.owner-panel) {
 .owner-panel .as-pay-flow-row strong { font-size: 0.86rem; font-weight: 500; color: #aeb3bc; }
 .owner-panel .as-pay-progress-track { height: 0.42rem; flex: 1; overflow: hidden; border-radius: 999px; background: rgba(255, 255, 255, 0.045); }
 .owner-panel .as-pay-progress-track > span { display: block; height: 100%; border-radius: inherit; background: #555b65; }
-.owner-panel .as-pay-progress-track > span.is-positive { background: linear-gradient(90deg, #1159bd, #1677ff 70%, #5da8ff); box-shadow: 0 0 12px rgba(22, 119, 255, 0.34); }
+.owner-panel .as-pay-progress-track > span.is-positive { background: linear-gradient(90deg, #1159bd, var(--panel-accent, #1677ff) 70%, var(--panel-accent-bright, #5da8ff)); box-shadow: 0 0 12px rgba(22, 119, 255, 0.34); }
 .owner-panel .as-pay-month-card { min-height: 13rem; display: flex; flex-direction: column; justify-content: space-between; padding: 1.1rem; }
 .owner-panel .as-pay-month-segments { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.28rem; }
 .owner-panel .as-pay-month-segments span { height: 0.7rem; border-radius: 0.22rem; background: rgba(255, 255, 255, 0.065); }
-.owner-panel .as-pay-month-segments span.is-active { background: linear-gradient(90deg, #105cc8, #1677ff, #5da8ff); box-shadow: 0 0 14px rgba(22, 119, 255, 0.3); }
+.owner-panel .as-pay-month-segments span.is-active { background: linear-gradient(90deg, #105cc8, var(--panel-accent, #1677ff), var(--panel-accent-bright, #5da8ff)); box-shadow: 0 0 14px rgba(22, 119, 255, 0.3); }
 .owner-panel .as-pay-history-card { min-height: 17.5rem; }
 .owner-panel .as-pay-history-header { border-bottom: 1px solid rgba(255, 255, 255, 0.065); padding: 1.1rem; }
 .owner-panel .as-pay-empty-withdrawals { display: flex; min-height: 12rem; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
@@ -507,7 +507,7 @@ body:has(.owner-panel) {
   --report-blue-shadow-alpha: 0;
   --report-border-color: rgba(255, 255, 255, 0.095);
   --report-icon-border: rgba(51, 125, 255, 0.29);
-  --report-icon-color: #69a2ff;
+  --report-icon-color: var(--panel-accent-soft, #69a2ff);
   --report-icon-background: rgba(22, 119, 255, 0.09);
   --report-icon-glow: rgba(22, 119, 255, 0.08);
   position: relative;
@@ -786,7 +786,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible { box-shadow: 
 main, [data-slot="card"] { animation: page-fade-in 280ms ease-out both; }
 
 .owner-panel .owner-nav-active { position: relative; overflow: hidden; border-radius: 8px; background: #121215; border: 0; color: #ffffff; box-shadow: none; }
-.owner-panel .owner-nav-active::before { content: ""; display: block; position: absolute; top: 50%; left: 0; width: 3px; height: 20px; transform: translateY(-50%); border-radius: 0 999px 999px 0; background: #1f6df9; box-shadow: none; }
+.owner-panel .owner-nav-active::before { content: ""; display: block; position: absolute; top: 50%; left: 0; width: 3px; height: 20px; transform: translateY(-50%); border-radius: 0 999px 999px 0; background: var(--panel-accent, #1f6df9); box-shadow: none; }
 .owner-panel .owner-nav-active > svg { color: #5f97fb; filter: none; }
 .owner-panel .owner-nav-active .owner-nav-hint { color: #97a9ca; }
 
@@ -983,7 +983,7 @@ main, [data-slot="card"] { animation: page-fade-in 280ms ease-out both; }
   justify-content: center;
   border: 1px solid rgba(51, 125, 255, 0.38);
   border-radius: 0.72rem;
-  color: #69a2ff;
+  color: var(--panel-accent-soft, #69a2ff);
   background: linear-gradient(145deg, rgba(19, 42, 78, 0.82), rgba(12, 25, 47, 0.74));
   box-shadow:
     inset 0 1px 0 rgba(180, 213, 255, 0.045),
@@ -1041,7 +1041,7 @@ main, [data-slot="card"] { animation: page-fade-in 280ms ease-out both; }
 
 .owner-panel .integration-gold-button {
   border: 1px solid rgba(64, 139, 255, 0.62);
-  background: linear-gradient(180deg, #2f83ff 0%, #1677ff 100%);
+  background: linear-gradient(180deg, var(--panel-accent-strong, #2f83ff) 0%, var(--panel-accent, #1677ff) 100%);
   color: #fffef8;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.26),
@@ -1050,7 +1050,7 @@ main, [data-slot="card"] { animation: page-fade-in 280ms ease-out both; }
 
 .owner-panel .integration-gold-button:hover {
   border-color: rgba(103, 166, 255, 0.80);
-  background: linear-gradient(180deg, #4a94ff 0%, #1f7fff 100%);
+  background: linear-gradient(180deg, var(--panel-accent-hover, #4a94ff) 0%, var(--panel-accent-hover-deep, #1f7fff) 100%);
   color: #ffffff;
 }
 
@@ -1064,7 +1064,7 @@ main, [data-slot="card"] { animation: page-fade-in 280ms ease-out both; }
 .owner-panel .integration-dark-button:hover {
   border-color: rgba(52, 120, 224, 0.62);
   background: linear-gradient(180deg, rgba(18, 25, 38, 0.98), rgba(11, 16, 25, 0.98));
-  color: #69a2ff;
+  color: var(--panel-accent-soft, #69a2ff);
 }
 
 
@@ -1171,7 +1171,7 @@ body:has(.owner-panel) .professional-dialog::before {
   justify-content: center;
   border: 1px solid rgba(51, 125, 255, 0.36);
   border-radius: 0.72rem;
-  color: #69a2ff;
+  color: var(--panel-accent-soft, #69a2ff);
   background: linear-gradient(145deg, rgba(19, 42, 78, 0.82), rgba(12, 25, 47, 0.74));
   box-shadow:
     inset 0 1px 0 rgba(180, 213, 255, 0.045),
@@ -1194,7 +1194,7 @@ body:has(.owner-panel) .professional-dialog::before {
 
 .owner-panel .professional-primary-button {
   border: 1px solid rgba(66, 137, 255, 0.64);
-  background: linear-gradient(180deg, #2f83ff 0%, #176df0 100%);
+  background: linear-gradient(180deg, var(--panel-accent-strong, #2f83ff) 0%, var(--panel-accent-deep, #176df0) 100%);
   color: #ffffff;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.18),
@@ -1203,7 +1203,7 @@ body:has(.owner-panel) .professional-dialog::before {
 
 .owner-panel .professional-primary-button:hover {
   border-color: rgba(103, 166, 255, 0.82);
-  background: linear-gradient(180deg, #4a94ff 0%, #1f7fff 100%);
+  background: linear-gradient(180deg, var(--panel-accent-hover, #4a94ff) 0%, var(--panel-accent-hover-deep, #1f7fff) 100%);
   color: #ffffff;
 }
 
@@ -1217,7 +1217,7 @@ body:has(.owner-panel) .professional-dialog::before {
 .owner-panel .professional-secondary-button:hover {
   border-color: rgba(54, 112, 205, 0.6);
   background: linear-gradient(180deg, rgba(17, 26, 42, 0.98), rgba(11, 17, 28, 0.98));
-  color: #6fa6ff;
+  color: var(--panel-accent-soft, #6fa6ff);
 }
 
 .owner-panel .professional-stat-card {
@@ -1321,7 +1321,7 @@ body:has(.owner-panel) .professional-dialog::before {
 .owner-panel .professional-icon-action:hover {
   border-color: rgba(56, 100, 171, 0.36);
   background: rgba(22, 119, 255, 0.05);
-  color: #6fa6ff;
+  color: var(--panel-accent-soft, #6fa6ff);
 }
 
 .owner-panel .professional-empty-state {
@@ -1401,7 +1401,7 @@ body:has(.owner-panel) .professional-dialog-icon {
   justify-content: center;
   border: 1px solid rgba(55, 131, 255, 0.44);
   border-radius: 0.75rem;
-  color: #70a8ff;
+  color: var(--panel-accent-soft, #70a8ff);
   background:
     radial-gradient(circle at 35% 20%, rgba(68, 144, 255, 0.18), transparent 52%),
     linear-gradient(145deg, rgba(18, 43, 82, 0.92), rgba(10, 25, 48, 0.9));
@@ -1453,7 +1453,7 @@ body:has(.owner-panel) .professional-input {
 }
 
 body:has(.owner-panel) .professional-input:focus-visible {
-  border-color: #2f83ff;
+  border-color: var(--panel-accent-strong, #2f83ff);
   box-shadow: 0 0 0 3px rgba(22, 119, 255, 0.13);
 }
 
@@ -1475,7 +1475,7 @@ body:has(.owner-panel) .professional-day-option {
 body:has(.owner-panel) .professional-day-option.is-selected {
   border-color: rgba(47, 131, 255, 0.72);
   background: rgba(22, 119, 255, 0.11);
-  color: #69a2ff;
+  color: var(--panel-accent-soft, #69a2ff);
   box-shadow: inset 0 0 0 1px rgba(22, 119, 255, 0.08);
 }
 
@@ -1635,7 +1635,7 @@ body:has(.owner-panel) .service-image-dropzone:hover {
 .owner-panel .bloqueio-filter-chip.is-selected {
   border-color: rgba(47, 131, 255, 0.58);
   background: rgba(22, 119, 255, 0.09);
-  color: #70a8ff;
+  color: var(--panel-accent-soft, #70a8ff);
   box-shadow:
     inset 0 1px 0 rgba(120, 176, 255, 0.04),
     0 0 18px rgba(22, 119, 255, 0.035);
@@ -1662,14 +1662,14 @@ body:has(.owner-panel) .bloqueio-type-option {
 
 body:has(.owner-panel) .bloqueio-type-option:hover {
   border-color: rgba(56, 112, 203, 0.5);
-  color: #8cb7ff;
+  color: var(--panel-accent-pale, #8cb7ff);
 }
 
 body:has(.owner-panel) .bloqueio-type-option.is-selected {
   border-color: rgba(47, 131, 255, 0.72);
   background:
     linear-gradient(180deg, rgba(22, 47, 84, 0.95), rgba(11, 26, 48, 0.98));
-  color: #75abff;
+  color: var(--panel-accent-soft, #75abff);
   box-shadow:
     inset 0 1px 0 rgba(120, 176, 255, 0.05),
     0 0 18px rgba(22, 119, 255, 0.045);
@@ -1910,7 +1910,7 @@ body .agenda-booking-dialog-icon {
   justify-content: center;
   border: 1px solid rgba(55, 131, 255, 0.44);
   border-radius: 0.75rem;
-  color: #70a8ff;
+  color: var(--panel-accent-soft, #70a8ff);
   background:
     radial-gradient(circle at 35% 20%, rgba(68, 144, 255, 0.18), transparent 52%),
     linear-gradient(145deg, rgba(18, 43, 82, 0.92), rgba(10, 25, 48, 0.9));
@@ -1961,7 +1961,7 @@ body .agenda-booking-input {
 
 body .agenda-booking-input:focus,
 body .agenda-booking-input:focus-visible {
-  border-color: #2f83ff !important;
+  border-color: var(--panel-accent-strong, #2f83ff) !important;
   outline: none !important;
   box-shadow: 0 0 0 3px rgba(22, 119, 255, 0.13) !important;
 }
@@ -1991,12 +1991,12 @@ body .agenda-booking-secondary-button {
 body .agenda-booking-secondary-button:hover {
   border-color: rgba(54, 112, 205, 0.6) !important;
   background: linear-gradient(180deg, rgba(17, 26, 42, 0.98), rgba(11, 17, 28, 0.98)) !important;
-  color: #6fa6ff !important;
+  color: var(--panel-accent-soft, #6fa6ff) !important;
 }
 
 body .agenda-booking-primary-button {
   border: 1px solid rgba(66, 137, 255, 0.64) !important;
-  background: linear-gradient(180deg, #2f83ff 0%, #176df0 100%) !important;
+  background: linear-gradient(180deg, var(--panel-accent-strong, #2f83ff) 0%, var(--panel-accent-deep, #176df0) 100%) !important;
   color: #ffffff !important;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.18),
@@ -2005,7 +2005,7 @@ body .agenda-booking-primary-button {
 
 body .agenda-booking-primary-button:hover {
   border-color: rgba(103, 166, 255, 0.82) !important;
-  background: linear-gradient(180deg, #4a94ff 0%, #1f7fff 100%) !important;
+  background: linear-gradient(180deg, var(--panel-accent-hover, #4a94ff) 0%, var(--panel-accent-hover-deep, #1f7fff) 100%) !important;
 }
 
 @media (max-width: 639px) {
@@ -2021,4 +2021,211 @@ body .agenda-booking-primary-button:hover {
   body .agenda-booking-form-section {
     padding: 0.9rem;
   }
+}
+
+
+/* Agenda Agora — temas do Painel 2.
+ * A cor escolhida no perfil altera apenas a identidade principal do painel.
+ * Cores semânticas (verde de sucesso, vermelho de erro e WhatsApp) permanecem intactas.
+ */
+body:has(.owner-panel),
+.owner-panel {
+  --panel-accent: #1677ff;
+  --panel-accent-bright: #5da8ff;
+  --panel-accent-soft: #69a2ff;
+  --panel-accent-pale: #79b1ff;
+  --panel-accent-strong: #2f83ff;
+  --panel-accent-deep: #176df0;
+  --panel-accent-hover: #4a94ff;
+  --panel-accent-hover-deep: #1f7fff;
+  --panel-accent-rgb: 22, 119, 255;
+  --panel-accent-bright-rgb: 93, 168, 255;
+  --panel-accent-dark-rgb: 15, 48, 86;
+  --panel-accent-deep-rgb: 0, 70, 150;
+}
+
+body:has(.owner-panel[data-panel-theme="pink"]),
+.owner-panel[data-panel-theme="pink"] {
+  --panel-accent: #ec4899;
+  --panel-accent-bright: #ff69ad;
+  --panel-accent-soft: #f76aac;
+  --panel-accent-pale: #ff9ac7;
+  --panel-accent-strong: #f052a1;
+  --panel-accent-deep: #cf2f7c;
+  --panel-accent-hover: #ff67ae;
+  --panel-accent-hover-deep: #e63c91;
+  --panel-accent-rgb: 236, 72, 153;
+  --panel-accent-bright-rgb: 255, 105, 173;
+  --panel-accent-dark-rgb: 83, 18, 52;
+  --panel-accent-deep-rgb: 122, 20, 67;
+}
+
+body:has(.owner-panel[data-panel-theme="yellow"]),
+.owner-panel[data-panel-theme="yellow"] {
+  --panel-accent: #d4ad2a;
+  --panel-accent-bright: #e9ca52;
+  --panel-accent-soft: #e1be3e;
+  --panel-accent-pale: #f2d978;
+  --panel-accent-strong: #dabc36;
+  --panel-accent-deep: #a87d12;
+  --panel-accent-hover: #e6c84a;
+  --panel-accent-hover-deep: #bc941d;
+  --panel-accent-rgb: 212, 173, 42;
+  --panel-accent-bright-rgb: 233, 202, 82;
+  --panel-accent-dark-rgb: 67, 54, 11;
+  --panel-accent-deep-rgb: 106, 78, 10;
+}
+
+.owner-panel[data-panel-theme] .panel-theme-page-bg {
+  background:
+    radial-gradient(circle at 0% 20%, rgba(var(--panel-accent-dark-rgb), 0.42), transparent 38%),
+    radial-gradient(circle at 100% 100%, rgba(var(--panel-accent-deep-rgb), 0.16), transparent 34%) !important;
+}
+
+.owner-panel[data-panel-theme] .panel-theme-page-sheen {
+  background:
+    linear-gradient(
+      115deg,
+      rgba(var(--panel-accent-dark-rgb), 0.18),
+      transparent 32%,
+      transparent 70%,
+      rgba(var(--panel-accent-deep-rgb), 0.13)
+    ) !important;
+}
+
+.owner-panel[data-panel-theme] .panel-theme-orb-left,
+.owner-panel[data-panel-theme] .panel-theme-orb-right {
+  background-color: rgba(var(--panel-accent-rgb), 0.055) !important;
+}
+
+.owner-panel[data-panel-theme] .panel-theme-sidebar {
+  border-right-color: rgba(var(--panel-accent-rgb), 0.18) !important;
+  background:
+    radial-gradient(
+      ellipse 120% 54% at 0% 0%,
+      rgba(var(--panel-accent-rgb), 0.28) 0%,
+      rgba(var(--panel-accent-rgb), 0.15) 28%,
+      rgba(var(--panel-accent-rgb), 0.055) 49%,
+      transparent 72%
+    ),
+    linear-gradient(180deg, rgba(6, 9, 15, 0.72) 0%, rgba(5, 7, 11, 0.68) 34%, rgba(5, 6, 7, 0.62) 100%) !important;
+  box-shadow:
+    18px 0 55px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(var(--panel-accent-bright-rgb), 0.10),
+    inset -1px 0 0 rgba(var(--panel-accent-rgb), 0.08) !important;
+}
+
+.owner-panel[data-panel-theme] .panel-theme-sidebar-orb {
+  background-color: rgba(var(--panel-accent-rgb), 0.16) !important;
+}
+
+.owner-panel[data-panel-theme] .panel-theme-sidebar-line {
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(var(--panel-accent-bright-rgb), 0.70),
+      rgba(var(--panel-accent-rgb), 0.30),
+      transparent
+    ) !important;
+}
+
+.owner-panel[data-panel-theme] .panel-theme-sidebar-wash {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(var(--panel-accent-bright-rgb), 0.075) 0%,
+      rgba(var(--panel-accent-rgb), 0.025) 42%,
+      transparent 100%
+    ) !important;
+}
+
+.owner-panel[data-panel-theme] .owner-nav-active {
+  border-color: rgba(var(--panel-accent-rgb), 0.15) !important;
+  background-color: rgba(var(--panel-accent-rgb), 0.09) !important;
+}
+
+.owner-panel[data-panel-theme] .owner-nav-item:not(.owner-nav-active):hover {
+  border-color: rgba(var(--panel-accent-rgb), 0.10) !important;
+  background-color: rgba(var(--panel-accent-rgb), 0.055) !important;
+}
+
+.owner-panel[data-panel-theme] .owner-nav-item:hover > svg,
+.owner-panel[data-panel-theme] .owner-nav-active > svg {
+  color: var(--panel-accent-bright) !important;
+}
+
+.owner-panel[data-panel-theme] .owner-nav-active::before {
+  background: var(--panel-accent) !important;
+  box-shadow: 0 0 12px rgba(var(--panel-accent-rgb), 0.46) !important;
+}
+
+/* Mantém o AS Pay com a identidade própria dourada quando a rota financeira está selecionada. */
+.owner-panel[data-panel-theme] aside nav a[href="/painel/as-pay"].owner-nav-active::before {
+  background: #f4c400 !important;
+  box-shadow: none !important;
+}
+
+.owner-panel[data-panel-theme] .preferences-mini-sidebar {
+  border-right-color: rgba(var(--panel-accent-rgb), 0.28) !important;
+  background:
+    radial-gradient(
+      ellipse 120% 48% at 0% 0%,
+      rgba(var(--panel-accent-rgb), 0.30) 0%,
+      rgba(var(--panel-accent-rgb), 0.12) 38%,
+      transparent 72%
+    ),
+    linear-gradient(180deg, #090d14 0%, #07090d 48%, #050607 100%) !important;
+  box-shadow:
+    18px 0 55px rgba(0, 0, 0, 0.52),
+    4px 0 28px rgba(var(--panel-accent-rgb), 0.10) !important;
+}
+
+.owner-panel[data-panel-theme] .panel-theme-option.is-selected {
+  border-color: rgba(var(--panel-accent-rgb), 0.72) !important;
+  background: rgba(var(--panel-accent-rgb), 0.11) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(var(--panel-accent-rgb), 0.07),
+    0 0 16px rgba(var(--panel-accent-rgb), 0.12) !important;
+}
+
+/* Classes utilitárias azuis existentes no layout/configurações também acompanham o tema.
+ * O seletor por substring preserva opacidades e evita reescrever cada tela.
+ */
+.owner-panel[data-panel-theme]:not([data-panel-theme="blue"]) [class*="text-[#1677ff]"],
+.owner-panel[data-panel-theme]:not([data-panel-theme="blue"]) [class*="text-[#5da8ff]"],
+.owner-panel[data-panel-theme]:not([data-panel-theme="blue"]) [class*="text-[#69a8ff]"],
+.owner-panel[data-panel-theme]:not([data-panel-theme="blue"]) [class*="text-[#69a2ff]"],
+.owner-panel[data-panel-theme]:not([data-panel-theme="blue"]) [class*="text-[#79b1ff]"],
+.owner-panel[data-panel-theme]:not([data-panel-theme="blue"]) [class*="text-[#5d7da9]"] {
+  color: var(--panel-accent-bright) !important;
+}
+
+.owner-panel[data-panel-theme]:not([data-panel-theme="blue"]) [class*="border-[#1677ff]"],
+.owner-panel[data-panel-theme]:not([data-panel-theme="blue"]) [class*="border-[#367bdc]"] {
+  border-color: rgba(var(--panel-accent-rgb), 0.42) !important;
+}
+
+.owner-panel[data-panel-theme]:not([data-panel-theme="blue"]) [class*="bg-[#1677ff]"] {
+  background-color: rgba(var(--panel-accent-rgb), 0.12) !important;
+}
+
+.owner-panel[data-panel-theme]:not([data-panel-theme="blue"]) [class*="hover:bg-[#1677ff]"]:hover {
+  background-color: rgba(var(--panel-accent-rgb), 0.12) !important;
+}
+
+.owner-panel[data-panel-theme]:not([data-panel-theme="blue"]) [class*="hover:border-[#1677ff]"]:hover {
+  border-color: rgba(var(--panel-accent-rgb), 0.46) !important;
+}
+
+.owner-panel[data-panel-theme]:not([data-panel-theme="blue"]) [class*="focus-visible:ring-[#1677ff]"]:focus-visible {
+  --tw-ring-color: rgba(var(--panel-accent-rgb), 0.70) !important;
+}
+
+body:has(.owner-panel[data-panel-theme="pink"]) .professional-dialog,
+body:has(.owner-panel[data-panel-theme="yellow"]) .professional-dialog {
+  border-color: rgba(var(--panel-accent-rgb), 0.34);
+  box-shadow:
+    0 28px 78px rgba(0, 0, 0, 0.78),
+    0 0 0 1px rgba(255, 255, 255, 0.012),
+    0 16px 42px -30px rgba(var(--panel-accent-rgb), 0.72);
 }
