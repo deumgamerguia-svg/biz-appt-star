@@ -6,6 +6,7 @@ import { toast } from "@/lib/toast";
 import {
   BadgeCheck,
   BriefcaseBusiness,
+  CircleAlert,
   KeyRound,
   Link2,
   Pencil,
@@ -89,6 +90,7 @@ function ProfissionaisPage() {
   const saveFn = useServerFn(saveProfessional);
   const deleteFn = useServerFn(deleteProfessional);
   const [open, setOpen] = useState(false);
+  const [billingNoticeOpen, setBillingNoticeOpen] = useState(false);
   const [form, setForm] = useState<Form>(empty);
 
   const { data: people } = useQuery({
@@ -196,6 +198,11 @@ function ProfissionaisPage() {
   };
 
   const openCreate = () => {
+    setBillingNoticeOpen(true);
+  };
+
+  const confirmCreate = () => {
+    setBillingNoticeOpen(false);
     setForm(empty);
     setOpen(true);
   };
@@ -336,6 +343,45 @@ function ProfissionaisPage() {
           </div>
         )}
       </section>
+
+      <Dialog open={billingNoticeOpen} onOpenChange={setBillingNoticeOpen}>
+        <DialogContent className="max-w-[440px] overflow-hidden border border-[#174ea6]/70 bg-[#070b12] p-0 shadow-[0_0_70px_rgba(31,111,235,0.26)]">
+          <div className="relative overflow-hidden px-6 pb-6 pt-7 text-center sm:px-8">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(37,119,255,0.20),transparent_55%)]" />
+            <div className="pointer-events-none absolute left-1/2 top-0 h-px w-3/4 -translate-x-1/2 bg-gradient-to-r from-transparent via-[#4b9cff] to-transparent shadow-[0_0_18px_rgba(75,156,255,0.95)]" />
+
+            <div className="relative mx-auto flex size-16 items-center justify-center rounded-full border border-[#3280ff]/80 bg-[#0a1630] text-[#68a8ff] shadow-[0_0_28px_rgba(48,128,255,0.34),inset_0_0_20px_rgba(48,128,255,0.10)]">
+              <CircleAlert className="size-7" strokeWidth={1.8} />
+            </div>
+
+            <DialogHeader className="relative mt-5">
+              <DialogTitle className="text-center text-xl font-semibold tracking-[-0.025em] text-[#f3f7ff]">
+                Atenção
+              </DialogTitle>
+            </DialogHeader>
+
+            <p className="relative mx-auto mt-3 max-w-[340px] text-sm leading-6 text-[#9fb3cf]">
+              Ao cadastrar um novo profissional, será acrescentado <strong className="font-semibold text-[#67a6ff]">R$ 10,00</strong> à sua mensalidade para cada novo profissional cadastrado.
+            </p>
+
+            <div className="relative mt-6 flex justify-center gap-3">
+              <Button
+                variant="outline"
+                className="professional-secondary-button"
+                onClick={() => setBillingNoticeOpen(false)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                className="professional-primary-button min-w-28 shadow-[0_0_22px_rgba(43,124,255,0.28)]"
+                onClick={confirmCreate}
+              >
+                Continuar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog
         open={open}
