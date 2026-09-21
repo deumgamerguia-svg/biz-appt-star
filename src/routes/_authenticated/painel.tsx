@@ -22,8 +22,6 @@ import {
   ChevronDown,
   SlidersHorizontal,
   Paintbrush,
-  Palette,
-  Check,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -31,6 +29,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useBusiness } from "@/lib/business";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import brandLogo from "@/assets/agenda-agora-logo.png.asset.json";
 import { RuntimeProfiler } from "@/lib/runtime-profiler";
 
 export const Route = createFileRoute("/_authenticated/painel")({
@@ -173,16 +172,6 @@ function formatAccountPhone(phone?: string | null) {
   return phone || "Não informado";
 }
 
-function AgendaAgoraSidebarLogo() {
-  return (
-    <span className="agenda-agora-wordmark" aria-label="Agenda Agora">
-      <span className="agenda-agora-wordmark__agenda">Agenda</span>
-      <span className="agenda-agora-wordmark__agora">Agora</span>
-      <span className="agenda-agora-wordmark__shine" aria-hidden="true" />
-    </span>
-  );
-}
-
 function PanelGreeting({ name }: { name: string }) {
   const [now, setNow] = useState(() => new Date());
 
@@ -258,20 +247,6 @@ function WhatsappBadge() {
   );
 }
 
-type PanelTheme = "blue" | "pink" | "yellow";
-
-const PANEL_THEME_OPTIONS: Array<{
-  id: PanelTheme;
-  label: string;
-  color: string;
-}> = [
-  { id: "blue", label: "Azul", color: "#1677ff" },
-  { id: "pink", label: "Rosa", color: "#ec4899" },
-  { id: "yellow", label: "Amarelo", color: "#d4ad2a" },
-];
-
-const PANEL_THEME_STORAGE_KEY = "agenda-agora:panel-theme";
-
 function PainelLayout() {
   const { user, signOut } = useAuth();
   const { business, businessId } = useBusiness();
@@ -280,7 +255,6 @@ function PainelLayout() {
   const [transitioning, setTransitioning] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
-  const [panelTheme, setPanelTheme] = useState<PanelTheme>("blue");
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const [configOpen, setConfigOpen] = useState(() => pathname.startsWith("/painel/configuracoes"));
 
@@ -321,18 +295,6 @@ function PainelLayout() {
   }, [pathname]);
 
   useEffect(() => {
-    const savedTheme = window.localStorage.getItem(PANEL_THEME_STORAGE_KEY);
-    if (savedTheme === "blue" || savedTheme === "pink" || savedTheme === "yellow") {
-      setPanelTheme(savedTheme);
-    }
-  }, []);
-
-  const changePanelTheme = (theme: PanelTheme) => {
-    setPanelTheme(theme);
-    window.localStorage.setItem(PANEL_THEME_STORAGE_KEY, theme);
-  };
-
-  useEffect(() => {
     if (!transitioning) return;
     const timer = window.setTimeout(() => setTransitioning(false), 360);
     return () => window.clearTimeout(timer);
@@ -364,25 +326,22 @@ function PainelLayout() {
   const accountPhone = formatAccountPhone(business?.phone);
 
   return (
-    <div
-      className="owner-panel relative min-h-screen min-h-[100dvh] overflow-x-hidden bg-[#050607] text-[#f3f4f6] lg:flex"
-      data-panel-theme={panelTheme}
-    >
+    <div className="owner-panel relative min-h-screen min-h-[100dvh] overflow-x-hidden bg-[#050607] text-[#f3f4f6] lg:flex">
       <div
         aria-hidden="true"
-        className="panel-theme-page-bg pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(circle_at_0%_20%,rgba(15,48,86,0.42),transparent_38%),radial-gradient(circle_at_100%_100%,rgba(0,70,150,0.16),transparent_34%)]"
+        className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(circle_at_0%_20%,rgba(15,48,86,0.42),transparent_38%),radial-gradient(circle_at_100%_100%,rgba(0,70,150,0.16),transparent_34%)]"
       />
       <div
         aria-hidden="true"
-        className="panel-theme-page-sheen pointer-events-none fixed inset-0 z-0 bg-[linear-gradient(115deg,rgba(11,29,49,0.18),transparent_32%,transparent_70%,rgba(4,15,28,0.18))]"
+        className="pointer-events-none fixed inset-0 z-0 bg-[linear-gradient(115deg,rgba(11,29,49,0.18),transparent_32%,transparent_70%,rgba(4,15,28,0.18))]"
       />
       <div
         aria-hidden="true"
-        className="panel-theme-orb-left pointer-events-none fixed -left-40 top-1/4 z-0 size-[28rem] rounded-full bg-blue-600/[0.055] blur-3xl"
+        className="pointer-events-none fixed -left-40 top-1/4 z-0 size-[28rem] rounded-full bg-blue-600/[0.055] blur-3xl"
       />
       <div
         aria-hidden="true"
-        className="panel-theme-orb-right pointer-events-none fixed -right-40 bottom-0 z-0 size-[30rem] rounded-full bg-cyan-400/[0.045] blur-3xl"
+        className="pointer-events-none fixed -right-40 bottom-0 z-0 size-[30rem] rounded-full bg-cyan-400/[0.045] blur-3xl"
       />
 
       <Button
@@ -399,28 +358,31 @@ function PainelLayout() {
       <aside
         className={`${
           open ? "translate-x-0" : "-translate-x-full"
-        } panel-theme-sidebar fixed inset-y-0 left-0 z-50 flex w-[17.5rem] max-w-[82vw] flex-col overflow-hidden border-r border-[#1b2d47] bg-[radial-gradient(ellipse_120%_54%_at_0%_0%,rgba(22,119,255,0.28)_0%,rgba(22,119,255,0.15)_28%,rgba(22,119,255,0.055)_49%,transparent_72%),linear-gradient(180deg,rgba(6,9,15,0.72)_0%,rgba(5,7,11,0.68)_34%,rgba(5,6,7,0.62)_100%)] px-5 py-4 shadow-[18px_0_55px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(93,168,255,0.10),inset_-1px_0_0_rgba(22,119,255,0.08)] backdrop-blur-xl transition-transform duration-200 ease-out lg:sticky lg:top-0 lg:h-screen lg:w-[18.5rem] lg:max-w-none lg:shrink-0 lg:translate-x-0 lg:px-5 lg:shadow-[inset_0_1px_0_rgba(93,168,255,0.10),inset_-1px_0_0_rgba(22,119,255,0.08)]`}
+        } fixed inset-y-0 left-0 z-50 flex w-[17.5rem] max-w-[82vw] flex-col overflow-hidden border-r border-[#1b2d47] bg-[radial-gradient(ellipse_120%_54%_at_0%_0%,rgba(22,119,255,0.28)_0%,rgba(22,119,255,0.15)_28%,rgba(22,119,255,0.055)_49%,transparent_72%),linear-gradient(180deg,rgba(6,9,15,0.72)_0%,rgba(5,7,11,0.68)_34%,rgba(5,6,7,0.62)_100%)] px-5 py-4 shadow-[18px_0_55px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(93,168,255,0.10),inset_-1px_0_0_rgba(22,119,255,0.08)] backdrop-blur-xl transition-transform duration-200 ease-out lg:sticky lg:top-0 lg:h-screen lg:w-[18.5rem] lg:max-w-none lg:shrink-0 lg:translate-x-0 lg:px-5 lg:shadow-[inset_0_1px_0_rgba(93,168,255,0.10),inset_-1px_0_0_rgba(22,119,255,0.08)]`}
       >
         <div
           aria-hidden="true"
-          className="panel-theme-sidebar-orb pointer-events-none absolute -left-28 -top-32 z-0 h-[23rem] w-[23rem] rounded-full bg-[#1677ff]/[0.16] blur-[86px]"
+          className="pointer-events-none absolute -left-28 -top-32 z-0 h-[23rem] w-[23rem] rounded-full bg-[#1677ff]/[0.16] blur-[86px]"
         />
         <div
           aria-hidden="true"
-          className="panel-theme-sidebar-line pointer-events-none absolute left-0 top-0 z-0 h-[18rem] w-px bg-gradient-to-b from-[#5da8ff]/70 via-[#1677ff]/30 to-transparent"
+          className="pointer-events-none absolute left-0 top-0 z-0 h-[18rem] w-px bg-gradient-to-b from-[#5da8ff]/70 via-[#1677ff]/30 to-transparent"
         />
         <div
           aria-hidden="true"
-          className="panel-theme-sidebar-wash pointer-events-none absolute inset-x-0 top-0 z-0 h-32 bg-[linear-gradient(180deg,rgba(93,168,255,0.075)_0%,rgba(22,119,255,0.025)_42%,transparent_100%)]"
+          className="pointer-events-none absolute inset-x-0 top-0 z-0 h-32 bg-[linear-gradient(180deg,rgba(93,168,255,0.075)_0%,rgba(22,119,255,0.025)_42%,transparent_100%)]"
         />
 
         <Link
           to="/painel"
           onClick={beginNavigation}
-          aria-label="Ir para a Agenda"
-          className="agenda-agora-wordmark-link group relative z-10 flex h-[5.25rem] shrink-0 items-center border-b border-[#25282c] px-1"
+          className="group relative z-10 flex h-[5.25rem] shrink-0 items-center border-b border-[#25282c] px-1"
         >
-          <AgendaAgoraSidebarLogo />
+          <img
+            src={brandLogo.url}
+            alt="Agenda Agora"
+            className="h-11 w-auto max-w-[220px] object-contain object-left transition-transform duration-300 group-hover:scale-[1.01]"
+          />
         </Link>
 
         <div className="relative z-50 shrink-0 border-b border-[#25282c] px-1 py-3">
@@ -498,46 +460,6 @@ function PainelLayout() {
                   <span className={`text-right font-medium ${business?.status === "suspenso" ? "text-red-400" : "text-[#cfd3d9]"}`}>
                     {business?.status === "suspenso" ? "Suspenso" : "Ativo"}
                   </span>
-                </div>
-              </div>
-
-              <div className="mt-3 border-t border-[#22252a] pt-3">
-                <div className="flex items-center gap-2">
-                  <span className="flex size-8 items-center justify-center rounded-lg border border-[#2b2f35] bg-[#0f1115] text-[var(--panel-accent-bright)]">
-                    <Palette className="size-4" strokeWidth={1.8} />
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-[11px] font-semibold text-[#e8ebef]">Cor do painel</p>
-                    <p className="mt-0.5 text-[9.5px] leading-3 text-[#666d76]">
-                      Escolha a cor principal da interface.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-2.5 grid grid-cols-3 gap-2">
-                  {PANEL_THEME_OPTIONS.map((theme) => {
-                    const selected = panelTheme === theme.id;
-                    return (
-                      <button
-                        key={theme.id}
-                        type="button"
-                        aria-pressed={selected}
-                        aria-label={`Usar tema ${theme.label}`}
-                        onClick={() => changePanelTheme(theme.id)}
-                        className={`panel-theme-option flex min-w-0 items-center justify-center gap-1.5 rounded-lg border px-2 py-2 text-[9.5px] font-semibold transition-all duration-150 ${
-                          selected ? "is-selected text-white" : "border-[#292d33] bg-[#0e1013] text-[#727984] hover:border-[#3a4049] hover:text-[#d7dbe1]"
-                        }`}
-                      >
-                        <span
-                          className="relative flex size-4 shrink-0 items-center justify-center rounded-full shadow-[0_0_12px_rgba(255,255,255,0.08)]"
-                          style={{ backgroundColor: theme.color }}
-                        >
-                          {selected && <Check className="size-3 text-white drop-shadow" strokeWidth={3} />}
-                        </span>
-                        <span className="truncate">{theme.label}</span>
-                      </button>
-                    );
-                  })}
                 </div>
               </div>
 
