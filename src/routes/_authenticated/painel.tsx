@@ -31,7 +31,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useBusiness } from "@/lib/business";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import brandLogo from "@/assets/agenda-agora-logo.png.asset.json";
 import { RuntimeProfiler } from "@/lib/runtime-profiler";
 
 export const Route = createFileRoute("/_authenticated/painel")({
@@ -172,6 +171,16 @@ function formatAccountPhone(phone?: string | null) {
     return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
   }
   return phone || "Não informado";
+}
+
+function AgendaAgoraSidebarLogo() {
+  return (
+    <span className="agenda-agora-wordmark" aria-label="Agenda Agora">
+      <span className="agenda-agora-wordmark__agenda">Agenda</span>
+      <span className="agenda-agora-wordmark__agora">Agora</span>
+      <span className="agenda-agora-wordmark__shine" aria-hidden="true" />
+    </span>
+  );
 }
 
 function PanelGreeting({ name }: { name: string }) {
@@ -408,13 +417,10 @@ function PainelLayout() {
         <Link
           to="/painel"
           onClick={beginNavigation}
-          className="group relative z-10 flex h-[5.25rem] shrink-0 items-center border-b border-[#25282c] px-1"
+          aria-label="Ir para a Agenda"
+          className="agenda-agora-wordmark-link group relative z-10 flex h-[5.25rem] shrink-0 items-center border-b border-[#25282c] px-1"
         >
-          <img
-            src={brandLogo.url}
-            alt="Agenda Agora"
-            className="h-11 w-auto max-w-[220px] object-contain object-left transition-transform duration-300 group-hover:scale-[1.01]"
-          />
+          <AgendaAgoraSidebarLogo />
         </Link>
 
         <div className="relative z-50 shrink-0 border-b border-[#25282c] px-1 py-3">
